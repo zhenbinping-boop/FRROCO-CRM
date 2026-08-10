@@ -2,7 +2,7 @@ import { Router } from "express";
 
 import { dashboard } from "../controllers/analytics-controller.js";
 import { login } from "../controllers/auth-controller.js";
-import { changeOwnership, createCustomer, exportRegionalCustomers, getCustomer, importCustomers, listCustomers, listDealerGroups, listStores, updateCustomer } from "../controllers/customer-controller.js";
+import { changeOwnership, createCustomer, deleteCustomer, exportRegionalCustomers, getCustomer, importCustomers, listCustomers, listDealerGroups, listStores, updateCustomer } from "../controllers/customer-controller.js";
 import { createOrder, createPayment, getOrder, listOrders } from "../controllers/order-controller.js";
 import { createTask, listTasks, updateTask } from "../controllers/task-controller.js";
 import { authenticate } from "../middleware/auth.js";
@@ -17,6 +17,7 @@ apiRouter.post("/customers/import", importCustomers);
 apiRouter.get("/customers/export-regional", exportRegionalCustomers);
 apiRouter.get("/customers/:id", getCustomer);
 apiRouter.patch("/customers/:id", updateCustomer);
+apiRouter.delete("/customers/:id", deleteCustomer);
 apiRouter.patch("/customers/:id/ownership", changeOwnership);
 apiRouter.get("/stores", listStores);
 apiRouter.get("/dealer-groups", listDealerGroups);

@@ -330,6 +330,12 @@ a.bg-primary {
   color: var(--farock-primary);
 }
 
+.farock-button--danger {
+  border-color: #b3261e;
+  background: #fff;
+  color: #b3261e;
+}
+
 .farock-button .material-symbols-outlined {
   font-size: 18px;
 }

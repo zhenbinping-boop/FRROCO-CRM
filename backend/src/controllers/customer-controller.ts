@@ -98,6 +98,21 @@ export const updateCustomer: RequestHandler = async (request, response) => {
   response.json({ data: customer });
 };
 
+export const deleteCustomer: RequestHandler = async (request, response) => {
+  if (request.user?.role !== "ADMIN") throw new AppError(403, "ADMIN_REQUIRED", "仅管理员可以删除客户");
+  const { id } = validate(z.object({ id: z.string().min(1) }), request.params);
+  const customer = await prisma.customer.findUnique({
+    where: { id },
+    select: { id: true, _count: { select: { orders: true } } },
+  });
+  if (!customer) throw new AppError(404, "CUSTOMER_NOT_FOUND", "客户不存在");
+  if (customer._count.orders > 0) {
+    throw new AppError(409, "CUSTOMER_HAS_ORDERS", "该客户已有订单或回款记录，不能直接删除");
+  }
+  await prisma.customer.delete({ where: { id } });
+  response.status(204).send();
+};
+
 export const importCustomers: RequestHandler = async (request, response) => {
   const { customers } = validate(z.object({ customers: z.array(customerInput).min(1).max(200) }), request.body);
   const phones = customers.map((customer) => customer.phone);

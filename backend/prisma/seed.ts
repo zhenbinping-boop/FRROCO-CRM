@@ -49,14 +49,30 @@ async function main() {
     },
   });
 
-  const email = process.env.SEED_ADMIN_EMAIL || "admin@frroco.com";
-  const password = process.env.SEED_ADMIN_PASSWORD || "Admin@123456";
-  const admin = await prisma.user.upsert({
-    where: { email },
-    update: { name: "林晓雅", role: "ADMIN", active: true, organizationId: headquarters.id, passwordHash: await bcrypt.hash(password, 12) },
-    create: { email, name: "林晓雅", role: "ADMIN", active: true, organizationId: headquarters.id, passwordHash: await bcrypt.hash(password, 12) },
-  });
+ const email = process.env.SEED_ADMIN_EMAIL || "admin@frroco.com";
 
+// 1. 严格检查环境变量：如果没有配置密码，直接报错中断，防止写死默认密码
+if (!process.env.SEED_ADMIN_PASSWORD) {
+  throw new Error("SEED_ADMIN_PASSWORD environment variable is missing!");
+}
+const password = process.env.SEED_ADMIN_PASSWORD;
+
+// 2. 生成密码 Hash
+const passwordHash = await bcrypt.hash(password, 10);
+
+const admin = await prisma.user.upsert({
+  where: { email },
+  // 3. update 保持为空对象 {}：如果管理员已被创建过，不重置其密码/数据
+  update: {}, 
+  create: { 
+    email, 
+    name: "林晓雅", 
+    role: "ADMIN", 
+    active: true, 
+    organizationId: headquarters.id, 
+    passwordHash 
+  }
+});
   const directCustomer = await prisma.customer.upsert({
     where: { phone: "13800001001" },
     update: { salesRepId: admin.id },

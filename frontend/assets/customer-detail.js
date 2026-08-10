@@ -68,6 +68,22 @@
     try { const result = await api.get(`/customers/${encodeURIComponent(id)}`); render(result.data); }
     catch (error) { setText("[data-customer-name]", "客户加载失败"); setText("[data-customer-contact]", error.message); }
   }
+  const deleteButton = document.querySelector("#customer-delete-button");
+  let session;
+  try { session = JSON.parse(localStorage.getItem("farock-session") || "null"); } catch { session = null; }
+  if (deleteButton && session?.role !== "ADMIN") deleteButton.remove();
+  deleteButton?.addEventListener("click", async () => {
+    const customerName = document.querySelector("[data-customer-name]")?.textContent?.trim() || "该客户";
+    if (!window.confirm(`确认永久删除客户“${customerName}”吗？此操作无法撤销。`)) return;
+    deleteButton.disabled = true;
+    try {
+      await api.delete(`/customers/${encodeURIComponent(id)}`);
+      location.href = "customers.html";
+    } catch (error) {
+      deleteButton.disabled = false;
+      window.alert(error.message || "客户删除失败");
+    }
+  });
   document.querySelector("#customer-edit-button")?.addEventListener("click", openEditor);
   load();
 })();
