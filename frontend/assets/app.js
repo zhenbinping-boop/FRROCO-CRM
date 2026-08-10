@@ -1037,7 +1037,7 @@
   }
 
   function setupFollowUpTasks() {
-    if (page !== routes.tasks) return;
+    if (page !== routes.tasks || window.FAROCK_TASKS_API) return;
 
     document.querySelectorAll("button").forEach((button) => {
       const label = textOf(button);

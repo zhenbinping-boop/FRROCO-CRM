@@ -10,7 +10,7 @@
     "customer-create.html": { title: "新建客户", active: "customers" },
     "customer-detail.html": { title: "客户详情", active: "customers", actions: ["editCustomer", "newFollowup"] },
     "customer-handover.html": { title: "客户交接", active: "customers" },
-    "follow-up-tasks.html": { title: "跟进任务", active: "tasks", actions: ["newFollowup"] },
+    "follow-up-tasks.html": { title: "跟进任务", active: "tasks", actions: ["createTask"] },
     "channel-analysis.html": { title: "渠道分析", active: "activity", actions: ["export"] },
     "team-ranking.html": { title: "团队业绩排行", active: "activity" },
     "orders-payments.html": { title: "订单与回款", active: "orders", actions: ["payment"] },
@@ -105,6 +105,7 @@
   const actionTemplates = {
     newCustomer: '<a class="farock-button farock-button--primary" href="customer-create.html"><span class="material-symbols-outlined">add</span><span>新建客户</span></a>',
     newFollowup: '<a class="farock-button farock-button--primary" href="follow-up-tasks.html"><span class="material-symbols-outlined">add_task</span><span>新增跟进</span></a>',
+    createTask: '<button class="farock-button farock-button--primary" id="task-create-button" type="button"><span class="material-symbols-outlined">add_task</span><span>新建任务</span></button>',
     editCustomer: '<button class="farock-button farock-button--secondary" id="customer-edit-button" type="button"><span class="material-symbols-outlined">edit</span><span>编辑客户</span></button>',
     payment: '<a class="farock-button farock-button--primary" href="payment-entry.html"><span class="material-symbols-outlined">payments</span><span>登记收款</span></a>',
     backToOrders: '<a class="farock-button farock-button--secondary" href="orders-payments.html"><span class="material-symbols-outlined">arrow_back</span><span>返回订单</span></a>',
