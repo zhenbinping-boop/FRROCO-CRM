@@ -166,6 +166,25 @@ farock-header {
   font-size: 18px;
 }
 
+.farock-sidebar__logout {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: var(--farock-radius);
+  background: transparent;
+  color: var(--farock-muted);
+  font: 600 13px/20px Inter, sans-serif;
+  text-align: left;
+}
+
+.farock-sidebar__logout:hover {
+  background: var(--farock-surface-soft);
+  color: var(--farock-text);
+}
+
 .farock-header {
   position: sticky;
   top: 0;

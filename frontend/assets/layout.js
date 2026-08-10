@@ -3,6 +3,10 @@
 
   const page = location.pathname.split("/").pop() || "index.html";
   if (page === "index.html") return;
+  if (!localStorage.getItem("farock-token")) {
+    location.replace("index.html");
+    return;
+  }
 
   const pages = {
     "dashboard.html": { title: "经营工作台", active: "dashboard", actions: ["newCustomer"] },
@@ -56,10 +60,16 @@
               <span class="farock-user-card__copy"><strong>林晓雅</strong><small>管理员</small></span>
               <span class="material-symbols-outlined">chevron_right</span>
             </a>
+            <button class="farock-sidebar__logout" type="button"><span class="material-symbols-outlined">logout</span><span>退出登录</span></button>
           </div>
         </aside>
         <button class="farock-sidebar__backdrop" type="button" aria-label="关闭导航"></button>`;
       this.querySelector(".farock-sidebar__backdrop").addEventListener("click", () => this.close());
+      this.querySelector(".farock-sidebar__logout").addEventListener("click", () => {
+        localStorage.removeItem("farock-token");
+        localStorage.removeItem("farock-session");
+        location.href = "index.html";
+      });
       this.querySelectorAll(".farock-sidebar__link").forEach((link) => link.addEventListener("click", () => this.close()));
       window.addEventListener("farock:toggle-sidebar", () => this.toggle());
     }

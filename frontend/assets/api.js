@@ -12,6 +12,12 @@
     }
   }
 
+  function expireSession() {
+    localStorage.removeItem("farock-token");
+    localStorage.removeItem("farock-session");
+    if (!location.pathname.endsWith("/index.html") && location.pathname !== "/") location.href = "index.html";
+  }
+
   async function request(path, options = {}) {
     const baseUrl = String(window.FAROCK_API_BASE_URL || defaultBaseUrl).replace(/\/$/, "");
     const headers = new Headers(options.headers || {});
@@ -33,6 +39,7 @@
     }
     const payload = response.status === 204 ? null : await response.json().catch(() => null);
     if (!response.ok) {
+      if (response.status === 401) expireSession();
       throw new ApiError(payload?.error?.message || `请求失败（HTTP ${response.status}）`, response.status, payload?.error?.details);
     }
     return payload;
@@ -48,6 +55,7 @@
     catch (error) { throw new ApiError("无法连接后端服务，请确认服务已启动", 0, error); }
     if (!response.ok) {
       const payload = await response.json().catch(() => null);
+      if (response.status === 401) expireSession();
       throw new ApiError(payload?.error?.message || `下载失败（HTTP ${response.status}）`, response.status, payload?.error?.details);
     }
     return { blob: await response.blob(), disposition: response.headers.get("content-disposition") || "" };
