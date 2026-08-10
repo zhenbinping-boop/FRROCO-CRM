@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Add Customer - Faloco CRM</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                            "outline": "#747878",
+                            "tertiary-fixed-dim": "#c8c8af",
+                            "tertiary": "#000000",
+                            "on-primary": "#ffffff",
+                            "status-earth": "#B7B7A4",
+                            "primary-fixed": "#e5e2e1",
+                            "surface-white": "#FFFFFF",
+                            "on-secondary-fixed-variant": "#444937",
+                            "surface-bright": "#faf9f4",
+                            "surface-variant": "#e3e3de",
+                            "secondary-container": "#e0e5cc",
+                            "on-tertiary-container": "#85856f",
+                            "tertiary-container": "#1c1d0c",
+                            "surface": "#faf9f4",
+                            "background": "#faf9f4",
+                            "error-container": "#ffdad6",
+                            "inverse-on-surface": "#f2f1ec",
+                            "warning-amber": "#F2CC8F",
+                            "primary": "#000000",
+                            "secondary-fixed-dim": "#c4c9b1",
+                            "secondary-fixed": "#e0e5cc",
+                            "tertiary-fixed": "#e5e4ca",
+                            "on-surface": "#1b1c19",
+                            "on-tertiary": "#ffffff",
+                            "inverse-surface": "#30312e",
+                            "secondary": "#5c614d",
+                            "error": "#ba1a1a",
+                            "on-secondary-fixed": "#191d0e",
+                            "surface-tint": "#5f5e5e",
+                            "outline-variant": "#c4c7c7",
+                            "on-secondary": "#ffffff",
+                            "surface-container-high": "#e9e8e3",
+                            "on-secondary-container": "#626753",
+                            "primary-container": "#1c1b1b",
+                            "on-primary-container": "#858383",
+                            "on-primary-fixed": "#1c1b1b",
+                            "on-primary-fixed-variant": "#474746",
+                            "on-error-container": "#93000a",
+                            "on-error": "#ffffff",
+                            "surface-dim": "#dbdad5",
+                            "primary-fixed-dim": "#c8c6c5",
+                            "inverse-primary": "#c8c6c5",
+                            "error-red": "#E07A5F",
+                            "on-tertiary-fixed": "#1c1d0c",
+                            "masked-gray": "#E5E5E5",
+                            "surface-container-low": "#f5f4ef",
+                            "on-surface-variant": "#444748",
+                            "surface-container-highest": "#e3e3de",
+                            "status-sage": "#84A59D",
+                            "surface-container-lowest": "#ffffff",
+                            "surface-container": "#efeee9",
+                            "on-background": "#1b1c19",
+                            "on-tertiary-fixed-variant": "#474835"
+                    },
+                    "borderRadius": {
+                            "DEFAULT": "0.25rem",
+                            "lg": "0.5rem",
+                            "xl": "0.75rem",
+                            "full": "9999px"
+                    },
+                    "spacing": {
+                            "base": "8px",
+                            "margin-mobile": "16px",
+                            "gutter-desktop": "24px",
+                            "margin-desktop": "40px",
+                            "card-padding": "24px",
+                            "section-gap": "48px"
+                    },
+                    "fontFamily": {
+                            "body-lg": ["Inter"],
+                            "label-md": ["Inter"],
+                            "headline-md": ["Inter"],
+                            "data-mono": ["jetbrainsMono"],
+                            "headline-lg": ["Inter"],
+                            "headline-lg-mobile": ["Inter"],
+                            "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                            "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                            "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                            "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                            "data-mono": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                            "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                            "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                            "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .icon-fill { font-variation-settings: 'FILL' 1; }
+        
+        /* Form input focus styles */
+        .input-premium {
+            background-color: #F1F0EA;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .input-premium:focus {
+            background-color: #FFFFFF;
+            border-color: #000000;
+            box-shadow: 0 0 0 2px rgba(0,0,0,0.1);
+            outline: none;
+        }
+        
+        /* Stepper styles */
+        .stepper-line {
+            position: absolute;
+            top: 16px;
+            left: calc(50% + 24px);
+            right: calc(-50% + 24px);
+            height: 2px;
+            background-color: #e3e3de;
+            z-index: 0;
+        }
+        .step-active .stepper-line { background-color: #000000; }
+        .step-completed .stepper-line { background-color: #000000; }
+    </style>
+<link href="assets/app.css" rel="stylesheet"/>
+<link href="assets/global.css" rel="stylesheet"/>
+</head>
+<body class="bg-background text-on-background font-body-md text-body-md flex h-screen overflow-hidden">
+<!-- SideNavBar -->
+<nav class="hidden md:flex flex-col py-margin-desktop px-4 space-y-4 bg-surface fixed left-0 top-0 h-full w-[280px] border-r border-outline-variant z-40">
+<div class="px-4 mb-8">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Faloco</h1>
+<p class="font-label-md text-label-md text-on-surface-variant mt-1">Premium Management</p>
+</div>
+<button class="bg-primary text-on-primary font-label-md text-label-md py-3 px-6 rounded-lg flex items-center justify-center gap-2 mb-6 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined">add</span>
+            New Project
+        </button>
+<div class="flex-1 flex flex-col space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-primary bg-surface-container-high font-semibold border-l-4 border-primary opacity-90 transition-all" href="#">
+<span class="material-symbols-outlined icon-fill">group</span>
+<span class="font-label-md text-label-md">Customers</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">assignment_turned_in</span>
+<span class="font-label-md text-label-md">Tasks</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">trending_up</span>
+<span class="font-label-md text-label-md">Activity</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="font-label-md text-label-md">Orders</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</div>
+<div class="mt-auto border-t border-outline-variant/30 pt-4 flex flex-col space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">account_circle</span>
+<span class="font-label-md text-label-md">Profile</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 ml-0 md:ml-[280px] h-full overflow-y-auto bg-background flex flex-col relative">
+<!-- TopAppBar -->
+<header class="flex items-center justify-between px-margin-desktop h-20 w-full sticky top-0 z-30 bg-surface-bright/80 backdrop-blur-md shadow-sm border-b border-outline-variant/30">
+<div class="flex items-center gap-6">
+<h2 class="font-headline-md text-headline-md font-bold text-primary md:hidden">Faloco CRM</h2>
+<div class="hidden md:flex items-center gap-6">
+<a class="text-primary border-b-2 border-primary font-bold pb-1 hover:text-primary hover:bg-surface-container-low transition-all" href="#">Main Office</a>
+<a class="text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-all pb-1" href="#">East Branch</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<button class="p-2 hover:bg-surface-container-low rounded-full transition-colors"><span class="material-symbols-outlined">notifications</span></button>
+<button class="p-2 hover:bg-surface-container-low rounded-full transition-colors"><span class="material-symbols-outlined">apps</span></button>
+</div>
+<div class="hidden md:flex gap-3 ml-4 border-l border-outline-variant/30 pl-4">
+<button class="bg-transparent border-[1.5px] border-primary text-primary font-label-md text-label-md py-2 px-4 rounded-lg hover:bg-surface-container-low transition-colors">New Follow-up</button>
+<button class="bg-primary text-on-primary font-label-md text-label-md py-2 px-4 rounded-lg hover:opacity-90 transition-opacity flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">add</span> Add Customer
+                    </button>
+</div>
+<img alt="User avatar" class="w-10 h-10 rounded-full border border-outline-variant object-cover ml-2" data-alt="A small, circular avatar image of a professional woman in a modern corporate setting, smiling softly. Warm, soft studio lighting. Minimalist aesthetic, high-quality, professional headshot." src="https://lh3.googleusercontent.com/aida-public/AB6AXuABo8CWFfw8EpWeGyxyQHQP4xHy1eJ7sHXtD_8-_-YlWAFb1JsmEsOn4sC1mM4nHki48c-qk_fNfk9PC3BC0pkUCPgWiF3AozY1NbY5Uap9z3ub_y7mbvpk8A4LCgyJbiXNOf1jB8ha3uMiP4ZpJhevJAQnbdJmBvpqkWaJsFepLhpTWntfI4hq-TjAgBj2PE4t34GqZ99xDKYacQVIGuDD_yLBEOqZevx5YjkHBUVvl2V-M5MgK0sw"/>
+</div>
+</header>
+<!-- Form Content -->
+<div class="p-margin-mobile md:p-margin-desktop max-w-4xl mx-auto w-full pb-24">
+<div class="mb-section-gap">
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-primary mb-2">Create New Customer</h1>
+<p class="text-on-surface-variant font-body-md text-body-md">Enter the preliminary details to onboard a new client.</p>
+</div>
+<!-- Stepper -->
+<div class="flex justify-between relative mb-section-gap">
+<!-- Step 1 -->
+<div class="flex-1 flex flex-col items-center relative step-active z-10">
+<div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-label-md text-label-md mb-2 shadow-[0_4px_12px_rgba(0,0,0,0.1)]">1</div>
+<span class="font-label-md text-label-md text-primary">Basic Info</span>
+<div class="stepper-line"></div>
+</div>
+<!-- Step 2 -->
+<div class="flex-1 flex flex-col items-center relative z-10">
+<div class="w-8 h-8 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center font-label-md text-label-md mb-2 border border-outline-variant">2</div>
+<span class="font-label-md text-label-md text-on-surface-variant">Housing Info</span>
+<div class="stepper-line"></div>
+</div>
+<!-- Step 3 -->
+<div class="flex-1 flex flex-col items-center relative z-10">
+<div class="w-8 h-8 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center font-label-md text-label-md mb-2 border border-outline-variant">3</div>
+<span class="font-label-md text-label-md text-on-surface-variant">Source &amp; Assignment</span>
+</div>
+</div>
+<!-- Form Card -->
+<div class="bg-surface-white rounded-xl p-card-padding shadow-[0_4px_20px_rgba(26,26,26,0.04)] border border-[#E5E5E2]">
+<h3 class="font-headline-md text-headline-md text-primary border-b border-[#E5E5E2] pb-4 mb-6">Basic Information</h3>
+<form class="grid grid-cols-1 md:grid-cols-2 gap-x-gutter-desktop gap-y-6">
+<div class="col-span-1">
+<label class="block font-label-md text-label-md text-on-surface mb-2">Customer Name <span class="text-error-red">*</span></label>
+<input class="w-full input-premium rounded-lg py-3 px-4 font-body-md text-body-md text-primary" placeholder="e.g. Jane Doe" type="text"/>
+</div>
+<div class="col-span-1">
+<label class="block font-label-md text-label-md text-on-surface mb-2">Age Group</label>
+<select class="w-full input-premium rounded-lg py-3 px-4 font-body-md text-body-md text-primary appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%231b1c19%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-[length:1.2em_1.2em] bg-[right_1rem_center] bg-no-repeat pr-10">
+<option>Select age range...</option>
+<option>20-30</option>
+<option>31-40</option>
+<option>41-50</option>
+<option>50+</option>
+</select>
+</div>
+<div class="col-span-1">
+<label class="block font-label-md text-label-md text-on-surface mb-2">Phone Number <span class="text-error-red">*</span></label>
+<div class="relative">
+<span class="absolute left-4 top-3 text-on-surface-variant font-data-mono">+86</span>
+<input class="w-full input-premium rounded-lg py-3 pl-14 pr-4 font-body-md text-body-md text-primary" placeholder="138 0000 0000" type="tel"/>
+</div>
+</div>
+<div class="col-span-1">
+<label class="block font-label-md text-label-md text-on-surface mb-2">WeChat ID</label>
+<div class="relative">
+<span class="absolute left-4 top-3 text-on-surface-variant material-symbols-outlined text-[20px]">chat</span>
+<input class="w-full input-premium rounded-lg py-3 pl-12 pr-4 font-body-md text-body-md text-primary" placeholder="Optional" type="text"/>
+</div>
+</div>
+<div class="col-span-1 md:col-span-2 mt-4">
+<label class="block font-label-md text-label-md text-on-surface mb-2">Initial Notes</label>
+<textarea class="w-full input-premium rounded-lg py-3 px-4 font-body-md text-body-md text-primary resize-none" placeholder="Brief context about the customer..." rows="4"></textarea>
+</div>
+</form>
+</div>
+<div class="mt-8 flex justify-end gap-4">
+<button class="bg-transparent border-[1.5px] border-primary text-primary font-label-md text-label-md py-3 px-8 rounded-lg hover:bg-surface-container-low transition-colors">Cancel</button>
+<button class="bg-primary text-on-primary font-label-md text-label-md py-3 px-8 rounded-lg hover:opacity-90 transition-opacity shadow-[0_4px_12px_rgba(26,26,26,0.15)]">Continue to Step 2</button>
+</div>
+</div>
+</main>
+<!-- Mobile Bottom Navigation (Hidden on desktop) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full bg-surface-white border-t border-[#E5E5E2] pb-safe z-50 shadow-[0_-4px_20px_rgba(26,26,26,0.04)] flex justify-around items-center h-16 px-4">
+<a class="flex flex-col items-center justify-center w-full h-full text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full text-primary" href="#">
+<span class="material-symbols-outlined icon-fill">group</span>
+</a>
+<div class="-mt-8">
+<button class="bg-primary text-on-primary w-12 h-12 rounded-full flex items-center justify-center shadow-[0_4px_12px_rgba(26,26,26,0.2)] hover:scale-105 transition-transform">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+<a class="flex flex-col items-center justify-center w-full h-full text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">assignment_turned_in</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+</a>
+</nav>
+<script src="assets/layout.js" defer></script>
+<script src="assets/app.js" defer></script>
+</body></html>

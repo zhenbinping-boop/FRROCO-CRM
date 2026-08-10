@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Task Dashboard - Faloco CRM</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "outline": "#747878",
+                      "tertiary-fixed-dim": "#c8c8af",
+                      "tertiary": "#000000",
+                      "on-primary": "#ffffff",
+                      "status-earth": "#B7B7A4",
+                      "primary-fixed": "#e5e2e1",
+                      "surface-white": "#FFFFFF",
+                      "on-secondary-fixed-variant": "#444937",
+                      "surface-bright": "#faf9f4",
+                      "surface-variant": "#e3e3de",
+                      "secondary-container": "#e0e5cc",
+                      "on-tertiary-container": "#85856f",
+                      "tertiary-container": "#1c1d0c",
+                      "surface": "#faf9f4",
+                      "background": "#faf9f4",
+                      "error-container": "#ffdad6",
+                      "inverse-on-surface": "#f2f1ec",
+                      "warning-amber": "#F2CC8F",
+                      "primary": "#000000",
+                      "secondary-fixed-dim": "#c4c9b1",
+                      "secondary-fixed": "#e0e5cc",
+                      "tertiary-fixed": "#e5e4ca",
+                      "on-surface": "#1b1c19",
+                      "on-tertiary": "#ffffff",
+                      "inverse-surface": "#30312e",
+                      "secondary": "#5c614d",
+                      "error": "#ba1a1a",
+                      "on-secondary-fixed": "#191d0e",
+                      "surface-tint": "#5f5e5e",
+                      "outline-variant": "#c4c7c7",
+                      "on-secondary": "#ffffff",
+                      "surface-container-high": "#e9e8e3",
+                      "on-secondary-container": "#626753",
+                      "primary-container": "#1c1b1b",
+                      "on-primary-container": "#858383",
+                      "on-primary-fixed": "#1c1b1b",
+                      "on-primary-fixed-variant": "#474746",
+                      "on-error-container": "#93000a",
+                      "on-error": "#ffffff",
+                      "surface-dim": "#dbdad5",
+                      "primary-fixed-dim": "#c8c6c5",
+                      "inverse-primary": "#c8c6c5",
+                      "error-red": "#E07A5F",
+                      "on-tertiary-fixed": "#1c1d0c",
+                      "masked-gray": "#E5E5E5",
+                      "surface-container-low": "#f5f4ef",
+                      "on-surface-variant": "#444748",
+                      "surface-container-highest": "#e3e3de",
+                      "status-sage": "#84A59D",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container": "#efeee9",
+                      "on-background": "#1b1c19",
+                      "on-tertiary-fixed-variant": "#474835"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "base": "8px",
+                      "margin-mobile": "16px",
+                      "gutter-desktop": "24px",
+                      "margin-desktop": "40px",
+                      "card-padding": "24px",
+                      "section-gap": "48px"
+              },
+              "fontFamily": {
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "data-mono": [
+                              "jetbrainsMono"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-md": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "data-mono": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        .card-shadow {
+            box-shadow: 0px 4px 20px rgba(26, 26, 26, 0.04);
+        }
+        
+        .card-shadow-hover:hover {
+            box-shadow: 0px 12px 32px rgba(26, 26, 26, 0.08);
+            transform: translateY(-2px);
+        }
+    </style>
+<link href="assets/app.css" rel="stylesheet"/>
+<link href="assets/global.css" rel="stylesheet"/>
+</head>
+<body class="bg-background text-on-background h-full font-body-md overflow-x-hidden antialiased">
+<!-- SideNavBar -->
+<nav class="hidden md:flex flex-col py-margin-desktop px-4 space-y-4 bg-surface dark:bg-surface-dim fixed left-0 top-0 h-full w-[280px] border-r border-outline-variant dark:border-outline z-40">
+<div class="px-4 mb-8">
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-on-primary-fixed">Faloco</h1>
+<p class="font-label-md text-label-md text-on-surface-variant">Premium Management</p>
+</div>
+<div class="space-y-2 flex-1">
+<a class="flex items-center px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-on-primary-fixed hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined mr-3">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-on-primary-fixed hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined mr-3">group</span>
+<span class="font-label-md text-label-md">Customers</span>
+</a>
+<a class="flex items-center px-4 py-3 rounded-lg text-primary dark:text-on-primary-fixed bg-surface-container-high dark:bg-surface-container font-semibold border-l-4 border-primary opacity-90 transition-all" href="#">
+<span class="material-symbols-outlined mr-3">assignment_turned_in</span>
+<span class="font-label-md text-label-md">Tasks</span>
+</a>
+<a class="flex items-center px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-on-primary-fixed hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined mr-3">trending_up</span>
+<span class="font-label-md text-label-md">Activity</span>
+</a>
+<a class="flex items-center px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-on-primary-fixed hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined mr-3">shopping_cart</span>
+<span class="font-label-md text-label-md">Orders</span>
+</a>
+<a class="flex items-center px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-on-primary-fixed hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined mr-3">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</div>
+<div class="px-4 mt-auto mb-4">
+<button class="w-full bg-primary text-on-primary py-3 rounded-DEFAULT font-label-md text-label-md flex items-center justify-center hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined mr-2 text-[18px]">add</span>
+                New Project
+            </button>
+</div>
+<div class="space-y-1 border-t border-outline-variant pt-4">
+<a class="flex items-center px-4 py-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">account_circle</span>
+<span class="font-label-md text-label-md">Profile</span>
+</a>
+<a class="flex items-center px-4 py-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</a>
+</div>
+</nav>
+<!-- TopAppBar -->
+<header class="hidden md:flex items-center justify-between px-margin-desktop h-20 w-[calc(100%-280px)] bg-surface-bright/80 dark:bg-surface-dim/80 backdrop-blur-md sticky top-0 z-30 ml-[280px] shadow-sm border-b border-outline-variant/30">
+<div class="flex items-center space-x-6">
+<h2 class="font-headline-md text-headline-md font-bold text-primary dark:text-on-primary-fixed">Faloco CRM</h2>
+<nav class="hidden lg:flex space-x-4">
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-all px-2 py-1 rounded" href="#">Main Office</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-all px-2 py-1 rounded" href="#">East Branch</a>
+</nav>
+</div>
+<div class="flex items-center space-x-4">
+<button class="bg-primary text-on-primary px-4 py-2 rounded font-label-md text-label-md hover:opacity-90 transition-opacity">Add Customer</button>
+<button class="border-[1.5px] border-primary text-primary px-4 py-2 rounded font-label-md text-label-md hover:bg-surface-container-low transition-colors">New Follow-up</button>
+<div class="flex items-center space-x-2 border-l border-outline-variant pl-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-1"><span class="material-symbols-outlined">notifications</span></button>
+<button class="text-on-surface-variant hover:text-primary transition-colors p-1"><span class="material-symbols-outlined">apps</span></button>
+<img alt="User avatar" class="w-8 h-8 rounded-full border border-outline-variant ml-2 object-cover" data-alt="A professional headshot of a corporate sales consultant, wearing a tailored dark suit against a softly lit, neutral minimalist office background. High-key lighting, bright modern aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGghN2d8DzhLxWQzOW8X4n0X2d3i8kSYOuh6xuB_N2YxSDu8mlC782ktlnb5EVS6it6qR_2mhtZERfeLMm26FK7SDGuo0YiPCn9LULuxW_eXn07zfDcyKbXjDeI5Q7vU7cstv5OXshGEVqgsHBXjWIunOtdtNVHw5CFEquw903Ovel_4_M5BqjeMMWkmdM-XwjApipVLIXqli1ilSjk3AOXWuxfO_v1O71m60ZDQOiwi4Ap-8IQYmu"/>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="md:ml-[280px] p-margin-mobile md:p-margin-desktop space-y-section-gap min-h-screen">
+<!-- Header Section -->
+<section class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary">Tasks &amp; Follow-ups</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2 max-w-2xl">Manage your daily outreach and prioritize high-value client interactions.</p>
+</div>
+</section>
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-gutter-desktop">
+<!-- Left Column: Tasks List -->
+<div class="xl:col-span-8 space-y-8">
+<!-- Overdue Tasks -->
+<section>
+<div class="flex items-center mb-4 space-x-2">
+<span class="material-symbols-outlined text-error-red">warning</span>
+<h2 class="font-headline-md text-headline-md text-primary">Overdue</h2>
+</div>
+<div class="space-y-4">
+<!-- Task Card 1 -->
+<div class="bg-surface-white rounded-lg p-card-padding card-shadow card-shadow-hover transition-all border border-surface-variant flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-error-red"></div>
+<div class="flex-1">
+<div class="flex items-center gap-2 mb-1">
+<span class="bg-error-container text-on-error-container font-label-md text-label-md px-2 py-0.5 rounded text-[10px]">High Priority</span>
+<span class="font-data-mono text-data-mono text-error-red">Yesterday, 4:00 PM</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-1">Finalize Custom Millwork Quote</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Client: <span class="font-medium text-primary">Elevate Designs LLC</span></p>
+</div>
+<div class="flex sm:flex-col gap-2 w-full sm:w-auto">
+<button class="flex-1 sm:flex-none bg-primary text-on-primary px-4 py-2 rounded font-label-md text-label-md hover:opacity-90 transition-opacity text-center min-w-[120px]">Log Activity</button>
+<button class="flex-1 sm:flex-none border border-outline-variant text-on-surface-variant px-4 py-2 rounded font-label-md text-label-md hover:bg-surface-container-low transition-colors text-center">Reschedule</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Today's Follow-ups -->
+<section>
+<div class="flex items-center mb-4 space-x-2">
+<span class="material-symbols-outlined text-status-sage">today</span>
+<h2 class="font-headline-md text-headline-md text-primary">Today</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Task Card 2 -->
+<div class="bg-surface-white rounded-lg p-card-padding card-shadow card-shadow-hover transition-all border border-surface-variant flex flex-col justify-between relative overflow-hidden h-full">
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="font-data-mono text-data-mono text-on-surface-variant">10:30 AM</span>
+<span class="material-symbols-outlined text-outline-variant">call</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-1 text-lg">Check-in on Steel Delivery</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4">Client: <span class="font-medium text-primary">Apex Constructors</span></p>
+</div>
+<button class="w-full border-[1.5px] border-primary text-primary px-4 py-2 rounded font-label-md text-label-md hover:bg-surface-container-low transition-colors">Log Follow-up</button>
+</div>
+<!-- Task Card 3 -->
+<div class="bg-surface-white rounded-lg p-card-padding card-shadow card-shadow-hover transition-all border border-surface-variant flex flex-col justify-between relative overflow-hidden h-full">
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="font-data-mono text-data-mono text-on-surface-variant">2:00 PM</span>
+<span class="material-symbols-outlined text-outline-variant">mail</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-1 text-lg">Send Revised Floorplans</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4">Client: <span class="font-medium text-primary">Northway Retail Group</span></p>
+</div>
+<button class="w-full border-[1.5px] border-primary text-primary px-4 py-2 rounded font-label-md text-label-md hover:bg-surface-container-low transition-colors">Log Follow-up</button>
+</div>
+</div>
+</section>
+<!-- Upcoming (Condensed) -->
+<section>
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-outline-variant">event_upcoming</span>
+<h2 class="font-headline-md text-headline-md text-on-surface-variant">Upcoming</h2>
+</div>
+<a class="font-label-md text-label-md text-primary hover:underline" href="#">View All</a>
+</div>
+<div class="bg-surface-white rounded-lg border border-surface-variant overflow-hidden">
+<div class="flex items-center justify-between p-4 border-b border-surface-variant hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<span class="font-data-mono text-data-mono text-on-surface-variant w-16">Tom</span>
+<div>
+<p class="font-body-md text-body-md text-primary font-medium">Review Q3 Supply Contracts</p>
+<p class="font-label-md text-label-md text-on-surface-variant font-normal">Internal</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-4 hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<span class="font-data-mono text-data-mono text-on-surface-variant w-16">Wed</span>
+<div>
+<p class="font-body-md text-body-md text-primary font-medium">Site Visit - Downtown Project</p>
+<p class="font-label-md text-label-md text-on-surface-variant font-normal">Client: Metro Build</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant">chevron_right</span>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Calendar & Stats -->
+<div class="xl:col-span-4 space-y-6">
+<!-- Mini Calendar -->
+<div class="bg-surface-white rounded-lg p-card-padding card-shadow border border-surface-variant">
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-headline-md text-headline-md text-primary">October 2023</h3>
+<div class="flex space-x-1">
+<button class="p-1 text-outline-variant hover:text-primary transition-colors"><span class="material-symbols-outlined">chevron_left</span></button>
+<button class="p-1 text-outline-variant hover:text-primary transition-colors"><span class="material-symbols-outlined">chevron_right</span></button>
+</div>
+</div>
+<div class="grid grid-cols-7 gap-1 text-center mb-2">
+<span class="font-label-md text-label-md text-outline-variant">S</span>
+<span class="font-label-md text-label-md text-outline-variant">M</span>
+<span class="font-label-md text-label-md text-outline-variant">T</span>
+<span class="font-label-md text-label-md text-outline-variant">W</span>
+<span class="font-label-md text-label-md text-outline-variant">T</span>
+<span class="font-label-md text-label-md text-outline-variant">F</span>
+<span class="font-label-md text-label-md text-outline-variant">S</span>
+</div>
+<div class="grid grid-cols-7 gap-1 text-center font-data-mono text-data-mono">
+<div class="py-1 text-outline-variant/30">1</div><div class="py-1 text-outline-variant/30">2</div><div class="py-1 text-outline-variant/30">3</div><div class="py-1 text-outline-variant/30">4</div><div class="py-1 text-outline-variant/30">5</div><div class="py-1 text-outline-variant/30">6</div><div class="py-1 text-outline-variant/30">7</div>
+<div class="py-1 text-primary">8</div><div class="py-1 text-primary">9</div><div class="py-1 text-primary">10</div><div class="py-1 text-primary">11</div><div class="py-1 text-primary relative"><span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-error-red rounded-full"></span>12</div><div class="py-1 text-primary">13</div><div class="py-1 text-primary">14</div>
+<div class="py-1 text-primary">15</div><div class="py-1 text-primary">16</div><div class="py-1 text-primary">17</div><div class="py-1 bg-primary text-on-primary rounded">18</div><div class="py-1 text-primary relative"><span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-status-sage rounded-full"></span>19</div><div class="py-1 text-primary">20</div><div class="py-1 text-primary">21</div>
+<div class="py-1 text-primary">22</div><div class="py-1 text-primary">23</div><div class="py-1 text-primary">24</div><div class="py-1 text-primary">25</div><div class="py-1 text-primary">26</div><div class="py-1 text-primary">27</div><div class="py-1 text-primary">28</div>
+<div class="py-1 text-primary">29</div><div class="py-1 text-primary">30</div><div class="py-1 text-primary">31</div><div class="py-1 text-outline-variant/30">1</div><div class="py-1 text-outline-variant/30">2</div><div class="py-1 text-outline-variant/30">3</div><div class="py-1 text-outline-variant/30">4</div>
+</div>
+</div>
+<!-- Daily Stats -->
+<div class="bg-surface-white rounded-lg p-card-padding card-shadow border border-surface-variant">
+<h3 class="font-headline-md text-headline-md text-primary mb-4">Activity Summary</h3>
+<div class="space-y-4">
+<div class="flex justify-between items-center border-b border-surface-variant pb-2">
+<span class="font-body-md text-body-md text-on-surface-variant">Tasks Completed</span>
+<span class="font-data-mono text-data-mono text-primary text-lg">12 / 15</span>
+</div>
+<div class="flex justify-between items-center border-b border-surface-variant pb-2">
+<span class="font-body-md text-body-md text-on-surface-variant">Calls Made</span>
+<span class="font-data-mono text-data-mono text-primary text-lg">8</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-body-md text-body-md text-on-surface-variant">Emails Sent</span>
+<span class="font-data-mono text-data-mono text-primary text-lg">24</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<script src="assets/layout.js" defer></script>
+<script src="assets/app.js" defer></script>
+</body></html>

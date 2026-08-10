@@ -1,0 +1,144 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum StoreType {
+  DIRECT
+  DEALER
+}
+
+enum CustomerTier {
+  S
+  A
+  B
+  C
+}
+
+enum CustomerStage {
+  LEAD
+  FOLLOWING
+  PROPOSAL
+  CONTRACTED
+  LOST
+}
+
+enum TaskStatus {
+  PENDING
+  COMPLETED
+  CANCELED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model DealerGroup {
+  id             String     @id @default(cuid())
+  code           String     @unique @db.VarChar(64)
+  dealerName     String     @map("name") @db.VarChar(160)
+  regionProvince String     @db.VarChar(64)
+  regionCity     String     @db.VarChar(64)
+  regionDistrict String?    @db.VarChar(64)
+  stores         Store[]
+  customers      Customer[]
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  @@index([regionProvince, regionCity])
+}
+
+model Store {
+  id             String       @id @default(cuid())
+  code           String       @unique @db.VarChar(64)
+  storeName      String       @map("name") @db.VarChar(160)
+  storeType      StoreType
+  regionProvince String       @db.VarChar(64)
+  regionCity     String       @db.VarChar(64)
+  regionDistrict String?      @db.VarChar(64)
+  dealerGroupId  String?
+  dealerGroup    DealerGroup? @relation(fields: [dealerGroupId], references: [id], onDelete: Restrict)
+  customers      Customer[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([storeType, regionProvince, regionCity])
+  @@index([dealerGroupId])
+
+  // Prisma 不能把 storeType 与可空外键表达成条件约束；服务层/SQL 迁移必须保证：
+  // DIRECT => dealerGroupId IS NULL；DEALER => dealerGroupId IS NOT NULL。
+}
+
+model Customer {
+  id               String        @id @default(cuid())
+  name             String        @db.VarChar(100)
+  phone            String        @unique @db.VarChar(32)
+  wechat           String?       @db.VarChar(100)
+  age              Int?
+  ageGroup         String?       @db.VarChar(32)
+  storeType        StoreType
+  regionProvince   String        @db.VarChar(64)
+  regionCity       String        @db.VarChar(64)
+  regionDistrict   String        @db.VarChar(64)
+  community        String?       @db.VarChar(120)
+  projectName      String?       @db.VarChar(160)
+  houseType        String?       @db.VarChar(64)
+  dealYear         Int?
+  totalAmount      Decimal       @default(0) @db.Decimal(14, 2)
+  depositAmount    Decimal       @default(0) @db.Decimal(14, 2)
+  productSeries    String[]      @default([])
+  whyFarock        String?       @db.Text
+  tier             CustomerTier  @default(B)
+  stage            CustomerStage @default(LEAD)
+  personaSummary   String?       @db.Text
+  salesRepId       String?
+  designerId       String?
+  storeId          String
+  dealerGroupId    String?
+  store            Store         @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  dealerGroup      DealerGroup?  @relation(fields: [dealerGroupId], references: [id], onDelete: Restrict)
+  tasks            Task[]
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  // regionProvince/regionCity/regionDistrict are required customer attribution fields.
+  // Prisma cannot express the following cross-column/cross-table invariants:
+  // - DIRECT => dealerGroupId IS NULL, store.storeType = DIRECT, and store.dealerGroupId IS NULL.
+  // - DEALER => dealerGroupId IS NOT NULL, store.storeType = DEALER, and
+  //   store.dealerGroupId = dealerGroupId; the dealer group and customer region must also match.
+  // Enforce same-row parts in service validation or a PostgreSQL CHECK constraint; the
+  // cross-table parts require a trigger or equivalent database constraint, not CHECK alone.
+  @@index([storeType, regionProvince, regionCity])
+  @@index([storeType, regionCity, createdAt])
+  @@index([dealerGroupId, createdAt])
+  @@index([storeType, dealerGroupId, regionCity, createdAt])
+  @@index([storeId, tier])
+  @@index([stage, dealYear])
+}
+
+model Task {
+  id          String       @id @default(cuid())
+  title       String       @db.VarChar(160)
+  content     String?      @db.Text
+  customerId  String
+  assigneeId  String?
+  status      TaskStatus   @default(PENDING)
+  priority    TaskPriority @default(MEDIUM)
+  dueAt       DateTime
+  completedAt DateTime?
+  customer    Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([customerId, dueAt])
+  @@index([customerId, createdAt])
+  @@index([status, dueAt])
+  @@index([assigneeId, status, dueAt])
+}

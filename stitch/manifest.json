@@ -1,0 +1,106 @@
+{
+  "project": {
+    "title": "UI Design Implementation",
+    "id": "3931688676975837661"
+  },
+  "screens": [
+    {
+      "order": 1,
+      "title": "经营工作台 (Dashboard)",
+      "screenId": "8d6c20e9f2394d8a91237a3a9adc3265",
+      "codePath": "screens/01-dashboard/code.html",
+      "previewPath": "screens/01-dashboard/preview.png"
+    },
+    {
+      "order": 2,
+      "title": "订单与回款 (Orders & Payments)",
+      "screenId": "432e53106acc4e8089c9f5cfaa52164a",
+      "codePath": "screens/02-orders-payments/code.html",
+      "previewPath": "screens/02-orders-payments/preview.png"
+    },
+    {
+      "order": 3,
+      "title": "客户详情 (Customer Details)",
+      "screenId": "15cc559afba2429c9b8c8414684cdce9",
+      "codePath": "screens/03-customer-detail/code.html",
+      "previewPath": "screens/03-customer-detail/preview.png"
+    },
+    {
+      "order": 4,
+      "title": "客户列表 (Customer List)",
+      "screenId": "02c032f9c01040e1bc391c7b2f3ee4de",
+      "codePath": "screens/04-customer-list/code.html",
+      "previewPath": "screens/04-customer-list/preview.png"
+    },
+    {
+      "order": 5,
+      "title": "新建客户 (Create Customer)",
+      "screenId": "8adf81926a554abfbef920f9e9944ec8",
+      "codePath": "screens/05-customer-create/code.html",
+      "previewPath": "screens/05-customer-create/preview.png"
+    },
+    {
+      "order": 6,
+      "title": "收款登记 (Register Payment)",
+      "screenId": "547ab76935bf47dc9509a8c4bc86de12",
+      "codePath": "screens/06-payment-entry/code.html",
+      "previewPath": "screens/06-payment-entry/preview.png"
+    },
+    {
+      "order": 7,
+      "title": "渠道分析 (Channel Analysis)",
+      "screenId": "dc59cd53839f4e598b054cde6584d494",
+      "codePath": "screens/07-channel-analysis/code.html",
+      "previewPath": "screens/07-channel-analysis/preview.png"
+    },
+    {
+      "order": 8,
+      "title": "团队业绩排行 (Team Performance)",
+      "screenId": "2a52d06b636e4f56be63db4f6969cb35",
+      "codePath": "screens/08-team-ranking/code.html",
+      "previewPath": "screens/08-team-ranking/preview.png"
+    },
+    {
+      "order": 9,
+      "title": "跟进任务 (Follow-up Tasks)",
+      "screenId": "da65e2f273f64150a7a257f255ae3afb",
+      "codePath": "screens/09-follow-up-tasks/code.html",
+      "previewPath": "screens/09-follow-up-tasks/preview.png"
+    },
+    {
+      "order": 10,
+      "title": "机构管理 (Organization Management)",
+      "screenId": "e2150b3c39f943e4bf6e24c98b7c1c3c",
+      "codePath": "screens/10-organization-management/code.html",
+      "previewPath": "screens/10-organization-management/preview.png"
+    },
+    {
+      "order": 11,
+      "title": "人员与权限 (Users & Permissions)",
+      "screenId": "7f2335209fc5409996740e6efe790ef3",
+      "codePath": "screens/11-people-permissions/code.html",
+      "previewPath": "screens/11-people-permissions/preview.png"
+    },
+    {
+      "order": 12,
+      "title": "登录页 (Login)",
+      "screenId": "073d271dd1504ba7bf01ff6c6152a020",
+      "codePath": "screens/12-login/code.html",
+      "previewPath": "screens/12-login/preview.png"
+    },
+    {
+      "order": 13,
+      "title": "客户交接 (Customer Handover)",
+      "screenId": "d4d0d8406356457b888721ed25162d29",
+      "codePath": "screens/13-customer-handover/code.html",
+      "previewPath": "screens/13-customer-handover/preview.png"
+    },
+    {
+      "order": 14,
+      "title": "基础数据配置 (Base Data)",
+      "screenId": "216a3b75b8d047ffbefe9ed67c1cbf0e",
+      "codePath": "screens/14-master-data/code.html",
+      "previewPath": "screens/14-master-data/preview.png"
+    }
+  ]
+}

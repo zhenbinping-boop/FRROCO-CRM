@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Faloco - Branch Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "outline": "#747878",
+                      "tertiary-fixed-dim": "#c8c8af",
+                      "tertiary": "#000000",
+                      "on-primary": "#ffffff",
+                      "status-earth": "#B7B7A4",
+                      "primary-fixed": "#e5e2e1",
+                      "surface-white": "#FFFFFF",
+                      "on-secondary-fixed-variant": "#444937",
+                      "surface-bright": "#faf9f4",
+                      "surface-variant": "#e3e3de",
+                      "secondary-container": "#e0e5cc",
+                      "on-tertiary-container": "#85856f",
+                      "tertiary-container": "#1c1d0c",
+                      "surface": "#faf9f4",
+                      "background": "#faf9f4",
+                      "error-container": "#ffdad6",
+                      "inverse-on-surface": "#f2f1ec",
+                      "warning-amber": "#F2CC8F",
+                      "primary": "#000000",
+                      "secondary-fixed-dim": "#c4c9b1",
+                      "secondary-fixed": "#e0e5cc",
+                      "tertiary-fixed": "#e5e4ca",
+                      "on-surface": "#1b1c19",
+                      "on-tertiary": "#ffffff",
+                      "inverse-surface": "#30312e",
+                      "secondary": "#5c614d",
+                      "error": "#ba1a1a",
+                      "on-secondary-fixed": "#191d0e",
+                      "surface-tint": "#5f5e5e",
+                      "outline-variant": "#c4c7c7",
+                      "on-secondary": "#ffffff",
+                      "surface-container-high": "#e9e8e3",
+                      "on-secondary-container": "#626753",
+                      "primary-container": "#1c1b1b",
+                      "on-primary-container": "#858383",
+                      "on-primary-fixed": "#1c1b1b",
+                      "on-primary-fixed-variant": "#474746",
+                      "on-error-container": "#93000a",
+                      "on-error": "#ffffff",
+                      "surface-dim": "#dbdad5",
+                      "primary-fixed-dim": "#c8c6c5",
+                      "inverse-primary": "#c8c6c5",
+                      "error-red": "#E07A5F",
+                      "on-tertiary-fixed": "#1c1d0c",
+                      "masked-gray": "#E5E5E5",
+                      "surface-container-low": "#f5f4ef",
+                      "on-surface-variant": "#444748",
+                      "surface-container-highest": "#e3e3de",
+                      "status-sage": "#84A59D",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container": "#efeee9",
+                      "on-background": "#1b1c19",
+                      "on-tertiary-fixed-variant": "#474835"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "base": "8px",
+                      "margin-mobile": "16px",
+                      "gutter-desktop": "24px",
+                      "margin-desktop": "40px",
+                      "card-padding": "24px",
+                      "section-gap": "48px"
+              },
+              "fontFamily": {
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "data-mono": [
+                              "jetbrainsMono"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-md": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "data-mono": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .material-symbols-outlined {
+          font-family: 'Material Symbols Outlined';
+          font-weight: normal;
+          font-style: normal;
+          font-size: 24px;
+          display: inline-block;
+          line-height: 1;
+          text-transform: none;
+          letter-spacing: normal;
+          word-wrap: normal;
+          white-space: nowrap;
+          direction: ltr;
+        }
+        
+        /* Ambient shadow for cards */
+        .ambient-shadow {
+            box-shadow: 0px 4px 20px rgba(26, 26, 26, 0.04);
+        }
+        .ambient-shadow:hover {
+            box-shadow: 0px 12px 32px rgba(26, 26, 26, 0.08);
+        }
+      </style>
+</head>
+<body class="bg-background text-on-background h-full font-body-md text-body-md flex antialiased">
+<!-- SideNavBar (Desktop) -->
+<nav class="hidden md:flex bg-surface dark:bg-surface-dim font-body-md text-body-md fixed left-0 top-0 h-full w-[280px] border-r border-outline-variant dark:border-outline flex-col py-margin-desktop px-4 space-y-4 z-40">
+<div class="px-4 mb-8">
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-on-primary-fixed">Faloco</h1>
+<p class="text-on-surface-variant text-label-md mt-1 font-label-md uppercase tracking-wider">Premium Management</p>
+</div>
+<button class="bg-primary text-on-primary rounded-lg py-3 px-4 font-label-md text-label-md flex items-center justify-center gap-2 mb-6 hover:bg-primary/90 transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span>
+            New Project
+        </button>
+<div class="flex-1 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-on-primary-fixed hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-primary dark:text-on-primary-fixed bg-surface-container-high dark:bg-surface-container font-semibold border-l-4 border-primary opacity-90 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="group" style="font-variation-settings: 'FILL' 1;">group</span>
+<span>Customers</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-on-primary-fixed hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="assignment_turned_in">assignment_turned_in</span>
+<span>Tasks</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-on-primary-fixed hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="trending_up">trending_up</span>
+<span>Activity</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-on-primary-fixed hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+<span>Orders</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-on-primary-fixed hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+</div>
+<div class="mt-auto space-y-2 pt-4 border-t border-outline-variant/30">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-on-primary-fixed hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+<span>Profile</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-on-primary-fixed hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span>Logout</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col md:ml-[280px] min-h-screen">
+<!-- TopAppBar (Desktop) -->
+<header class="hidden md:flex bg-surface-bright/80 dark:bg-surface-dim/80 backdrop-blur-md text-primary dark:text-on-primary-fixed font-label-md text-label-md sticky top-0 z-30 w-full border-b border-outline-variant/30 shadow-sm items-center justify-between px-margin-desktop h-20">
+<div class="flex items-center gap-8">
+<span class="font-headline-md text-headline-md font-bold">Faloco CRM</span>
+<nav class="flex items-center gap-6">
+<a class="text-primary border-b-2 border-primary font-bold pb-1 scale-95 duration-150" href="#">Main Office</a>
+<a class="text-on-surface-variant hover:text-primary transition-all pb-1" href="#">East Branch</a>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<!-- Search -->
+<div class="relative hidden lg:block w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" style="font-size: 20px;">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-full py-2 pl-10 pr-4 text-body-md font-body-md focus:ring-1 focus:ring-primary focus:bg-surface-white transition-colors" placeholder="Search branches..." type="text"/>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container-low rounded-full transition-all">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container-low rounded-full transition-all">
+<span class="material-symbols-outlined" data-icon="apps">apps</span>
+</button>
+</div>
+<div class="flex items-center gap-3">
+<button class="bg-surface-container border-1.5 border-primary text-primary px-4 py-2 rounded-lg hover:bg-surface-container-high transition-colors">
+                        New Follow-up
+                    </button>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
+                        Add Customer
+                    </button>
+</div>
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant">
+<img alt="User avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a corporate manager in a modern office environment, softly lit with a clean, high-key light mode aesthetic. The background is slightly blurred out to focus on the person, fitting a premium CRM interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-ree_rQW80Ga8P4naQp2YYEI2hRnA5VY57UpDEYtV5A16aFvOvMUr1Ck5Ba948tRwfY-bbiNIZ4nvXm9hbxM0zhyYxP1cFN3Vjdwp8ht0oRZyga-I6z9APzHKEky1EnWLIO41J5jQASvoDaLasagaIrMjhk5DdZ1HNQakwb2AGMKXiyRHAu9u23eqh5ttvbmXoG2gRj08oU0Bb6HgGc-kAfaG4aRold80xJcYVCan5YHvWhN6n1T4"/>
+</div>
+</div>
+</header>
+<!-- Mobile Header (Visible only on mobile) -->
+<header class="md:hidden sticky top-0 z-30 bg-surface-bright/90 backdrop-blur-md border-b border-outline-variant/30 px-margin-mobile h-16 flex items-center justify-between">
+<span class="font-headline-md text-headline-md font-bold text-primary">Faloco</span>
+<button class="p-2 text-on-surface-variant">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 p-margin-mobile md:p-margin-desktop overflow-y-auto">
+<!-- Page Header -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-section-gap">
+<div>
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary">Branch Management</h2>
+<p class="text-on-surface-variant text-body-lg font-body-lg mt-1">Overview of all operational units and regional offices.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="bg-surface-white border border-outline-variant text-on-surface px-4 py-2 rounded-lg font-label-md text-label-md flex items-center gap-2 hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                        Filter
+                    </button>
+<button class="bg-primary text-on-primary px-5 py-2.5 rounded-lg font-label-md text-label-md flex items-center gap-2 hover:bg-primary/90 transition-colors">
+<span class="material-symbols-outlined text-[18px]">add_business</span>
+                        Add Branch
+                    </button>
+</div>
+</div>
+<!-- Bento Grid / Cards -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop">
+<!-- Global Stats (Spans full on mobile, partial on desktop) -->
+<div class="lg:col-span-12 grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+<div class="bg-surface-white rounded-xl p-card-padding ambient-shadow border border-surface-variant transition-all">
+<span class="text-on-surface-variant font-label-md text-label-md uppercase block mb-2">Total Branches</span>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-primary">24</span>
+<span class="text-status-sage text-label-md font-label-md flex items-center"><span class="material-symbols-outlined text-[14px]">arrow_upward</span> 2</span>
+</div>
+</div>
+<div class="bg-surface-white rounded-xl p-card-padding ambient-shadow border border-surface-variant transition-all">
+<span class="text-on-surface-variant font-label-md text-label-md uppercase block mb-2">Direct Ops</span>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-primary">15</span>
+</div>
+</div>
+<div class="bg-surface-white rounded-xl p-card-padding ambient-shadow border border-surface-variant transition-all">
+<span class="text-on-surface-variant font-label-md text-label-md uppercase block mb-2">Dealer Network</span>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-primary">9</span>
+</div>
+</div>
+<div class="bg-surface-white rounded-xl p-card-padding ambient-shadow border border-surface-variant transition-all">
+<span class="text-on-surface-variant font-label-md text-label-md uppercase block mb-2">Pending Approvals</span>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-error-red">3</span>
+</div>
+</div>
+</div>
+<!-- HQ Card (Featured) -->
+<div class="lg:col-span-8 bg-surface-white rounded-xl overflow-hidden ambient-shadow border border-surface-variant transition-all flex flex-col md:flex-row">
+<div class="w-full md:w-2/5 h-48 md:h-auto bg-surface-container-high relative">
+<!-- Abstract Map/Location Graphic -->
+<div class="bg-cover bg-center w-full h-full absolute inset-0 opacity-80 mix-blend-multiply" data-alt="A stylized, minimalist overhead map view of a major metropolitan area. The map uses a soft, light mode color palette with pale creams, subtle greys, and muted green accents. It conveys a clean, corporate, high-end geographic data visualization aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCb2F3VqsihDu-TTkwABVH91ExS41HJNE_xNPNvpHcG-6iElusemNUmtbBsIa8US37E2ii1U9XJTmmXGM9eMEP-sNmuPJA1TDI-HaidfsqUQB38SC819d9orOnw4iZZXMKsKjrm-sjQsn_ra_trRDOg8psHAmUlg0AcRSINApeufK-4LZUDSAjGhVVwvYkbINU-Qru83kD0yS1JlFN23uUv5lAEoZht0eicQXZwPr1kRmE71TTYiUy4')"></div>
+<div class="absolute inset-0 bg-gradient-to-r md:bg-gradient-to-t from-surface-white/90 to-transparent"></div>
+<div class="absolute bottom-4 left-4 right-4 z-10">
+<span class="inline-block bg-tertiary-container text-on-tertiary-container font-label-md text-label-md px-2 py-1 rounded mb-2">HEADQUARTERS</span>
+<h3 class="font-headline-md text-headline-md text-primary">Main Office</h3>
+</div>
+</div>
+<div class="p-card-padding flex-1 flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-6">
+<div>
+<p class="text-on-surface-variant text-body-md flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+                                        1200 Enterprise Way, Suite 100
+                                    </p>
+<p class="text-on-surface-variant text-body-md ml-6">San Francisco, CA 94103</p>
+</div>
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<div class="grid grid-cols-2 gap-4 pt-4 border-t border-surface-variant">
+<div>
+<span class="text-outline font-label-md text-label-md block mb-1">Regional Manager</span>
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-surface-dim overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Small circular portrait of a professional woman in a grey blazer. Soft studio lighting against a white background, representing a high-level executive in a CRM interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBb_Sm_OYMbMaZSahAabrMpIjPtbWb-siatHj34BCCFrOElxRLYTmh5eBPQvZqs7jkCjtVCx5s11fumYq5snmCTEIIVG32I58wzlusMaTGLKC8pLRRDNfdKls-CqehUvCH5FNAfkb8Nhexphm3IqC8fgVgwt_uYg2qKqB5blSxw_jCFBDD9bhDpX4rgO0a3I8QF-IVgSJILz7I1pNpIKUMeHbR7j3vHs4fNNRL9MGPsXMZozcYD2zCR"/>
+</div>
+<span class="font-body-md text-primary font-medium">Sarah Jenkins</span>
+</div>
+</div>
+<div>
+<span class="text-outline font-label-md text-label-md block mb-1">Operational Mode</span>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-md text-label-md">
+<span class="w-1.5 h-1.5 rounded-full bg-status-sage"></span> Direct
+                                    </span>
+</div>
+</div>
+</div>
+<div class="mt-6 flex justify-end gap-3">
+<button class="px-4 py-2 text-primary font-label-md text-label-md border border-outline-variant rounded-lg hover:bg-surface-container-low transition-colors">View Details</button>
+<button class="px-4 py-2 bg-surface-container-highest text-on-surface font-label-md text-label-md rounded-lg hover:bg-surface-dim transition-colors">Edit</button>
+</div>
+</div>
+</div>
+<!-- Secondary Branch List -->
+<div class="lg:col-span-4 flex flex-col gap-4">
+<!-- Branch Item -->
+<div class="bg-surface-white rounded-xl p-4 ambient-shadow border border-surface-variant hover:border-primary-fixed-dim transition-all cursor-pointer flex flex-col gap-3">
+<div class="flex justify-between items-start">
+<h4 class="font-headline-md text-body-lg font-semibold text-primary">East Branch</h4>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider bg-surface-container-high text-on-surface-variant">Dealer</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant text-body-md">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span>New York, NY</span>
+</div>
+<div class="flex items-center justify-between pt-3 border-t border-surface-variant mt-1">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-dim overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Small portrait of a man with glasses, professional attire. Used as an avatar in a clean corporate software UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJo6hybIG7qnwc7GuD0XhT8T5XJAvdrsOJ1ObuIZcRbijRRHCGGi38mHBIUlk3YH5KI2dcxABEzavqQCe7jYA_Jb23EqEkfxxacXJ3ofELsGdqxxv-L5Z61k0VdfpieuTy9ukpep3_E5sTUo5ZVdGjwiJEQmJO2FHRXCiT894-Dq8UFHT-WhkXDEcVUUHn6MnpDQmJA9aWjYxkckQggGGXKSvldjFSNSC4afRY7zDvJoV2IT39dNuR"/>
+</div>
+<span class="font-body-md text-sm text-on-surface">M. Chen</span>
+</div>
+<span class="font-data-mono text-data-mono text-outline">ID: BR-002</span>
+</div>
+</div>
+<!-- Branch Item -->
+<div class="bg-surface-white rounded-xl p-4 ambient-shadow border border-surface-variant hover:border-primary-fixed-dim transition-all cursor-pointer flex flex-col gap-3">
+<div class="flex justify-between items-start">
+<h4 class="font-headline-md text-body-lg font-semibold text-primary">South Hub</h4>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider bg-secondary-container text-on-secondary-container">Direct</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant text-body-md">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span>Austin, TX</span>
+</div>
+<div class="flex items-center justify-between pt-3 border-t border-surface-variant mt-1">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-dim overflow-hidden flex items-center justify-center text-[10px] font-bold text-on-surface-variant">
+                                     JD
+                                 </div>
+<span class="font-body-md text-sm text-on-surface">J. Doe</span>
+</div>
+<span class="font-data-mono text-data-mono text-outline">ID: BR-003</span>
+</div>
+</div>
+<button class="w-full py-3 border border-dashed border-outline-variant text-on-surface-variant rounded-xl hover:bg-surface-white hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2 font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                        View All Branches
+                    </button>
+</div>
+</div>
+</main>
+</div>
+</body></html>

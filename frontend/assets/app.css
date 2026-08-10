@@ -1,0 +1,248 @@
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+button:not(:disabled),
+a,
+select,
+label:has(input) {
+  cursor: pointer;
+}
+
+[data-farock-clickable] {
+  cursor: pointer;
+}
+
+.farock-toast-stack {
+  position: fixed;
+  top: 96px;
+  right: 24px;
+  z-index: 1000;
+  display: grid;
+  gap: 10px;
+  width: min(360px, calc(100vw - 32px));
+}
+
+.farock-toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid #c4c7c7;
+  border-radius: 8px;
+  background: #fff;
+  color: #1b1c19;
+  box-shadow: 0 8px 28px rgba(26, 26, 26, 0.12);
+  animation: farock-enter 180ms ease-out;
+}
+
+.farock-toast.error {
+  border-color: #e07a5f;
+}
+
+.farock-toast.success .material-symbols-outlined {
+  color: #64857e;
+}
+
+.farock-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(27, 28, 25, 0.48);
+  backdrop-filter: blur(3px);
+}
+
+.farock-modal {
+  width: min(520px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  border: 1px solid #c4c7c7;
+  border-radius: 12px;
+  background: #fff;
+  color: #1b1c19;
+  box-shadow: 0 20px 60px rgba(26, 26, 26, 0.2);
+}
+
+.farock-modal-header,
+.farock-modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 24px;
+}
+
+.farock-modal-header {
+  border-bottom: 1px solid #e3e3de;
+}
+
+.farock-modal-header h2 {
+  margin: 0;
+  font: 600 20px/28px Inter, sans-serif;
+}
+
+.farock-modal-body {
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+}
+
+.farock-modal-actions {
+  justify-content: flex-end;
+  border-top: 1px solid #e3e3de;
+}
+
+.farock-field {
+  display: grid;
+  gap: 7px;
+}
+
+.farock-field label {
+  color: #444748;
+  font: 600 12px/16px Inter, sans-serif;
+  text-transform: uppercase;
+}
+
+.farock-field input,
+.farock-field select,
+.farock-field textarea {
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: #f1f0ea;
+  padding: 12px 14px;
+  color: #1b1c19;
+  font: 400 14px/20px Inter, sans-serif;
+}
+
+.farock-field input:focus,
+.farock-field select:focus,
+.farock-field textarea:focus {
+  border-color: #000;
+  background: #fff;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08);
+}
+
+.farock-btn {
+  border: 1.5px solid #000;
+  border-radius: 8px;
+  padding: 11px 18px;
+  background: transparent;
+  color: #000;
+  font: 600 12px/16px Inter, sans-serif;
+}
+
+.farock-btn.primary {
+  background: #000;
+  color: #fff;
+}
+
+.farock-empty {
+  grid-column: 1 / -1;
+  padding: 48px 24px;
+  border: 1px dashed #c4c7c7;
+  border-radius: 12px;
+  color: #444748;
+  text-align: center;
+}
+
+.farock-hidden {
+  display: none !important;
+}
+
+.customer-mode-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: fit-content;
+  padding: 4px 8px;
+  border-radius: 6px;
+  color: #fff;
+  font: 600 11px/16px Inter, sans-serif;
+  letter-spacing: 0;
+}
+
+.customer-mode-badge .material-symbols-outlined {
+  font-size: 15px;
+}
+
+.customer-mode-direct {
+  background: #000;
+}
+
+.customer-mode-dealer {
+  background: #b42318;
+}
+
+.farock-mobile-dock {
+  display: none;
+}
+
+@keyframes farock-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+@media (max-width: 767px) {
+  [data-mobile-hide] {
+    display: none !important;
+  }
+
+  body > .flex-1,
+  body > div > .flex-1,
+  main {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+  }
+
+  main > *,
+  main .overflow-x-auto {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  h1,
+  h2,
+  h3,
+  p {
+    overflow-wrap: anywhere;
+  }
+
+  .farock-toast-stack {
+    top: 16px;
+    right: 16px;
+  }
+
+  .farock-mobile-dock {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 60;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    height: 64px;
+    border-top: 1px solid #e3e3de;
+    background: #fff;
+  }
+
+  .farock-mobile-dock button {
+    display: grid;
+    place-items: center;
+    color: #747878;
+  }
+
+  .farock-mobile-dock button.active {
+    color: #000;
+  }
+}
