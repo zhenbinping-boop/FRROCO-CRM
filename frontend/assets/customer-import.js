@@ -18,7 +18,7 @@
     dealerGroup: ["代理商分组", "代理商", "经销商", "加盟商", "dealer", "dealergroup"],
     dealYear: ["订购年份", "下单年份", "签约年份", "年份", "dealyear"],
     totalAmount: ["订购金额", "成交金额", "合同金额", "订单金额", "下单金额", "totalamount"],
-    depositAmount: ["已付定金", "定金", "已付金额", "交款金额", "交款退款金额", "收款金额", "depositamount"],
+    depositAmount: ["已付定金", "定金", "已付金额", "depositamount"],
     productSeries: ["产品系列", "订购系列", "产品品类", "订单性质", "productseries"],
     whyFarock: ["为什么选择法洛可", "选择原因", "客户来源", "来源", "whyfarock"],
     tier: ["客户分级", "客户等级", "客户级别", "分级", "等级", "tier"],
@@ -112,6 +112,9 @@
     return key ? String(row[key] ?? "").trim() : "";
   }
 
+  const numberFor = (value) => Number(String(value || "0").replaceAll(",", "")) || 0;
+  const depositFor = (row, totalAmount) => Math.min(Math.max(numberFor(valueFor(row, "depositAmount")), 0), totalAmount);
+
   function normalizedContains(left, right) {
     const a = normalize(left);
     const b = normalize(right);
@@ -160,14 +163,16 @@
   function runSelfCheck() {
     const matrix = [
       ["2021年门店客户详情表"],
-      ["序号", " 客户姓明\n", "客户联系方式（手机）", "地址", "下单金额", "交款/退款金额"],
-      [1, "张三", "13800138000", "朝阳区", 100000, 20000],
+      ["序号", " 客户姓明\n", "客户联系方式（手机）", "地址", "下单金额", "交款/退款金额", "已付定金"],
+      [1, "张三", "13800138000", "朝阳区", 100000, -20000, 120000],
     ];
     const index = detectHeaderRow(matrix);
     const mapping = buildHeaderMapping(matrix[index], matrix[index + 1]);
-    if (index !== 1 || mapping.get(1) !== "name" || mapping.get(2) !== "phone" || mapping.get(4) !== "totalAmount" || mapping.get(5) !== "depositAmount") {
+    if (index !== 1 || mapping.get(1) !== "name" || mapping.get(2) !== "phone" || mapping.get(4) !== "totalAmount" || mapping.has(5) || mapping.get(6) !== "depositAmount") {
       throw new Error("customer-import header matching self-check failed");
     }
+    const row = { depositAmount: matrix[2][6] };
+    if (depositFor(row, matrix[2][4]) !== matrix[2][4]) throw new Error("customer-import deposit bounds self-check failed");
     if (new Set(mapping.values()).size !== mapping.size) throw new Error("customer-import unique mapping self-check failed");
     console.log("customer-import self-check passed");
   }
@@ -189,7 +194,6 @@
 
   let parsedRows = [];
   let sheetJsPromise;
-  const numberFor = (value) => Number(String(value || "0").replaceAll(",", "")) || 0;
   const normalizeStoreType = (value) => /dealer|代理|经销/i.test(value) ? "DEALER" : /direct|直营/i.test(value) ? "DIRECT" : "";
   const normalizeTier = (value) => ["S", "A", "B", "C"].includes(String(value).trim().charAt(0).toUpperCase()) ? String(value).trim().charAt(0).toUpperCase() : "B";
 
@@ -221,12 +225,13 @@
       const district = valueFor(row, "district") || store?.regionDistrict || "";
       const phone = valueFor(row, "phone");
       const normalizedPhone = phone.replace(/\D/g, "");
+      const totalAmount = Math.max(numberFor(valueFor(row, "totalAmount")), 0);
       const customer = {
         name: valueFor(row, "name"), phone, wechat: valueFor(row, "wechat") || undefined,
         ageGroup: valueFor(row, "ageGroup") || undefined, storeType, regionProvince: province, regionCity: city,
         regionDistrict: district, community: valueFor(row, "community") || undefined,
         houseType: valueFor(row, "houseType") || undefined, dealYear: numberFor(valueFor(row, "dealYear") || row.__dealYear) || undefined,
-        totalAmount: numberFor(valueFor(row, "totalAmount")), depositAmount: numberFor(valueFor(row, "depositAmount")),
+        totalAmount, depositAmount: depositFor(row, totalAmount),
         productSeries: valueFor(row, "productSeries").split(/[,，、;；]/).map((value) => value.trim()).filter(Boolean),
         whyFarock: valueFor(row, "whyFarock") || undefined, tier: normalizeTier(valueFor(row, "tier")),
         personaSummary: valueFor(row, "personaSummary") || undefined, storeId: store?.id || "",
