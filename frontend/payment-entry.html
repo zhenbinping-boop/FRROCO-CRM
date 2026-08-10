@@ -155,24 +155,24 @@
 <div class="space-y-4">
 <div>
 <p class="font-label-md text-label-md text-on-surface-variant mb-1">客户</p>
-<p class="font-body-lg text-body-lg text-on-surface">艾克米公司 - 张伟</p>
+<p class="font-body-lg text-body-lg text-on-surface" id="payment-order-customer">加载中...</p>
 </div>
 <div>
 <p class="font-label-md text-label-md text-on-surface-variant mb-1">项目</p>
-<p class="font-body-md text-body-md text-on-surface">定制大厅座椅 v2</p>
+<p class="font-body-md text-body-md text-on-surface" id="payment-order-project">加载中...</p>
 </div>
 <hr class="border-surface-variant my-4"/>
 <div class="flex justify-between items-center">
 <p class="font-body-md text-body-md text-on-surface-variant">订单总额</p>
-<p class="font-data-mono text-data-mono text-on-surface">$24,500.00</p>
+<p class="font-data-mono text-data-mono text-on-surface" id="payment-order-total">¥0.00</p>
 </div>
 <div class="flex justify-between items-center text-status-sage">
 <p class="font-body-md text-body-md">已付金额</p>
-<p class="font-data-mono text-data-mono">$10,000.00</p>
+<p class="font-data-mono text-data-mono" id="payment-order-paid">¥0.00</p>
 </div>
 <div class="flex justify-between items-center pt-2 mt-2 border-t border-surface-variant">
 <p class="font-label-md text-label-md text-primary">待付余额</p>
-<p class="font-data-mono text-data-mono text-primary font-bold text-lg">$14,500.00</p>
+<p class="font-data-mono text-data-mono text-primary font-bold text-lg" id="payment-order-balance">¥0.00</p>
 </div>
 </div>
 </div>
@@ -183,7 +183,7 @@
 </div>
 <!-- Right Column: Payment Form -->
 <div class="lg:col-span-8">
-<form class="bg-surface-white border border-surface-variant rounded-xl p-card-padding shadow-[0_4px_20px_rgba(26,26,26,0.04)] flex flex-col gap-8">
+<form class="bg-surface-white border border-surface-variant rounded-xl p-card-padding shadow-[0_4px_20px_rgba(26,26,26,0.04)] flex flex-col gap-8" id="payment-form">
 <!-- Section 1: Payment Details -->
 <div>
 <h3 class="font-headline-md text-headline-md text-primary border-b border-surface-variant pb-4 mb-6">收款详情</h3>
@@ -192,11 +192,11 @@
 <div class="flex flex-col gap-2">
 <label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">收款类型</label>
 <div class="relative">
-<select class="w-full bg-[#F1F0EA] focus:bg-surface-white border-none focus:ring-1 focus:ring-primary rounded-lg p-3 appearance-none font-body-md text-on-surface cursor-pointer">
+<select class="w-full bg-[#F1F0EA] focus:bg-surface-white border-none focus:ring-1 focus:ring-primary rounded-lg p-3 appearance-none font-body-md text-on-surface cursor-pointer" name="type" required>
 <option disabled="" selected="" value="">请选择类型...</option>
-<option value="deposit">定金</option>
-<option value="milestone">阶段款</option>
-<option value="balance">尾款</option>
+<option value="DEPOSIT">定金</option>
+<option value="MILESTONE">阶段款</option>
+<option value="BALANCE">尾款</option>
 </select>
 <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" data-icon="expand_more">expand_more</span>
 </div>
@@ -206,20 +206,20 @@
 <label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">金额</label>
 <div class="relative">
 <span class="absolute left-3 top-1/2 -translate-y-1/2 font-data-mono text-on-surface-variant">$</span>
-<input class="w-full bg-[#F1F0EA] focus:bg-surface-white border-none focus:ring-1 focus:ring-primary rounded-lg p-3 pl-8 font-data-mono text-on-surface" placeholder="0.00" type="text"/>
+<input class="w-full bg-[#F1F0EA] focus:bg-surface-white border-none focus:ring-1 focus:ring-primary rounded-lg p-3 pl-8 font-data-mono text-on-surface" name="amount" placeholder="0.00" type="number" min="0.01" step="0.01" required/>
 </div>
 </div>
 <!-- Date -->
 <div class="flex flex-col gap-2">
 <label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">收款日期</label>
 <div class="relative">
-<input class="w-full bg-[#F1F0EA] focus:bg-surface-white border-none focus:ring-1 focus:ring-primary rounded-lg p-3 font-body-md text-on-surface" type="date"/>
+<input class="w-full bg-[#F1F0EA] focus:bg-surface-white border-none focus:ring-1 focus:ring-primary rounded-lg p-3 font-body-md text-on-surface" name="paidAt" type="date" required/>
 </div>
 </div>
 <!-- Reference Number -->
 <div class="flex flex-col gap-2">
 <label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">参考编号（可选）</label>
-<input class="w-full bg-[#F1F0EA] focus:bg-surface-white border-none focus:ring-1 focus:ring-primary rounded-lg p-3 font-body-md text-on-surface" placeholder="e.g. TRC-99201" type="text"/>
+<input class="w-full bg-[#F1F0EA] focus:bg-surface-white border-none focus:ring-1 focus:ring-primary rounded-lg p-3 font-body-md text-on-surface" name="referenceNumber" placeholder="例如：TRC-99201" type="text"/>
 </div>
 </div>
 </div>
@@ -230,25 +230,25 @@
 <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
 <!-- Card -->
 <label class="relative flex flex-col items-center justify-center p-4 rounded-xl border border-surface-variant bg-surface-white cursor-pointer hover:bg-surface-container-low transition-colors has-[:checked]:border-primary has-[:checked]:bg-surface-container-low has-[:checked]:ring-1 has-[:checked]:ring-primary">
-<input class="sr-only" name="payment_method" type="radio" value="card"/>
+<input class="sr-only" name="method" type="radio" value="CARD"/>
 <span class="material-symbols-outlined text-[28px] mb-2 text-on-surface" data-icon="credit_card">credit_card</span>
 <span class="font-label-md text-label-md text-on-surface">银行卡</span>
 </label>
 <!-- Wire Transfer -->
 <label class="relative flex flex-col items-center justify-center p-4 rounded-xl border border-surface-variant bg-surface-white cursor-pointer hover:bg-surface-container-low transition-colors has-[:checked]:border-primary has-[:checked]:bg-surface-container-low has-[:checked]:ring-1 has-[:checked]:ring-primary">
-<input class="sr-only" name="payment_method" type="radio" value="wire"/>
+<input class="sr-only" name="method" type="radio" value="BANK_TRANSFER"/>
 <span class="material-symbols-outlined text-[28px] mb-2 text-on-surface" data-icon="account_balance">account_balance</span>
 <span class="font-label-md text-label-md text-on-surface">银行转账</span>
 </label>
 <!-- WeChat -->
 <label class="relative flex flex-col items-center justify-center p-4 rounded-xl border border-surface-variant bg-surface-white cursor-pointer hover:bg-surface-container-low transition-colors has-[:checked]:border-primary has-[:checked]:bg-surface-container-low has-[:checked]:ring-1 has-[:checked]:ring-primary">
-<input class="sr-only" name="payment_method" type="radio" value="wechat"/>
+<input class="sr-only" name="method" type="radio" value="WECHAT"/>
 <span class="material-symbols-outlined text-[28px] mb-2 text-on-surface" data-icon="chat">chat</span>
 <span class="font-label-md text-label-md text-on-surface">微信支付</span>
 </label>
 <!-- Cash -->
 <label class="relative flex flex-col items-center justify-center p-4 rounded-xl border border-surface-variant bg-surface-white cursor-pointer hover:bg-surface-container-low transition-colors has-[:checked]:border-primary has-[:checked]:bg-surface-container-low has-[:checked]:ring-1 has-[:checked]:ring-primary">
-<input class="sr-only" name="payment_method" type="radio" value="cash"/>
+<input class="sr-only" name="method" type="radio" value="CASH"/>
 <span class="material-symbols-outlined text-[28px] mb-2 text-on-surface" data-icon="payments">payments</span>
 <span class="font-label-md text-label-md text-on-surface">现金</span>
 </label>
@@ -313,5 +313,7 @@
         }
     </script>
 <script src="assets/layout.js" defer></script>
+<script src="assets/api.js" defer></script>
+<script src="assets/payment-entry.js" defer></script>
 <script src="assets/app.js" defer></script>
 </body></html>

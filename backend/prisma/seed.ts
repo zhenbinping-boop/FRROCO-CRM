@@ -87,6 +87,23 @@ async function main() {
       customerId: directCustomer.id, assigneeId: admin.id, priority: "HIGH", dueAt: new Date(Date.now() + 86400000),
     },
   });
+  const seedOrder = await prisma.order.upsert({
+    where: { orderNumber: "FR-SEED-2026-001" },
+    update: {
+      customerId: directCustomer.id, title: "徐汇直营店全屋定制项目", productSeries: ["极简隐形门", "全屋衣帽间"],
+      totalAmount: 480000, paidAmount: 120000, status: "CONFIRMED", signedAt: new Date("2026-02-18"),
+    },
+    create: {
+      orderNumber: "FR-SEED-2026-001", customerId: directCustomer.id, title: "徐汇直营店全屋定制项目",
+      productSeries: ["极简隐形门", "全屋衣帽间"], totalAmount: 480000, paidAmount: 120000,
+      status: "CONFIRMED", signedAt: new Date("2026-02-18"),
+    },
+  });
+  await prisma.payment.upsert({
+    where: { id: "seed-payment-2026-001" },
+    update: { orderId: seedOrder.id, type: "DEPOSIT", method: "BANK_TRANSFER", amount: 120000, paidAt: new Date("2026-02-18"), recordedById: admin.id },
+    create: { id: "seed-payment-2026-001", orderId: seedOrder.id, type: "DEPOSIT", method: "BANK_TRANSFER", amount: 120000, paidAt: new Date("2026-02-18"), recordedById: admin.id },
+  });
 
   console.log(`种子数据初始化完成，管理员账号：${email}`);
 }

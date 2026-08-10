@@ -3,6 +3,7 @@ import { Router } from "express";
 import { dashboard } from "../controllers/analytics-controller.js";
 import { login } from "../controllers/auth-controller.js";
 import { changeOwnership, createCustomer, exportRegionalCustomers, getCustomer, importCustomers, listCustomers, listDealerGroups, listStores, updateCustomer } from "../controllers/customer-controller.js";
+import { createOrder, createPayment, getOrder, listOrders } from "../controllers/order-controller.js";
 import { createTask, listTasks, updateTask } from "../controllers/task-controller.js";
 import { authenticate } from "../middleware/auth.js";
 
@@ -19,6 +20,10 @@ apiRouter.patch("/customers/:id", updateCustomer);
 apiRouter.patch("/customers/:id/ownership", changeOwnership);
 apiRouter.get("/stores", listStores);
 apiRouter.get("/dealer-groups", listDealerGroups);
+apiRouter.get("/orders", listOrders);
+apiRouter.post("/orders", createOrder);
+apiRouter.get("/orders/:id", getOrder);
+apiRouter.post("/orders/:id/payments", createPayment);
 apiRouter.get("/tasks", listTasks);
 apiRouter.post("/tasks", createTask);
 apiRouter.patch("/tasks/:id", updateTask);

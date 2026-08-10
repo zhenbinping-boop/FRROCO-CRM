@@ -189,7 +189,7 @@
 <div class="flex items-center gap-6">
 <div class="relative hidden lg:block">
 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
-<input class="pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-lg text-body-md focus:ring-1 focus:ring-primary w-64 transition-all" placeholder="搜索订单..." type="text"/>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-lg text-body-md focus:ring-1 focus:ring-primary w-64 transition-all" id="order-search" placeholder="搜索订单..." type="search"/>
 </div>
 </div>
 <div class="flex items-center gap-4">
@@ -326,7 +326,7 @@
 <th class="py-3 px-4 w-10"></th>
 </tr>
 </thead>
-<tbody class="divide-y divide-outline-variant/30 text-body-md">
+<tbody class="divide-y divide-outline-variant/30 text-body-md" id="orders-table-body">
 <!-- Row 1: Partial Payment -->
 <tr class="hover:bg-surface-container-low/50 transition-colors group" data-has-balance="true" data-order-status="confirmed">
 <td class="py-4 px-6 font-data-mono text-primary font-medium">ORD-2024-089</td>
@@ -423,6 +423,7 @@
 </div>
 </main>
 <script src="assets/layout.js" defer></script>
-<script src="assets/app.js" defer></script>
+<script src="assets/api.js" defer></script>
 <script src="assets/order-actions.js" defer></script>
+<script src="assets/app.js" defer></script>
 </body></html>

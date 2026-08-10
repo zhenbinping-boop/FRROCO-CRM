@@ -54,6 +54,27 @@ enum TaskPriority {
   URGENT
 }
 
+enum OrderStatus {
+  DRAFT
+  CONFIRMED
+  IN_PRODUCTION
+  COMPLETED
+  CANCELED
+}
+
+enum PaymentType {
+  DEPOSIT
+  MILESTONE
+  BALANCE
+}
+
+enum PaymentMethod {
+  CARD
+  BANK_TRANSFER
+  WECHAT
+  CASH
+}
+
 model Organization {
   id          String           @id @default(cuid())
   code        String           @unique @db.VarChar(64)
@@ -69,19 +90,20 @@ model Organization {
 }
 
 model User {
-  id             String        @id @default(cuid())
-  email          String        @unique @db.VarChar(160)
-  phone          String?       @unique @db.VarChar(32)
-  name           String        @db.VarChar(100)
-  passwordHash   String        @db.VarChar(255)
-  role           UserRole      @default(SALES_REP)
-  active         Boolean       @default(true)
-  organizationId String?
-  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
-  assignedTasks  Task[]        @relation("TaskAssignee")
-  followUps      FollowUp[]
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id               String        @id @default(cuid())
+  email            String        @unique @db.VarChar(160)
+  phone            String?       @unique @db.VarChar(32)
+  name             String        @db.VarChar(100)
+  passwordHash     String        @db.VarChar(255)
+  role             UserRole      @default(SALES_REP)
+  active           Boolean       @default(true)
+  organizationId   String?
+  organization     Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  assignedTasks    Task[]        @relation("TaskAssignee")
+  followUps        FollowUp[]
+  recordedPayments Payment[]
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
   @@index([organizationId])
   @@index([role, active])
@@ -155,6 +177,7 @@ model Customer {
   dealerGroup    DealerGroup?  @relation(fields: [dealerGroupId], references: [id], onDelete: Restrict)
   tasks          Task[]
   followUps      FollowUp[]
+  orders         Order[]
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
@@ -165,6 +188,42 @@ model Customer {
   @@index([storeId, tier])
   @@index([stage, dealYear])
   @@index([salesRepId, stage])
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  orderNumber   String      @unique @db.VarChar(64)
+  customerId    String
+  title         String      @db.VarChar(160)
+  productSeries String[]    @default([])
+  totalAmount   Decimal     @db.Decimal(14, 2)
+  paidAmount    Decimal     @default(0) @db.Decimal(14, 2)
+  status        OrderStatus @default(DRAFT)
+  signedAt      DateTime?
+  customer      Customer    @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  payments      Payment[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([customerId, createdAt])
+  @@index([status, createdAt])
+}
+
+model Payment {
+  id              String        @id @default(cuid())
+  orderId         String
+  type            PaymentType
+  method          PaymentMethod
+  amount          Decimal       @db.Decimal(14, 2)
+  paidAt          DateTime
+  referenceNumber String?       @db.VarChar(100)
+  recordedById    String?
+  order           Order         @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  recordedBy      User?         @relation(fields: [recordedById], references: [id], onDelete: SetNull)
+  createdAt       DateTime      @default(now())
+
+  @@index([orderId, paidAt])
+  @@index([recordedById])
 }
 
 model Task {

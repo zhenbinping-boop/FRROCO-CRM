@@ -1,154 +1,79 @@
 (() => {
-  const rows = Array.from(document.querySelectorAll("tbody tr[data-order-status]"));
-  const tabs = Array.from(document.querySelectorAll("[data-order-tab]"));
-  const filterToggle = document.querySelector("#order-filter-toggle");
-  const filterPanel = document.querySelector("#order-filter-panel");
+  "use strict";
+  window.FAROCK_ORDERS_API = true;
+  const api = window.FarockAPI;
+  const body = document.querySelector("#orders-table-body") || document.querySelector("table tbody");
+  if (!api || !body) return;
+
+  const tabs = [...document.querySelectorAll("[data-order-tab]")];
   const statusFilter = document.querySelector("#order-status-filter");
+  const search = document.querySelector("#order-search");
   const previous = document.querySelector("#order-page-prev");
   const next = document.querySelector("#order-page-next");
   const summary = document.querySelector("#order-pagination-summary");
   const indicator = document.querySelector("#order-page-indicator");
-  const pageSize = 2;
+  const pageSize = 10;
   let page = 1;
-  let activeTab = "all";
+  let tab = "all";
+  let requestId = 0;
+  const statusLabels = { DRAFT: "草稿", CONFIRMED: "已确认", IN_PRODUCTION: "生产中", COMPLETED: "已完成", CANCELED: "已取消" };
+  const money = (value) => `¥${Number(value || 0).toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const escape = (value) => String(value ?? "").replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]);
 
-  if (!rows.length || !summary || !indicator) return;
-
-  const text = (row, selector) => row.querySelector(selector)?.textContent.trim() || "";
-  const statusMatches = (row, value) => value === "all"
-    || (value === "pending" && row.dataset.hasBalance === "true")
-    || row.dataset.orderStatus === value;
-  const tabMatches = (row) => activeTab === "all"
-    || (activeTab === "pending" && row.dataset.hasBalance === "true")
-    || (activeTab === "completed" && row.dataset.orderStatus === "completed");
-
-  function closeMenus() {
-    document.querySelectorAll("[data-order-menu]").forEach((menu) => menu.remove());
+  function row(order) {
+    const total = Number(order.totalAmount || 0);
+    const paid = Number(order.paidAmount || 0);
+    const balance = Math.max(0, total - paid);
+    const status = statusLabels[order.status] || order.status;
+    return `<tr class="hover:bg-surface-container-low/50 transition-colors group" data-order-id="${escape(order.id)}" data-order-status="${escape(order.status)}" data-has-balance="${balance > 0}">
+      <td class="py-4 px-6 font-data-mono text-primary font-medium">${escape(order.orderNumber)}</td>
+      <td class="py-4 px-6 font-medium text-primary">${escape(order.customer?.name)}</td>
+      <td class="py-4 px-6 text-on-surface-variant">${escape((order.productSeries || []).join("、") || "未填写")}</td>
+      <td class="py-4 px-6 text-right font-data-mono">${money(total)}</td>
+      <td class="py-4 px-6 text-right font-data-mono text-secondary">${money(paid)}</td>
+      <td class="py-4 px-6 text-right font-data-mono font-semibold ${balance ? "text-error-red" : "text-on-surface-variant"}">${money(balance)}</td>
+      <td class="py-4 px-6 text-center"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${order.status === "COMPLETED" ? "bg-status-sage/20" : "bg-warning-amber/20"}">${escape(status)}</span></td>
+      <td class="py-4 px-4 text-right"><button aria-label="订单操作" class="text-outline hover:text-primary transition-colors" data-order-actions type="button"><span class="material-symbols-outlined">more_vert</span></button></td>
+    </tr>`;
   }
 
-  function showOrderDetails(row) {
-    const orderId = text(row, "td:nth-child(1)");
-    const customer = text(row, "td:nth-child(2)");
-    const material = text(row, "td:nth-child(3)");
-    const total = text(row, "td:nth-child(4)");
-    const balance = text(row, "td:nth-child(6)");
-    const status = text(row, "td:nth-child(7)");
-    const overlay = document.createElement("div");
-    overlay.className = "fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4";
-    overlay.setAttribute("role", "presentation");
-    overlay.innerHTML = `
-      <section aria-labelledby="order-details-title" aria-modal="true" class="w-full max-w-md rounded-xl border border-outline-variant bg-surface-white p-6 shadow-xl" role="dialog">
-        <div class="mb-5 flex items-center justify-between border-b border-outline-variant/30 pb-4">
-          <h2 class="font-headline-md text-headline-md text-primary" id="order-details-title">订单详情</h2>
-          <button aria-label="关闭订单详情" class="rounded p-1 text-on-surface-variant hover:bg-surface-container-low hover:text-primary" data-order-close type="button">
-            <span class="material-symbols-outlined">close</span>
-          </button>
-        </div>
-        <dl class="space-y-3 text-body-md">
-          <div class="flex justify-between gap-4"><dt class="text-on-surface-variant">订单编号</dt><dd class="font-medium text-primary">${orderId}</dd></div>
-          <div class="flex justify-between gap-4"><dt class="text-on-surface-variant">客户名称</dt><dd class="font-medium text-primary">${customer}</dd></div>
-          <div class="flex justify-between gap-4"><dt class="text-on-surface-variant">材料系列</dt><dd class="text-right text-primary">${material}</dd></div>
-          <div class="flex justify-between gap-4"><dt class="text-on-surface-variant">订单总额</dt><dd class="font-data-mono text-primary">${total}</dd></div>
-          <div class="flex justify-between gap-4"><dt class="text-on-surface-variant">待付余额</dt><dd class="font-data-mono text-primary">${balance}</dd></div>
-          <div class="flex justify-between gap-4"><dt class="text-on-surface-variant">状态</dt><dd class="text-primary">${status}</dd></div>
-        </dl>
-        <button class="mt-6 w-full rounded-lg bg-primary px-4 py-3 text-label-md text-on-primary hover:opacity-90" data-order-close type="button">关闭</button>
-      </section>`;
-    const close = () => overlay.remove();
-    overlay.addEventListener("click", (event) => {
-      if (event.target === overlay) close();
-    });
-    overlay.querySelectorAll("[data-order-close]").forEach((button) => button.addEventListener("click", close));
-    document.body.append(overlay);
-  }
-
-  function showOrderMenu(row, trigger) {
-    closeMenus();
-    const cell = trigger.parentElement;
-    cell.classList.add("relative");
-    const menu = document.createElement("div");
-    menu.dataset.orderMenu = "true";
-    menu.className = "absolute right-4 top-9 z-30 w-32 rounded-lg border border-outline-variant bg-surface-white p-1 shadow-lg";
-    menu.innerHTML = `
-      <button class="block w-full rounded px-3 py-2 text-left text-body-md text-on-surface hover:bg-surface-container-low" data-order-view type="button">查看订单</button>
-      <button class="block w-full rounded px-3 py-2 text-left text-body-md text-on-surface hover:bg-surface-container-low" data-order-payment type="button">登记收款</button>`;
-    menu.addEventListener("click", (event) => event.stopPropagation());
-    menu.querySelector("[data-order-view]").addEventListener("click", () => {
-      closeMenus();
-      showOrderDetails(row);
-    });
-    menu.querySelector("[data-order-payment]").addEventListener("click", () => {
-      const orderId = text(row, "td:nth-child(1)");
-      window.location.href = `payment-entry.html?orderId=${encodeURIComponent(orderId)}`;
-    });
-    cell.append(menu);
-  }
-
-  function render() {
-    const selectedStatus = statusFilter?.value || "all";
-    const matching = rows.filter((row) => tabMatches(row) && statusMatches(row, selectedStatus));
-    const pageCount = Math.max(1, Math.ceil(matching.length / pageSize));
-    page = Math.min(page, pageCount);
-    const start = (page - 1) * pageSize;
-    const visible = new Set(matching.slice(start, start + pageSize));
-
-    rows.forEach((row) => {
-      row.classList.remove("farock-hidden");
-      row.hidden = !visible.has(row);
-    });
-    summary.textContent = matching.length
-      ? `显示第 ${start + 1} 至 ${Math.min(start + pageSize, matching.length)} 条，共 ${matching.length} 条订单`
-      : "暂无符合条件的订单";
-    indicator.textContent = `第 ${page} / ${pageCount} 页`;
-    if (previous) previous.disabled = page <= 1;
-    if (next) next.disabled = page >= pageCount;
-    tabs.forEach((tab) => {
-      const active = tab.dataset.orderTab === activeTab;
-      tab.classList.toggle("bg-surface-container-low", active);
-      tab.classList.toggle("text-primary", active);
-      tab.classList.toggle("border", active);
-      tab.classList.toggle("border-outline-variant/30", active);
-      tab.setAttribute("aria-pressed", String(active));
-    });
-  }
-
-  filterToggle?.addEventListener("click", (event) => {
-    event.stopPropagation();
-    const open = filterPanel?.classList.toggle("hidden") === false;
-    filterToggle.setAttribute("aria-expanded", String(open));
-  });
-  filterPanel?.addEventListener("click", (event) => event.stopPropagation());
-  document.addEventListener("click", () => {
-    closeMenus();
-    if (filterPanel && !filterPanel.classList.contains("hidden")) {
-      filterPanel.classList.add("hidden");
-      filterToggle?.setAttribute("aria-expanded", "false");
+  async function load() {
+    const current = ++requestId;
+    body.innerHTML = `<tr><td class="py-8 text-center text-on-surface-variant" colspan="8">正在加载订单...</td></tr>`;
+    const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
+    const selectedStatus = statusFilter?.value;
+    if (tab === "pending" || selectedStatus === "pending") params.set("hasBalance", "true");
+    else if (tab === "completed") params.set("status", "COMPLETED");
+    else if (selectedStatus && selectedStatus !== "all") params.set("status", selectedStatus.toUpperCase());
+    if (search?.value.trim()) params.set("search", search.value.trim());
+    try {
+      const payload = await api.get(`/orders?${params}`);
+      if (current !== requestId) return;
+      const orders = payload.data || [];
+      body.innerHTML = orders.length ? orders.map(row).join("") : `<tr><td class="py-8 text-center text-on-surface-variant" colspan="8">暂无符合条件的订单</td></tr>`;
+      const meta = payload.meta || { page, total: orders.length, totalPages: 1 };
+      page = meta.page;
+      if (summary) summary.textContent = meta.total ? `显示第 ${(page - 1) * pageSize + 1} 至 ${Math.min(page * pageSize, meta.total)} 条，共 ${meta.total} 条订单` : "暂无订单";
+      if (indicator) indicator.textContent = `第 ${page} / ${Math.max(1, meta.totalPages)} 页`;
+      if (previous) previous.disabled = page <= 1;
+      if (next) next.disabled = page >= meta.totalPages;
+    } catch (error) {
+      body.innerHTML = `<tr><td class="py-8 text-center text-error-red" colspan="8">${escape(error.message || "订单加载失败")}</td></tr>`;
     }
+  }
+
+  body.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-order-actions]");
+    if (!button) return;
+    const orderId = button.closest("tr")?.dataset.orderId;
+    if (!orderId) return;
+    window.location.href = `payment-entry.html?orderId=${encodeURIComponent(orderId)}`;
   });
-  statusFilter?.addEventListener("change", () => {
-    page = 1;
-    render();
-  });
-  tabs.forEach((tab) => tab.addEventListener("click", () => {
-    activeTab = tab.dataset.orderTab || "all";
-    page = 1;
-    render();
-  }));
-  previous?.addEventListener("click", () => {
-    if (page > 1) {
-      page -= 1;
-      render();
-    }
-  });
-  next?.addEventListener("click", () => {
-    page += 1;
-    render();
-  });
-  document.querySelectorAll("[data-order-actions]").forEach((button) => {
-    button.addEventListener("click", (event) => {
-      event.stopPropagation();
-      showOrderMenu(button.closest("tr"), button);
-    });
-  });
-  render();
+  tabs.forEach((item) => item.addEventListener("click", () => { tab = item.dataset.orderTab || "all"; page = 1; load(); }));
+  statusFilter?.addEventListener("change", () => { page = 1; load(); });
+  let searchTimer;
+  search?.addEventListener("input", () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { page = 1; load(); }, 250); });
+  previous?.addEventListener("click", () => { if (page > 1) { page -= 1; load(); } });
+  next?.addEventListener("click", () => { page += 1; load(); });
+  load();
 })();

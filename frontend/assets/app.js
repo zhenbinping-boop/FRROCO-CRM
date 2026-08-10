@@ -933,7 +933,7 @@
   }
 
   function setupPayment() {
-    if (page !== routes.payment) return;
+    if (page !== routes.payment || window.FAROCK_PAYMENT_API) return;
     const form = document.querySelector("main form");
     if (!form) return;
     const draft = Array.from(form.querySelectorAll("button")).find((button) => textOf(button).includes("Save as Draft"));
@@ -978,7 +978,7 @@
   }
 
   function setupOrderTabs() {
-    if (page !== routes.orders) return;
+    if (page !== routes.orders || window.FAROCK_ORDERS_API) return;
     const rows = Array.from(document.querySelectorAll("tbody tr"));
     const matches = (row, status) => {
       const content = textOf(row);
