@@ -806,7 +806,7 @@
   }
 
   function setupCreateCustomer() {
-    if (page !== routes.customerCreate) return;
+    if (page !== routes.customerCreate || window.FAROCK_CUSTOMER_CREATE_API) return;
     const title = Array.from(document.querySelectorAll("h3")).find((item) => textOf(item) === "Basic Information");
     const card = title?.parentElement;
     const actions = card?.nextElementSibling;

@@ -6,9 +6,9 @@
 
   const pages = {
     "dashboard.html": { title: "经营工作台", active: "dashboard", actions: ["newCustomer"] },
-    "customers.html": { title: "客户管理", active: "customers", actions: ["customerImport", "newCustomer"] },
+    "customers.html": { title: "客户管理", active: "customers", actions: ["regionalExport", "customerImport", "newCustomer"] },
     "customer-create.html": { title: "新建客户", active: "customers" },
-    "customer-detail.html": { title: "客户详情", active: "customers", actions: ["newFollowup"] },
+    "customer-detail.html": { title: "客户详情", active: "customers", actions: ["editCustomer", "newFollowup"] },
     "customer-handover.html": { title: "客户交接", active: "customers" },
     "follow-up-tasks.html": { title: "跟进任务", active: "tasks", actions: ["newFollowup"] },
     "channel-analysis.html": { title: "渠道分析", active: "activity", actions: ["export"] },
@@ -105,12 +105,14 @@
   const actionTemplates = {
     newCustomer: '<a class="farock-button farock-button--primary" href="customer-create.html"><span class="material-symbols-outlined">add</span><span>新建客户</span></a>',
     newFollowup: '<a class="farock-button farock-button--primary" href="follow-up-tasks.html"><span class="material-symbols-outlined">add_task</span><span>新增跟进</span></a>',
+    editCustomer: '<button class="farock-button farock-button--secondary" id="customer-edit-button" type="button"><span class="material-symbols-outlined">edit</span><span>编辑客户</span></button>',
     payment: '<a class="farock-button farock-button--primary" href="payment-entry.html"><span class="material-symbols-outlined">payments</span><span>登记收款</span></a>',
     backToOrders: '<a class="farock-button farock-button--secondary" href="orders-payments.html"><span class="material-symbols-outlined">arrow_back</span><span>返回订单</span></a>',
     export: '<button class="farock-button farock-button--secondary" type="button"><span class="material-symbols-outlined">download</span><span>导出</span></button>',
     addBranch: '<button class="farock-button farock-button--primary" type="button">新增机构</button>',
     inviteUser: '<button class="farock-button farock-button--primary" type="button">邀请用户</button>',
     customerImport: '<button class="farock-button farock-button--secondary" id="customer-import-button" type="button"><span class="material-symbols-outlined">upload_file</span><span>表格导入</span></button><input id="customer-import-file" class="farock-visually-hidden" type="file" accept=".xlsx,.xls,.csv"/>',
+    regionalExport: '<button class="farock-button farock-button--secondary" id="customer-regional-export" type="button"><span class="material-symbols-outlined">download</span><span>导出地区名单</span></button>',
     userImport: '<button class="farock-button farock-button--secondary" id="user-import-button" type="button"><span class="material-symbols-outlined">upload_file</span><span>表格导入</span></button><input id="user-import-file" class="farock-visually-hidden" type="file" accept=".xlsx,.xls,.csv"/>'
   };
 

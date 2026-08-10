@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import type { RequestHandler } from "express";
 import { z } from "zod";
 
@@ -16,6 +17,17 @@ const customerInput = z.object({
   stage: z.enum(["LEAD", "FOLLOWING", "PROPOSAL", "CONTRACTED", "LOST"]).default("LEAD"), personaSummary: z.string().optional(),
   salesRepId: z.string().optional(), designerId: z.string().optional(), storeId: z.string().min(1), dealerGroupId: z.string().optional(),
 });
+
+const customerUpdateInput = customerInput.omit({ storeType: true, storeId: true, dealerGroupId: true }).partial();
+
+function csvCell(value: unknown): string {
+  const text = Array.isArray(value) ? value.join("、") : String(value ?? "");
+  return `"${text.replaceAll('"', '""')}"`;
+}
+
+function validateAmounts(totalAmount: Prisma.Decimal | number, depositAmount: Prisma.Decimal | number): void {
+  if (Number(depositAmount) > Number(totalAmount)) throw new AppError(400, "INVALID_DEPOSIT", "已付定金不能超过订购金额");
+}
 
 async function verifyAttribution(storeType: "DIRECT" | "DEALER", storeId: string, dealerGroupId?: string) {
   const store = await prisma.store.findUnique({ where: { id: storeId } });
@@ -51,6 +63,7 @@ export const listCustomers: RequestHandler = async (request, response) => {
 
 export const createCustomer: RequestHandler = async (request, response) => {
   const input = validate(customerInput, request.body);
+  validateAmounts(input.totalAmount, input.depositAmount);
   const store = await verifyAttribution(input.storeType, input.storeId, input.dealerGroupId);
   assertOrganizationAccess(request, store.organizationId);
   if (input.storeType === "DEALER" && (input.regionProvince !== store.regionProvince || input.regionCity !== store.regionCity)) {
@@ -58,6 +71,97 @@ export const createCustomer: RequestHandler = async (request, response) => {
   }
   const customer = await prisma.customer.create({ data: input, include: { store: true, dealerGroup: true } });
   response.status(201).json({ data: customer });
+};
+
+export const getCustomer: RequestHandler = async (request, response) => {
+  const { id } = validate(z.object({ id: z.string().min(1) }), request.params);
+  const customer = await prisma.customer.findFirst({
+    where: { id, ...customerAccessWhere(request) },
+    include: {
+      store: true,
+      dealerGroup: true,
+      tasks: { include: { assignee: { select: { id: true, name: true } } }, orderBy: { dueAt: "desc" } },
+      followUps: { include: { author: { select: { id: true, name: true } } }, orderBy: { followedAt: "desc" } },
+    },
+  });
+  if (!customer) throw new AppError(404, "CUSTOMER_NOT_FOUND", "客户不存在");
+  response.json({ data: customer });
+};
+
+export const updateCustomer: RequestHandler = async (request, response) => {
+  const { id } = validate(z.object({ id: z.string().min(1) }), request.params);
+  const input = validate(customerUpdateInput, request.body);
+  const existing = await prisma.customer.findFirst({ where: { id, ...customerAccessWhere(request) }, select: { id: true, totalAmount: true, depositAmount: true } });
+  if (!existing) throw new AppError(404, "CUSTOMER_NOT_FOUND", "客户不存在");
+  validateAmounts(input.totalAmount ?? existing.totalAmount, input.depositAmount ?? existing.depositAmount);
+  const customer = await prisma.customer.update({ where: { id }, data: input, include: { store: true, dealerGroup: true } });
+  response.json({ data: customer });
+};
+
+export const importCustomers: RequestHandler = async (request, response) => {
+  const { customers } = validate(z.object({ customers: z.array(customerInput).min(1).max(200) }), request.body);
+  const phones = customers.map((customer) => customer.phone);
+  if (new Set(phones).size !== phones.length) throw new AppError(400, "DUPLICATE_PHONE_IN_FILE", "导入数据中存在重复手机号");
+
+  const storeIds = [...new Set(customers.map((customer) => customer.storeId))];
+  const stores = await prisma.store.findMany({ where: { id: { in: storeIds } } });
+  const storesById = new Map(stores.map((store) => [store.id, store]));
+  for (const input of customers) {
+    validateAmounts(input.totalAmount, input.depositAmount);
+    const store = storesById.get(input.storeId);
+    if (!store) throw new AppError(400, "INVALID_STORE", `客户“${input.name}”关联的门店不存在`);
+    assertOrganizationAccess(request, store.organizationId);
+    if (store.storeType !== input.storeType) throw new AppError(400, "STORE_TYPE_MISMATCH", `客户“${input.name}”经营模式与门店不一致`);
+    if (input.storeType === "DEALER") {
+      if (!input.dealerGroupId || store.dealerGroupId !== input.dealerGroupId) throw new AppError(400, "DEALER_GROUP_REQUIRED", `客户“${input.name}”代理商分组不正确`);
+      if (input.regionProvince !== store.regionProvince || input.regionCity !== store.regionCity) throw new AppError(400, "DEALER_REGION_MISMATCH", `客户“${input.name}”不属于代理商特许经营区域`);
+    } else if (input.dealerGroupId) {
+      throw new AppError(400, "DIRECT_DEALER_CONFLICT", `直营客户“${input.name}”不能关联代理商分组`);
+    }
+  }
+  const duplicate = await prisma.customer.findFirst({ where: { phone: { in: phones } }, select: { phone: true } });
+  if (duplicate) throw new AppError(409, "DUPLICATE_PHONE", `手机号 ${duplicate.phone} 已存在`);
+
+  const created = await prisma.$transaction(customers.map((input) => prisma.customer.create({ data: input })));
+  response.status(201).json({ data: { imported: created.length, customers: created } });
+};
+
+export const exportRegionalCustomers: RequestHandler = async (request, response) => {
+  const query = validate(z.object({ dealerGroupId: z.string().optional(), city: z.string().optional() }).refine(
+    (value) => Boolean(value.dealerGroupId || value.city), { message: "必须指定代理商分组或城市" },
+  ), request.query);
+  const where: Prisma.CustomerWhereInput = {
+    ...customerAccessWhere(request),
+    ...(query.dealerGroupId && { dealerGroupId: query.dealerGroupId }),
+    ...(query.city && { regionCity: query.city }),
+  };
+  const customers = await prisma.customer.findMany({ where, include: { store: true, dealerGroup: true }, orderBy: [{ dealYear: "desc" }, { name: "asc" }] });
+  const header = ["客户姓名", "联系电话", "经营模式", "省份", "城市", "区县", "门店", "代理商", "建档年份", "订购金额", "已付定金", "产品系列", "客户等级", "跟进状态"];
+  const rows = customers.map((customer) => [customer.name, customer.phone, customer.storeType === "DIRECT" ? "直营" : "代理商", customer.regionProvince, customer.regionCity, customer.regionDistrict, customer.store.storeName, customer.dealerGroup?.dealerName, customer.dealYear, customer.totalAmount, customer.depositAmount, customer.productSeries, customer.tier, customer.stage]);
+  const csv = `\uFEFF${[header, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n")}`;
+  response.setHeader("Content-Type", "text/csv; charset=utf-8");
+  response.setHeader("Content-Disposition", `attachment; filename="regional-customers-${Date.now()}.csv"`);
+  response.send(csv);
+};
+
+export const listStores: RequestHandler = async (request, response) => {
+  const query = validate(z.object({ storeType: z.enum(["DIRECT", "DEALER"]).optional() }), request.query);
+  const where: Prisma.StoreWhereInput = {
+    ...(query.storeType && { storeType: query.storeType }),
+    ...(request.user?.role !== "ADMIN" && { organizationId: request.user?.organizationId || "__none__" }),
+  };
+  const stores = await prisma.store.findMany({ where, include: { dealerGroup: true }, orderBy: [{ regionProvince: "asc" }, { regionCity: "asc" }, { storeName: "asc" }] });
+  response.json({ data: stores });
+};
+
+export const listDealerGroups: RequestHandler = async (request, response) => {
+  const where: Prisma.DealerGroupWhereInput = request.user?.role === "ADMIN" ? {} : { organizationId: request.user?.organizationId || "__none__" };
+  const groups = await prisma.dealerGroup.findMany({
+    where,
+    include: { _count: { select: { customers: true } }, stores: { select: { id: true, storeName: true } } },
+    orderBy: [{ regionProvince: "asc" }, { regionCity: "asc" }, { dealerName: "asc" }],
+  });
+  response.json({ data: groups });
 };
 
 export const changeOwnership: RequestHandler = async (request, response) => {

@@ -227,11 +227,11 @@
 <div class="w-24 h-24 rounded-full overflow-hidden mb-4 border-2 border-surface-container">
 <img alt="Customer Avatar" class="w-full h-full object-cover" data-alt="A professional portrait of an adult male in a modern corporate setting, wearing a tailored navy suit. Soft, natural lighting from a nearby window creates a warm, inviting atmosphere. High quality, editorial style photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAntMhtkg0Z1boWKnEzoomZgsKKL5MKukoznyWdofRRDKDymK86icGa_9cxoxhJd58yUqs0G2JUS4HMwM4A8Va4L9wskdt8Un4RP-6vNSujUA71t16n69IHkTP6w50pHMcNaSixpfZih_KZnEjV9GO-Hf37yTk1TXzlNH5PQft_3Cahyhd2TddzWeG6mWD6051Eklsf4ywT0QQeqym12FP93to2o8Td5LEkBqY1ZJrihw9W6LWcSMl1"/>
 </div>
-<h2 class="font-headline-md text-headline-md text-primary mb-1">Alex Sterling</h2>
-<p class="font-body-md text-body-md text-on-surface-variant mb-4">alex.sterling@example.com <br/> +1 (555) 019-2834</p>
+<h2 class="font-headline-md text-headline-md text-primary mb-1" data-customer-name>正在加载...</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4" data-customer-contact>正在读取客户资料</p>
 <div class="flex space-x-2 mb-6">
-<span class="bg-primary-fixed px-3 py-1 rounded-full font-label-md text-label-md text-primary">Level S</span>
-<span class="bg-secondary-container px-3 py-1 rounded-full font-label-md text-label-md text-on-secondary-container">Stage: Proposal</span>
+<span class="bg-primary-fixed px-3 py-1 rounded-full font-label-md text-label-md text-primary" data-customer-tier>-</span>
+<span class="bg-secondary-container px-3 py-1 rounded-full font-label-md text-label-md text-on-secondary-container" data-customer-stage>-</span>
 </div>
 </div>
 <div class="border-t border-masked-gray pt-4 mt-2">
@@ -240,14 +240,14 @@
 <div class="flex items-start">
 <span class="material-symbols-outlined text-outline mr-2 text-[20px]" data-icon="apartment">apartment</span>
 <div>
-<p class="font-body-md text-body-md text-primary">Penthouse Suite 4A</p>
-<p class="font-body-md text-body-md text-on-surface-variant text-sm">Riverfront Residences</p>
+<p class="font-body-md text-body-md text-primary" data-customer-house>-</p>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm" data-customer-community>-</p>
 </div>
 </div>
 <div class="flex items-start">
 <span class="material-symbols-outlined text-outline mr-2 text-[20px]" data-icon="map">map</span>
 <div>
-<p class="font-body-md text-body-md text-primary">Downtown District</p>
+<p class="font-body-md text-body-md text-primary" data-customer-location>-</p>
 </div>
 </div>
 </div>
@@ -263,7 +263,7 @@
 <span class="material-symbols-outlined" data-icon="add">add</span>
 </button>
 </div>
-<div class="relative border-l-2 border-surface-container ml-3 space-y-8 pb-4">
+<div class="relative border-l-2 border-surface-container ml-3 space-y-8 pb-4" data-customer-followups>
 <!-- Timeline Item 1 -->
 <div class="relative pl-6">
 <div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-primary border-4 border-surface-white"></div>
@@ -296,7 +296,7 @@
 <div class="bg-surface-white rounded-xl p-card-padding card-shadow border border-masked-gray">
 <h2 class="font-headline-md text-headline-md text-primary mb-6">Commercial Details</h2>
 <!-- Orders List -->
-<div class="mb-8">
+<div class="mb-8" data-customer-order-summary>
 <h3 class="font-label-md text-label-md text-on-surface-variant mb-3 uppercase tracking-wider">Active Orders</h3>
 <div class="bg-surface-container-low p-4 rounded-lg border border-masked-gray mb-3 card-shadow-hover transition-shadow cursor-pointer">
 <div class="flex justify-between items-center mb-2">
@@ -308,7 +308,7 @@
 </div>
 </div>
 <!-- Payment Progress -->
-<div>
+<div data-customer-payment-summary>
 <h3 class="font-label-md text-label-md text-on-surface-variant mb-3 uppercase tracking-wider">Payment Progress</h3>
 <div class="flex justify-between font-data-mono text-data-mono mb-2">
 <span class="text-primary">$45,000 Paid</span>
@@ -332,13 +332,13 @@
 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
 <div>
 <h3 class="font-label-md text-label-md text-on-surface-variant mb-3 uppercase tracking-wider">Persona Profile</h3>
-<p class="font-body-md text-body-md text-primary leading-relaxed">
+<p class="font-body-md text-body-md text-primary leading-relaxed" data-customer-persona>
                                 Alex is a detail-oriented professional who values sustainable materials and long-term durability. They are highly analytical in their purchasing decisions, preferring data-backed guarantees over emotional sales pitches. Time efficiency is critical; they appreciate concise communication and adherence to promised timelines.
                             </p>
 </div>
 <div class="border-t md:border-t-0 md:border-l border-masked-gray pt-4 md:pt-0 md:pl-8">
 <h3 class="font-label-md text-label-md text-on-surface-variant mb-3 uppercase tracking-wider">Why Faloco?</h3>
-<ul class="space-y-3">
+<ul class="space-y-3" data-customer-why>
 <li class="flex items-start">
 <span class="material-symbols-outlined text-status-sage mr-2 text-[20px]" data-icon="check_circle">check_circle</span>
 <span class="font-body-md text-body-md text-primary">Exclusive use of certified ENF Eco-friendly materials.</span>
@@ -359,5 +359,7 @@
 </main>
 </div>
 <script src="assets/layout.js" defer></script>
+<script src="assets/api.js" defer></script>
 <script src="assets/app.js" defer></script>
+<script src="assets/customer-detail.js" defer></script>
 </body></html>
