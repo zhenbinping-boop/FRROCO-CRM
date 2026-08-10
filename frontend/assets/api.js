@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const defaultBaseUrl = "http://localhost:3000/api/v1";
+  const defaultBaseUrl = "https://frroco-crm.onrender.com/api/v1";
 
   class ApiError extends Error {
     constructor(message, status = 0, details = null) {
