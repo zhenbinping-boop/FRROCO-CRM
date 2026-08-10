@@ -614,18 +614,27 @@
       password.type = reveal ? "text" : "password";
       visibility.querySelector("span").textContent = reveal ? "visibility" : "visibility_off";
     });
-    form?.addEventListener("submit", (event) => {
+    form?.addEventListener("submit", async (event) => {
       event.preventDefault();
-      const username = document.querySelector('#username')?.value.trim();
-      if (!username || !password?.value) {
-        toast("请输入账号和密码。", "error");
+      const email = document.querySelector('#email')?.value.trim();
+      if (!email || !password?.value) {
+        toast("请输入邮箱和密码。", "error");
         return;
       }
-      localStorage.setItem("farock-session", JSON.stringify({ username, loggedInAt: new Date().toISOString() }));
       const submit = form.querySelector('button[type="submit"]');
+      const originalContent = submit.innerHTML;
       submit.disabled = true;
       submit.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> 正在登录';
-      setTimeout(() => go(routes.dashboard), 450);
+      try {
+        const payload = await window.FarockAPI.post("/auth/login", { email, password: password.value });
+        window.FarockAPI.setToken(payload.data.token);
+        localStorage.setItem("farock-session", JSON.stringify(payload.data.user));
+        go(routes.dashboard);
+      } catch (error) {
+        toast(error?.message || "登录失败，请稍后重试。", "error");
+        submit.disabled = false;
+        submit.innerHTML = originalContent;
+      }
     });
   }
 

@@ -201,8 +201,8 @@
 <div>
 <h3 class="font-label-md text-label-md text-on-surface-variant mb-2">New customers</h3>
 <div class="flex items-baseline gap-2">
-<span class="font-headline-lg text-headline-lg text-on-surface">124</span>
-<span class="text-status-sage flex items-center text-sm font-medium"><span class="material-symbols-outlined text-[16px]">arrow_upward</span> 12%</span>
+<span class="font-headline-lg text-headline-lg text-on-surface" data-dashboard-new-customers data-dashboard-value>124</span>
+<span class="text-status-sage flex items-center text-sm font-medium" data-dashboard-new-change data-dashboard-value><span class="material-symbols-outlined text-[16px]">arrow_upward</span> 12%</span>
 </div>
 </div>
 <!-- Placeholder for Chart -->
@@ -220,10 +220,10 @@
 <div class="relative w-32 h-32 mt-4 flex items-center justify-center">
 <svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
 <path class="text-surface-container-high" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="100, 100" stroke-width="2"></path>
-<path class="text-primary" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="68, 100" stroke-linecap="round" stroke-width="2"></path>
+<path class="text-primary" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" data-dashboard-success-gauge fill="none" stroke="currentColor" stroke-dasharray="68, 100" stroke-linecap="round" stroke-width="2"></path>
 </svg>
 <div class="absolute inset-0 flex flex-col items-center justify-center">
-<span class="font-headline-lg text-headline-lg text-on-surface leading-none">68%</span>
+<span class="font-headline-lg text-headline-lg text-on-surface leading-none" data-dashboard-success-rate data-dashboard-value>68%</span>
 </div>
 </div>
 <p class="font-body-md text-body-md text-on-surface-variant mt-2">Successful deals</p>
@@ -232,7 +232,7 @@
 <div class="bg-surface-white rounded-3xl p-card-padding shadow-[0_4px_20px_rgba(26,26,26,0.04)] border border-masked-gray flex flex-col justify-between min-h-[240px]">
 <div>
 <h3 class="font-label-md text-label-md text-on-surface-variant mb-2">Total Revenue</h3>
-<div class="font-data-mono text-[32px] font-semibold text-on-surface mt-4">$15,890</div>
+<div class="font-data-mono text-[32px] font-semibold text-on-surface mt-4" data-dashboard-revenue data-dashboard-value>$15,890</div>
 </div>
 <div class="flex items-center justify-between text-on-surface-variant group cursor-pointer mt-auto">
 <span class="font-body-md text-body-md">View details</span>
@@ -242,7 +242,7 @@
 </section>
 <!-- Pipeline Kanban Board -->
 <section class="mb-section-gap overflow-x-auto pb-4">
-<div class="flex gap-6 min-w-max">
+<div class="flex gap-6 min-w-max" data-dashboard-ranking>
 <!-- Column 1: Contacted -->
 <div class="w-[320px] flex-shrink-0">
 <div class="flex items-center justify-between mb-4">
@@ -320,4 +320,6 @@
 </main>
 <script src="assets/layout.js" defer></script>
 <script src="assets/app.js" defer></script>
+<script src="assets/api.js" defer></script>
+<script src="assets/api-pages.js" defer></script>
 </body></html>

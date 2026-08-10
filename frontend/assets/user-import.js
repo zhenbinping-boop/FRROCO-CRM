@@ -2,13 +2,22 @@
   "use strict";
 
   const STORAGE_KEY = "faloco-users";
-  const SHEETJS_URL = "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
+  const SHEETJS_URLS = [
+    "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js",
+    "https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js",
+  ];
   const aliases = {
-    name: ["姓名", "name"],
-    phone: ["手机号", "phone"],
-    role: ["角色", "role"],
-    organization: ["所属机构", "organization", "branch"],
-    status: ["状态", "status"],
+    name: ["姓名", "员工姓名", "name"],
+    phone: ["手机号", "手机号码", "联系电话", "电话", "phone", "mobile"],
+    role: ["角色", "职位", "role"],
+    organization: ["所属机构", "所属组织", "机构", "组织", "organization", "branch"],
+    status: ["状态", "在职状态", "status"],
+  };
+  const fieldLabels = {
+    name: "姓名/name",
+    phone: "手机号/phone",
+    role: "角色/role",
+    organization: "所属机构/organization/branch",
   };
 
   const elements = {
@@ -36,32 +45,51 @@
     if (window.XLSX) return Promise.resolve(window.XLSX);
     if (sheetJsPromise) return sheetJsPromise;
 
-    sheetJsPromise = new Promise((resolve, reject) => {
-      const script = document.createElement("script");
-      script.src = SHEETJS_URL;
-      script.async = true;
-      script.onload = () => window.XLSX ? resolve(window.XLSX) : reject(new Error("表格解析组件加载失败"));
-      script.onerror = () => reject(new Error("表格解析组件加载失败，请检查网络后重试"));
-      document.head.appendChild(script);
+    sheetJsPromise = SHEETJS_URLS.reduce(
+      (promise, url) => promise.catch(() => new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = url;
+        script.async = true;
+        script.onload = () => window.XLSX ? resolve(window.XLSX) : reject(new Error("表格解析组件加载失败"));
+        script.onerror = () => reject(new Error("表格解析组件加载失败"));
+        document.head.appendChild(script);
+      })),
+      Promise.reject(new Error("表格解析组件加载失败"))
+    ).catch((error) => {
+      sheetJsPromise = undefined;
+      throw new Error(`${error.message}，请检查网络后重试`);
     });
     return sheetJsPromise;
   }
 
   function normalizeHeader(value) {
-    return String(value ?? "").trim().toLowerCase();
+    return String(value ?? "").trim().toLowerCase().replace(/[\s_-]/g, "");
   }
 
   function valueFor(row, field) {
-    const sourceKey = Object.keys(row).find((key) => aliases[field].includes(normalizeHeader(key)));
+    const accepted = aliases[field].map(normalizeHeader);
+    const sourceKey = Object.keys(row).find((key) => accepted.includes(normalizeHeader(key)));
     return sourceKey ? String(row[sourceKey] ?? "").trim() : "";
   }
 
+  function readStoredUsers() {
+    try {
+      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+      return Array.isArray(stored) ? stored : [];
+    } catch {
+      return [];
+    }
+  }
+
   function validateRows(sourceRows) {
+    const existingPhones = new Set(readStoredUsers().map((user) => String(user.phone || "").replace(/\D/g, "")));
+    const importedPhones = new Set();
+
     return sourceRows
       .filter((row) => Object.values(row).some((value) => String(value ?? "").trim()))
       .map((row, index) => {
         const user = {
-          id: `import-${Date.now()}-${index}`,
+          id: globalThis.crypto?.randomUUID?.() || `import-${Date.now()}-${index}`,
           name: valueFor(row, "name"),
           phone: valueFor(row, "phone"),
           role: valueFor(row, "role"),
@@ -70,11 +98,15 @@
           importedAt: new Date().toISOString(),
         };
         const reasons = [];
+        const phoneDigits = user.phone.replace(/\D/g, "");
         if (!user.name) reasons.push("缺少姓名");
         if (!user.phone) reasons.push("缺少手机号");
-        else if (!/^[+\d][\d\s()-]{5,19}$/.test(user.phone)) reasons.push("手机号格式不正确");
+        else if (phoneDigits.length < 6 || phoneDigits.length > 20) reasons.push("手机号格式不正确");
+        else if (existingPhones.has(phoneDigits)) reasons.push("手机号已存在");
+        else if (importedPhones.has(phoneDigits)) reasons.push("文件内手机号重复");
         if (!user.role) reasons.push("缺少角色");
         if (!user.organization) reasons.push("缺少所属机构");
+        if (phoneDigits) importedPhones.add(phoneDigits);
         return { rowNumber: index + 2, user, reasons, valid: reasons.length === 0 };
       });
   }
@@ -94,7 +126,7 @@
     elements.confirm.disabled = validCount === 0;
     elements.preview.replaceChildren();
 
-    parsedRows.forEach((row) => {
+    parsedRows.slice(0, 500).forEach((row) => {
       const tr = document.createElement("tr");
       if (!row.valid) tr.className = "bg-error-container/30";
       tr.append(
@@ -128,6 +160,7 @@
     elements.modal.classList.add("hidden");
     elements.modal.classList.remove("flex");
     elements.input.value = "";
+    elements.confirm.disabled = true;
     parsedRows = [];
     elements.button.focus();
   }
@@ -153,24 +186,9 @@
     employeeWrap.append(avatar, identity);
     employee.appendChild(employeeWrap);
 
-    const role = cell("", "px-6 py-4");
-    const roleBadge = document.createElement("span");
-    roleBadge.className = "inline-flex items-center px-2.5 py-1 rounded-md bg-surface-container-high text-on-surface font-label-md text-label-md border border-outline-variant/30";
-    roleBadge.textContent = user.role;
-    role.appendChild(roleBadge);
-
-    const status = cell("", "px-6 py-4");
-    const statusWrap = document.createElement("div");
-    statusWrap.className = "flex items-center gap-2";
-    const dot = document.createElement("div");
-    const inactive = /停用|离职|禁用|suspended|inactive/i.test(user.status);
-    dot.className = `w-2 h-2 rounded-full ${inactive ? "bg-error-red" : "bg-status-sage"}`;
-    const statusText = document.createElement("span");
-    statusText.className = "font-body-md text-body-md text-on-surface";
-    statusText.textContent = user.status;
-    statusWrap.append(dot, statusText);
-    status.appendChild(statusWrap);
-
+    const role = cell(user.role, "px-6 py-4");
+    const organization = cell(user.organization, "px-6 py-4 font-body-md text-body-md text-on-surface");
+    const status = cell(user.status, "px-6 py-4");
     const actions = cell("", "px-6 py-4 text-right");
     const action = document.createElement("button");
     action.className = "text-on-surface-variant hover:text-primary p-1 opacity-0 group-hover:opacity-100 transition-opacity";
@@ -182,37 +200,52 @@
     action.appendChild(icon);
     actions.appendChild(action);
 
-    tr.append(employee, role, cell(user.organization, "px-6 py-4 font-body-md text-body-md text-on-surface"), status, actions);
+    tr.append(employee, role, organization, status, actions);
     return tr;
   }
 
-  try {
-    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-    if (Array.isArray(stored)) elements.tableBody.prepend(...stored.map(makeUserRow));
-  } catch {
-    localStorage.removeItem(STORAGE_KEY);
+  function parseCsv(text) {
+    const rows = [];
+    let row = [];
+    let value = "";
+    let quoted = false;
+    for (let index = 0; index < text.length; index += 1) {
+      const character = text[index];
+      const next = text[index + 1];
+      if (character === '"' && quoted && next === '"') { value += '"'; index += 1; }
+      else if (character === '"') quoted = !quoted;
+      else if (character === "," && !quoted) { row.push(value); value = ""; }
+      else if ((character === "\n" || character === "\r") && !quoted) {
+        if (character === "\r" && next === "\n") index += 1;
+        row.push(value); rows.push(row); row = []; value = "";
+      } else value += character;
+    }
+    if (value || row.length) { row.push(value); rows.push(row); }
+    const [headers, ...data] = rows.filter((items) => items.some((item) => item.trim()));
+    return data.map((items) => Object.fromEntries(headers.map((header, index) => [header, items[index] || ""])));
   }
 
   async function handleFile(file) {
     const extension = file.name.split(".").pop().toLowerCase();
     if (!["xlsx", "xls", "csv"].includes(extension)) throw new Error("仅支持 .xlsx、.xls 或 .csv 文件");
-    const XLSX = await loadSheetJs();
+
     const buffer = await file.arrayBuffer();
-    const workbook = extension === "csv"
-      ? XLSX.read(new TextDecoder("utf-8").decode(buffer), { type: "string" })
-      : XLSX.read(buffer, { type: "array" });
-    if (!workbook.SheetNames.length) throw new Error("文件中没有可读取的工作表");
-    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: "", raw: false });
-    if (!rows.length) throw new Error("首个工作表没有可导入的数据");
+    let rows;
+    if (extension === "csv") {
+      rows = parseCsv(new TextDecoder("utf-8").decode(buffer).replace(/^\uFEFF/, ""));
+    } else {
+      const XLSX = await loadSheetJs();
+      const workbook = XLSX.read(buffer, { type: "array" });
+      if (!workbook.SheetNames.length) throw new Error("文件中没有可读取的工作表");
+      rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: "", raw: false });
+    }
+    if (!rows.length) throw new Error("文件中没有可导入的数据");
 
     const headers = Object.keys(rows[0]).map(normalizeHeader);
     const missing = ["name", "phone", "role", "organization"].filter(
-      (field) => !aliases[field].some((alias) => headers.includes(alias))
+      (field) => !aliases[field].some((alias) => headers.includes(normalizeHeader(alias)))
     );
-    if (missing.length) {
-      const labels = { name: "姓名/name", phone: "手机号/phone", role: "角色/role", organization: "所属机构/organization/branch" };
-      throw new Error(`缺少必要列：${missing.map((field) => labels[field]).join("、")}`);
-    }
+    if (missing.length) throw new Error(`缺少必要列：${missing.map((field) => fieldLabels[field]).join("、")}`);
 
     parsedRows = validateRows(rows);
     openModal(file.name);
@@ -220,8 +253,9 @@
   }
 
   elements.button.addEventListener("click", () => elements.input.click());
+  elements.button.dataset.importReady = "true";
   elements.input.addEventListener("change", async () => {
-    const file = elements.input.files[0];
+    const file = elements.input.files?.[0];
     if (!file) return;
     elements.button.disabled = true;
     try {
@@ -240,12 +274,11 @@
     const users = parsedRows.filter((row) => row.valid).map((row) => row.user);
     if (!users.length) return;
     try {
-      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-      const existing = Array.isArray(stored) ? stored : [];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([...users, ...existing]));
+      const stored = readStoredUsers();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([...users, ...stored]));
       elements.tableBody.prepend(...users.map(makeUserRow));
       closeModal();
-    } catch (error) {
+    } catch {
       showError("导入结果无法保存到本地，请检查浏览器存储空间或隐私设置");
     }
   });
@@ -257,4 +290,6 @@
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && !elements.modal.classList.contains("hidden")) closeModal();
   });
+
+  readStoredUsers().forEach((user) => elements.tableBody.prepend(makeUserRow(user)));
 })();
