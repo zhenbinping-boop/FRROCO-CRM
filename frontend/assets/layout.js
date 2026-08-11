@@ -20,7 +20,7 @@
     "orders-payments.html": { title: "订单与回款", active: "orders", actions: ["payment"] },
     "payment-entry.html": { title: "登记收款", active: "orders", actions: ["backToOrders"] },
     "organizations.html": { title: "机构管理", active: "settings", actions: ["addBranch"] },
-    "users-permissions.html": { title: "人员与权限", active: "settings", actions: ["userImport", "inviteUser"] },
+    "users-permissions.html": { title: "人员与权限", active: "settings", actions: ["userImport", "changePassword", "inviteUser"] },
     "master-data.html": { title: "基础数据配置", active: "settings", actions: ["export"] }
   };
 
@@ -122,7 +122,8 @@
     backToOrders: '<a class="farock-button farock-button--secondary" href="orders-payments.html"><span class="material-symbols-outlined">arrow_back</span><span>返回订单</span></a>',
     export: '<button class="farock-button farock-button--secondary" type="button"><span class="material-symbols-outlined">download</span><span>导出</span></button>',
     addBranch: '<button class="farock-button farock-button--primary" type="button">新增机构</button>',
-    inviteUser: '<button class="farock-button farock-button--primary" type="button">邀请用户</button>',
+    inviteUser: '<button class="farock-button farock-button--primary" id="user-create-button" type="button"><span class="material-symbols-outlined">person_add</span><span>添加成员</span></button>',
+    changePassword: '<button class="farock-button farock-button--secondary" id="password-change-button" type="button"><span class="material-symbols-outlined">password</span><span>修改我的密码</span></button>',
     customerImport: '<button class="farock-button farock-button--secondary" id="customer-import-button" type="button"><span class="material-symbols-outlined">upload_file</span><span>表格导入</span></button><input id="customer-import-file" class="farock-visually-hidden" type="file" accept=".xlsx,.xls,.csv"/>',
     regionalExport: '<button class="farock-button farock-button--secondary" id="customer-regional-export" type="button"><span class="material-symbols-outlined">download</span><span>导出地区名单</span></button>',
     userImport: '<button class="farock-button farock-button--secondary" id="user-import-button" type="button"><span class="material-symbols-outlined">upload_file</span><span>表格导入</span></button><input id="user-import-file" class="farock-visually-hidden" type="file" accept=".xlsx,.xls,.csv"/>'

@@ -5,12 +5,19 @@ import { login } from "../controllers/auth-controller.js";
 import { changeOwnership, createCustomer, createStore, deleteCustomer, exportRegionalCustomers, getCustomer, importCustomers, listCustomers, listDealerGroups, listStores, updateCustomer } from "../controllers/customer-controller.js";
 import { createOrder, createPayment, getOrder, listOrders } from "../controllers/order-controller.js";
 import { createTask, listTasks, updateTask } from "../controllers/task-controller.js";
+import { changeMyPassword, createUser, deleteUser, listOrganizations, listUsers, updateUser } from "../controllers/user-controller.js";
 import { authenticate } from "../middleware/auth.js";
 
 export const apiRouter = Router();
 
 apiRouter.post("/auth/login", login);
 apiRouter.use(authenticate);
+apiRouter.patch("/auth/me/password", changeMyPassword);
+apiRouter.get("/users", listUsers);
+apiRouter.post("/users", createUser);
+apiRouter.patch("/users/:id", updateUser);
+apiRouter.delete("/users/:id", deleteUser);
+apiRouter.get("/organizations", listOrganizations);
 apiRouter.get("/customers", listCustomers);
 apiRouter.post("/customers", createCustomer);
 apiRouter.post("/customers/import", importCustomers);

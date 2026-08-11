@@ -1,631 +1,121 @@
-<!DOCTYPE html>
-
-<html lang="zh-CN"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Faloco - User Management</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            "colors": {
-                    "outline": "#747878",
-                    "tertiary-fixed-dim": "#c8c8af",
-                    "tertiary": "#000000",
-                    "on-primary": "#ffffff",
-                    "status-earth": "#B7B7A4",
-                    "primary-fixed": "#e5e2e1",
-                    "surface-white": "#FFFFFF",
-                    "on-secondary-fixed-variant": "#444937",
-                    "surface-bright": "#faf9f4",
-                    "surface-variant": "#e3e3de",
-                    "secondary-container": "#e0e5cc",
-                    "on-tertiary-container": "#85856f",
-                    "tertiary-container": "#1c1d0c",
-                    "surface": "#faf9f4",
-                    "background": "#faf9f4",
-                    "error-container": "#ffdad6",
-                    "inverse-on-surface": "#f2f1ec",
-                    "warning-amber": "#F2CC8F",
-                    "primary": "#000000",
-                    "secondary-fixed-dim": "#c4c9b1",
-                    "secondary-fixed": "#e0e5cc",
-                    "tertiary-fixed": "#e5e4ca",
-                    "on-surface": "#1b1c19",
-                    "on-tertiary": "#ffffff",
-                    "inverse-surface": "#30312e",
-                    "secondary": "#5c614d",
-                    "error": "#ba1a1a",
-                    "on-secondary-fixed": "#191d0e",
-                    "surface-tint": "#5f5e5e",
-                    "outline-variant": "#c4c7c7",
-                    "on-secondary": "#ffffff",
-                    "surface-container-high": "#e9e8e3",
-                    "on-secondary-container": "#626753",
-                    "primary-container": "#1c1b1b",
-                    "on-primary-container": "#858383",
-                    "on-primary-fixed": "#1c1b1b",
-                    "on-primary-fixed-variant": "#474746",
-                    "on-error-container": "#93000a",
-                    "on-error": "#ffffff",
-                    "surface-dim": "#dbdad5",
-                    "primary-fixed-dim": "#c8c6c5",
-                    "inverse-primary": "#c8c6c5",
-                    "error-red": "#E07A5F",
-                    "on-tertiary-fixed": "#1c1d0c",
-                    "masked-gray": "#E5E5E5",
-                    "surface-container-low": "#f5f4ef",
-                    "on-surface-variant": "#444748",
-                    "surface-container-highest": "#e3e3de",
-                    "status-sage": "#84A59D",
-                    "surface-container-lowest": "#ffffff",
-                    "surface-container": "#efeee9",
-                    "on-background": "#1b1c19",
-                    "on-tertiary-fixed-variant": "#474835"
-            },
-            "borderRadius": {
-                    "DEFAULT": "0.25rem",
-                    "lg": "0.5rem",
-                    "xl": "0.75rem",
-                    "full": "9999px"
-            },
-            "spacing": {
-                    "base": "8px",
-                    "margin-mobile": "16px",
-                    "gutter-desktop": "24px",
-                    "margin-desktop": "40px",
-                    "card-padding": "24px",
-                    "section-gap": "48px"
-            },
-            "fontFamily": {
-                    "body-lg": [
-                            "Inter"
-                    ],
-                    "label-md": [
-                            "Inter"
-                    ],
-                    "headline-md": [
-                            "Inter"
-                    ],
-                    "data-mono": [
-                            "jetbrainsMono"
-                    ],
-                    "headline-lg": [
-                            "Inter"
-                    ],
-                    "headline-lg-mobile": [
-                            "Inter"
-                    ],
-                    "body-md": [
-                            "Inter"
-                    ]
-            },
-            "fontSize": {
-                    "body-lg": [
-                            "16px",
-                            {
-                                    "lineHeight": "24px",
-                                    "fontWeight": "400"
-                            }
-                    ],
-                    "label-md": [
-                            "12px",
-                            {
-                                    "lineHeight": "16px",
-                                    "letterSpacing": "0.05em",
-                                    "fontWeight": "600"
-                            }
-                    ],
-                    "headline-md": [
-                            "20px",
-                            {
-                                    "lineHeight": "28px",
-                                    "fontWeight": "600"
-                            }
-                    ],
-                    "data-mono": [
-                            "14px",
-                            {
-                                    "lineHeight": "20px",
-                                    "fontWeight": "500"
-                            }
-                    ],
-                    "headline-lg": [
-                            "32px",
-                            {
-                                    "lineHeight": "40px",
-                                    "letterSpacing": "-0.02em",
-                                    "fontWeight": "700"
-                            }
-                    ],
-                    "headline-lg-mobile": [
-                            "24px",
-                            {
-                                    "lineHeight": "32px",
-                                    "fontWeight": "700"
-                            }
-                    ],
-                    "body-md": [
-                            "14px",
-                            {
-                                    "lineHeight": "20px",
-                                    "fontWeight": "400"
-                            }
-                    ]
-            }
-    },
-        },
-      }
-    </script>
-<style>
-        .material-symbols-outlined {
-          font-variation-settings:
-          'FILL' 0,
-          'wght' 400,
-          'GRAD' 0,
-          'opsz' 24
-        }
-        .icon-fill {
-            font-variation-settings: 'FILL' 1;
-        }
-        
-        /* Custom scrollbar for tables */
-        .table-container::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        .table-container::-webkit-scrollbar-track {
-            background: #faf9f4; 
-        }
-        .table-container::-webkit-scrollbar-thumb {
-            background: #c4c7c7; 
-            border-radius: 4px;
-        }
-        .table-container::-webkit-scrollbar-thumb:hover {
-            background: #747878; 
-        }
-    </style>
-<link href="assets/app.css" rel="stylesheet"/>
-<link href="assets/global.css" rel="stylesheet"/>
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>人员与权限 - 法洛可 CRM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:wght@400&display=swap" rel="stylesheet">
+  <link href="assets/global.css" rel="stylesheet">
+  <style>
+    dialog::backdrop { background: rgba(20, 20, 18, .48); }
+    dialog[open] { animation: user-dialog-in 150ms ease-out; }
+    @keyframes user-dialog-in { from { opacity: 0; transform: translateY(8px); } }
+    .user-field { display: grid; gap: 6px; }
+    .user-field > span { font-size: 13px; font-weight: 600; color: #444748; }
+    .user-input { width: 100%; min-height: 44px; border: 1px solid #c4c7c7; border-radius: 6px; background: #fff; padding: 9px 12px; font-size: 14px; }
+    .user-input:focus { border-color: #1b1c19; outline: 2px solid rgba(27, 28, 25, .12); outline-offset: 0; }
+    .user-dialog { width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 32px); border: 0; border-radius: 8px; padding: 0; box-shadow: 0 18px 48px rgba(0,0,0,.2); }
+    .user-dialog__body { max-height: calc(100vh - 180px); overflow: auto; }
+    @media (max-width: 767px) { .farock-content-actions { justify-content: flex-start; } }
+  </style>
 </head>
-<body class="bg-background text-on-background font-body-md min-h-screen flex antialiased">
-<!-- SideNavBar -->
-<nav class="hidden md:flex flex-col py-margin-desktop px-4 space-y-4 fixed left-0 top-0 h-full w-[280px] bg-surface dark:bg-surface-dim border-r border-outline-variant dark:border-outline z-40">
-<div class="flex items-center px-4 mb-8">
-<div class="h-10 w-10 bg-primary rounded-lg flex items-center justify-center mr-3 text-on-primary font-bold">F</div>
-<div>
-<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-on-primary-fixed">Faloco</h1>
-<p class="font-label-md text-label-md text-on-surface-variant">Premium Management</p>
-</div>
-</div>
-<button class="w-full bg-primary text-on-primary rounded-lg py-3 px-4 font-label-md text-label-md flex items-center justify-center gap-2 mb-6 hover:bg-surface-tint transition-colors">
-<span class="material-symbols-outlined text-[18px]">add</span>
-            New Project
-        </button>
-<div class="flex-1 space-y-1 overflow-y-auto">
-<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-on-primary-fixed hover:bg-surface-container-low transition-colors duration-200" href="#">
-<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
-<span class="font-body-md text-body-md font-medium">Dashboard</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-on-primary-fixed hover:bg-surface-container-low transition-colors duration-200" href="#">
-<span class="material-symbols-outlined" data-icon="group">group</span>
-<span class="font-body-md text-body-md font-medium">Customers</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-on-primary-fixed hover:bg-surface-container-low transition-colors duration-200" href="#">
-<span class="material-symbols-outlined" data-icon="assignment_turned_in">assignment_turned_in</span>
-<span class="font-body-md text-body-md font-medium">Tasks</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-on-primary-fixed hover:bg-surface-container-low transition-colors duration-200" href="#">
-<span class="material-symbols-outlined" data-icon="trending_up">trending_up</span>
-<span class="font-body-md text-body-md font-medium">Activity</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-on-primary-fixed hover:bg-surface-container-low transition-colors duration-200" href="#">
-<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
-<span class="font-body-md text-body-md font-medium">Orders</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-primary dark:text-on-primary-fixed bg-surface-container-high dark:bg-surface-container font-semibold border-l-4 border-primary transition-all opacity-90" href="#">
-<span class="material-symbols-outlined icon-fill" data-icon="settings">settings</span>
-<span class="font-body-md text-body-md">Settings</span>
-</a>
-</div>
-<div class="mt-auto pt-4 border-t border-outline-variant/30 space-y-1">
-<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-on-primary-fixed hover:bg-surface-container-low transition-colors duration-200" href="#">
-<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
-<span class="font-body-md text-body-md font-medium">Profile</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-on-primary-fixed hover:bg-surface-container-low transition-colors duration-200" href="#">
-<span class="material-symbols-outlined" data-icon="logout">logout</span>
-<span class="font-body-md text-body-md font-medium">Logout</span>
-</a>
-</div>
-</nav>
-<!-- Main Content Wrapper -->
-<div class="flex-1 md:ml-[280px] flex flex-col min-h-screen">
-<!-- TopAppBar -->
-<header class="sticky top-0 z-30 w-full bg-surface-bright/80 dark:bg-surface-dim/80 backdrop-blur-md border-b border-outline-variant/30 shadow-sm flex items-center justify-between px-margin-desktop h-20">
-<div class="flex items-center gap-8">
-<h2 class="font-headline-md text-headline-md font-bold text-primary dark:text-on-primary-fixed hidden lg:block">Faloco CRM</h2>
-<div class="flex space-x-6">
-<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors py-2" href="#">Main Office</a>
-<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors py-2" href="#">East Branch</a>
-</div>
-</div>
-<div class="flex items-center gap-4">
-<div class="relative hidden sm:block">
-<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
-<input class="pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-full text-body-md font-body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary w-64 transition-all" placeholder="Search..." type="text"/>
-</div>
-<div class="h-6 w-px bg-outline-variant/50 hidden md:block"></div>
-<button class="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-surface-container-low">
-<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
-</button>
-<button class="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-surface-container-low">
-<span class="material-symbols-outlined" data-icon="apps">apps</span>
-</button>
-<div class="h-8 w-8 rounded-full bg-surface-variant overflow-hidden border border-outline-variant ml-2">
-<img alt="User avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a corporate executive, modern soft lighting, minimalist office background, high resolution, soft focus" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQPDligMPoYKisfX9GdtFSnJpE7eH4pjmhkSVg-lH-YFHQq3NTUcUTArK1l4oiKWVC_m10St3Z9jIwPKLOHG8_-hSE_3q5sdGOzW7yUw0ZBUME0VXO3U1NjUr5GZBTAxZIvAKkKGpw8DsIeL5_kZB79yHBy1mRYGWTHoqhkjOpWpMndomRMWR9_8pona5dbkxKMA6Hsrrdn1K4MKGZDyfapRIwb17Vh3Eo_w4UTBeFlh2JMleA7zeO"/>
-</div>
-</div>
-</header>
-<!-- Page Content -->
-<main class="flex-1 p-margin-mobile md:p-gutter-desktop lg:p-margin-desktop bg-background max-w-7xl w-full mx-auto">
-<!-- Page Header -->
-<div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-section-gap gap-4">
-<div>
-<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary mb-2">User &amp; Role Management</h1>
-<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">Configure system access, define roles, and manage permissions across branches.</p>
-</div>
-<div class="flex gap-3">
-<button class="px-4 py-2 bg-transparent border-[1.5px] border-primary text-primary font-label-md text-label-md rounded-lg hover:bg-surface-container-low transition-colors">
-                        Export List
-                    </button>
-<button class="px-4 py-2 bg-transparent border-[1.5px] border-primary text-primary font-label-md text-label-md rounded-lg hover:bg-surface-container-low transition-colors flex items-center gap-2" id="user-import-button" type="button">
-<span class="material-symbols-outlined text-[18px]">upload_file</span>
-                        表格导入
-                    </button>
-<input accept=".xlsx,.xls,.csv" class="hidden" id="user-import-file" type="file"/>
-<button class="px-4 py-2 bg-primary text-on-primary font-label-md text-label-md rounded-lg flex items-center gap-2 hover:bg-surface-tint transition-colors shadow-sm">
-<span class="material-symbols-outlined text-[18px]">person_add</span>
-                        邀请用户
-                    </button>
-</div>
-</div>
-<!-- Main Layout Grid (Bento/Asymmetric style) -->
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop">
-<!-- Left Column: User List (Spans 8 cols) -->
-<div class="lg:col-span-8 flex flex-col gap-gutter-desktop">
-<!-- Search & Filter Bar -->
-<div class="bg-surface-white rounded-xl border border-outline-variant/30 shadow-[0px_4px_20px_rgba(26,26,26,0.04)] p-4 flex flex-col sm:flex-row gap-4 items-center justify-between">
-<div class="relative w-full sm:w-72">
-<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
-<input class="w-full pl-10 pr-4 py-2 bg-surface bg-opacity-50 border border-outline-variant/50 rounded-lg text-body-md font-body-md focus:outline-none focus:bg-surface-white focus:border-primary transition-all" placeholder="Search employees..." type="text"/>
-</div>
-<div class="flex gap-2 w-full sm:w-auto">
-<select class="flex-1 sm:w-auto px-3 py-2 bg-surface-white border border-outline-variant/50 rounded-lg text-body-md font-body-md text-on-surface focus:border-primary focus:ring-0">
-<option>All Roles</option>
-<option>Admin</option>
-<option>Sales</option>
-<option>Designer</option>
-</select>
-<select class="flex-1 sm:w-auto px-3 py-2 bg-surface-white border border-outline-variant/50 rounded-lg text-body-md font-body-md text-on-surface focus:border-primary focus:ring-0">
-<option>All Branches</option>
-<option>Main Office</option>
-<option>East Branch</option>
-</select>
-</div>
-</div>
-<!-- User Table Card -->
-<div class="bg-surface-white rounded-xl border border-outline-variant/30 shadow-[0px_4px_20px_rgba(26,26,26,0.04)] overflow-hidden flex flex-col h-[600px]">
-<div class="p-card-padding border-b border-outline-variant/30 flex justify-between items-center bg-surface-white/50">
-<h3 class="font-headline-md text-headline-md text-primary">Team Members</h3>
-<span class="font-label-md text-label-md text-on-surface-variant bg-surface-container-low px-3 py-1 rounded-full">24 Active</span>
-</div>
-<div class="flex-1 overflow-auto table-container">
-<table class="w-full text-left border-collapse">
-<thead class="sticky top-0 bg-surface-container-lowest/95 backdrop-blur-sm z-10 border-b border-outline-variant/30 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
-<tr>
-<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider whitespace-nowrap">Employee</th>
-<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider whitespace-nowrap">Role</th>
-<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider whitespace-nowrap">Branch</th>
-<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider whitespace-nowrap">Status</th>
-<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider whitespace-nowrap text-right">Actions</th>
-</tr>
-</thead>
-<tbody class="divide-y divide-outline-variant/20" id="user-table-body">
-<!-- Row 1 -->
-<tr class="hover:bg-surface-container-low/50 transition-colors group cursor-pointer">
-<td class="px-6 py-4">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-full bg-surface-dim overflow-hidden flex-shrink-0">
-<img alt="Sarah Jenkins" class="w-full h-full object-cover" data-alt="Professional portrait of a middle-aged woman in a grey blazer, bright office setting, soft daylight, confident smile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQqlTHpb-JXHcOOYP6Ghf5V6MVXs4aGz3H1OYWsBVHumCWKkm12x27Qx1hXPF9rB63FMzxRe7gIFQsTgIjFz8zEd_qLkEF9M1tVsU5mE24FtJ5np4tkx0aIagEUN-Sjcov5CX0VfoUmT2aLsIwHu2y4BejG5xX5PgGPUJpQH6lp_g6UXPaYtS2nfOE_fbKSqITnSYIsYsGYxxAC9lgyQ1jtTFUUhn7qBf5vsCBEYA2PKThhgUnZr7B"/>
-</div>
-<div>
-<p class="font-body-md text-body-md font-semibold text-primary">Sarah Jenkins</p>
-<p class="font-label-md text-label-md text-on-surface-variant font-normal">s.jenkins@faloco.com</p>
-</div>
-</div>
-</td>
-<td class="px-6 py-4">
-<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-secondary-container/50 text-on-secondary-container font-label-md text-label-md">
-<span class="material-symbols-outlined text-[14px]">shield_person</span>
-                                                Admin
-                                            </span>
-</td>
-<td class="px-6 py-4 font-body-md text-body-md text-on-surface">Main Office</td>
-<td class="px-6 py-4">
-<div class="flex items-center gap-2">
-<div class="w-2 h-2 rounded-full bg-status-sage"></div>
-<span class="font-body-md text-body-md text-on-surface">Active</span>
-</div>
-</td>
-<td class="px-6 py-4 text-right">
-<button class="text-on-surface-variant hover:text-primary p-1 opacity-0 group-hover:opacity-100 transition-opacity">
-<span class="material-symbols-outlined text-[20px]">more_vert</span>
-</button>
-</td>
-</tr>
-<!-- Row 2 -->
-<tr class="hover:bg-surface-container-low/50 transition-colors group cursor-pointer bg-surface-container-lowest shadow-[inset_4px_0_0_0_#000000]">
-<td class="px-6 py-4">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-full bg-surface-dim overflow-hidden flex-shrink-0">
-<img alt="Marcus Chen" class="w-full h-full object-cover" data-alt="Headshot of a young man with glasses and short beard, wearing a casual button-down shirt, warm neutral background, studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAP4rEuqT6GI29AkI9Ww4nGcaa1Lx24nlRxWKLOXsvbrvey2jB-ydygHiZ9Y2zd7kjjZ-rItXR4PAB8EXGakBxqoffHlZIw0rKKzOTL3AY9m64m9-h5S4NzMere3u4NSEz3tZbu_yxIwcUWM6PpXKPdDd610hUKsdiAe7ezVOGW1taIcPbpO9M0ZWNtkbG31hBY2Hu4vQU7Vd-iHsplFOLrHNTfR3gmH57ZRlAZv3Gu79CgPXhPeQbR"/>
-</div>
-<div>
-<p class="font-body-md text-body-md font-semibold text-primary">Marcus Chen</p>
-<p class="font-label-md text-label-md text-on-surface-variant font-normal">m.chen@faloco.com</p>
-</div>
-</div>
-</td>
-<td class="px-6 py-4">
-<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-container-high text-on-surface font-label-md text-label-md border border-outline-variant/30">
-<span class="material-symbols-outlined text-[14px]">design_services</span>
-                                                Designer
-                                            </span>
-</td>
-<td class="px-6 py-4 font-body-md text-body-md text-on-surface">East Branch</td>
-<td class="px-6 py-4">
-<div class="flex items-center gap-2">
-<div class="w-2 h-2 rounded-full bg-status-sage"></div>
-<span class="font-body-md text-body-md text-on-surface">Active</span>
-</div>
-</td>
-<td class="px-6 py-4 text-right">
-<button class="text-on-surface-variant hover:text-primary p-1 opacity-0 group-hover:opacity-100 transition-opacity">
-<span class="material-symbols-outlined text-[20px]">more_vert</span>
-</button>
-</td>
-</tr>
-<!-- Row 3 -->
-<tr class="hover:bg-surface-container-low/50 transition-colors group cursor-pointer">
-<td class="px-6 py-4">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-full bg-surface-dim overflow-hidden flex-shrink-0 flex items-center justify-center text-on-surface-variant font-bold">
-                                                    ER
-                                                </div>
-<div>
-<p class="font-body-md text-body-md font-semibold text-primary">Elena Rodriguez</p>
-<p class="font-label-md text-label-md text-on-surface-variant font-normal">e.rodriguez@faloco.com</p>
-</div>
-</div>
-</td>
-<td class="px-6 py-4">
-<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-container-high text-on-surface font-label-md text-label-md border border-outline-variant/30">
-<span class="material-symbols-outlined text-[14px]">monetization_on</span>
-                                                Sales
-                                            </span>
-</td>
-<td class="px-6 py-4 font-body-md text-body-md text-on-surface">Main Office</td>
-<td class="px-6 py-4">
-<div class="flex items-center gap-2">
-<div class="w-2 h-2 rounded-full bg-warning-amber"></div>
-<span class="font-body-md text-body-md text-on-surface">Away</span>
-</div>
-</td>
-<td class="px-6 py-4 text-right">
-<button class="text-on-surface-variant hover:text-primary p-1 opacity-0 group-hover:opacity-100 transition-opacity">
-<span class="material-symbols-outlined text-[20px]">more_vert</span>
-</button>
-</td>
-</tr>
-<!-- Row 4 -->
-<tr class="hover:bg-surface-container-low/50 transition-colors group cursor-pointer opacity-60">
-<td class="px-6 py-4">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-full bg-surface-dim overflow-hidden flex-shrink-0">
-<img alt="David Kim" class="w-full h-full object-cover grayscale" data-alt="Portrait of an older gentleman in a dark suit, monochromatic grey background, serious expression, high contrast lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBa-jHUJ_e2h0Cw8skwrhJxtxE19r3DuvKfo6mLBQsy_clYEs1eLBktMKsM8bn0kelc8w6DlgF4PcywVgZrgIe8-1oAihn54XzpCKKMGdyMFsgy4HPlvlpuV4dcE2-I_vB06C3OaF4mhLBMjsqBEAa7wsC-fDKHQ1cxa0enJvV8_EmDwW2lzolBAmO1MGIQadMCIWkKpu6c4ZS1CdFUWEDWqOwBlXykMfqhhs5o_s_AphtE0luGJ08q"/>
-</div>
-<div>
-<p class="font-body-md text-body-md font-semibold text-on-surface-variant line-through decoration-1">David Kim</p>
-<p class="font-label-md text-label-md text-on-surface-variant font-normal">d.kim@faloco.com</p>
-</div>
-</div>
-</td>
-<td class="px-6 py-4">
-<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-container-high text-on-surface-variant font-label-md text-label-md border border-outline-variant/30">
-<span class="material-symbols-outlined text-[14px]">monetization_on</span>
-                                                Sales
-                                            </span>
-</td>
-<td class="px-6 py-4 font-body-md text-body-md text-on-surface-variant">East Branch</td>
-<td class="px-6 py-4">
-<div class="flex items-center gap-2">
-<div class="w-2 h-2 rounded-full bg-error-red"></div>
-<span class="font-body-md text-body-md text-on-surface-variant">Suspended</span>
-</div>
-</td>
-<td class="px-6 py-4 text-right">
-<button class="text-on-surface-variant hover:text-primary p-1 opacity-0 group-hover:opacity-100 transition-opacity">
-<span class="material-symbols-outlined text-[20px]">more_vert</span>
-</button>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="p-4 border-t border-outline-variant/30 bg-surface-container-lowest flex justify-between items-center">
-<span class="font-label-md text-label-md text-on-surface-variant">Showing 1-4 of 24</span>
-<div class="flex gap-1">
-<button class="p-1 rounded text-outline hover:text-primary hover:bg-surface-container-low transition-colors" disabled="">
-<span class="material-symbols-outlined">chevron_left</span>
-</button>
-<button class="p-1 rounded text-primary hover:bg-surface-container-low transition-colors">
-<span class="material-symbols-outlined">chevron_right</span>
-</button>
-</div>
-</div>
-</div>
-</div>
-<!-- Right Column: Role Configuration Panel (Spans 4 cols) -->
-<div class="lg:col-span-4">
-<div class="bg-surface-white rounded-xl border border-outline-variant/30 shadow-[0px_12px_32px_rgba(26,26,26,0.08)] sticky top-[104px] overflow-hidden">
-<!-- Panel Header -->
-<div class="p-card-padding border-b border-outline-variant/30 bg-surface-bright">
-<div class="flex items-center gap-3 mb-2">
-<span class="material-symbols-outlined text-primary text-[28px]">design_services</span>
-<h3 class="font-headline-md text-headline-md text-primary">Role Settings</h3>
-</div>
-<p class="font-body-md text-body-md text-on-surface-variant">Currently configuring permissions for the <span class="font-semibold text-primary">Designer</span> role.</p>
-</div>
-<!-- Panel Content -->
-<div class="p-card-padding space-y-6">
-<!-- Section: Data Access -->
-<div>
-<h4 class="font-label-md text-label-md text-on-surface uppercase tracking-widest mb-4">Module Access</h4>
-<div class="space-y-3">
-<label class="flex items-center justify-between p-3 rounded-lg border border-outline-variant/30 hover:border-outline-variant transition-colors cursor-pointer group">
-<div class="flex items-center gap-3">
-<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">group</span>
-<span class="font-body-md text-body-md text-on-surface">Customers</span>
-</div>
-<div class="relative inline-block w-10 h-5 align-middle select-none">
-<input checked="" class="peer sr-only" type="checkbox"/>
-<div class="w-10 h-5 bg-surface-variant rounded-full peer-checked:bg-primary transition-colors duration-200 ease-in-out"></div>
-<div class="absolute left-1 top-1 bg-white w-3 h-3 rounded-full transition-transform duration-200 ease-in-out peer-checked:translate-x-5 shadow-sm"></div>
-</div>
-</label>
-<label class="flex items-center justify-between p-3 rounded-lg border border-primary bg-surface-container-low cursor-pointer group">
-<div class="flex items-center gap-3">
-<span class="material-symbols-outlined text-primary icon-fill">assignment_turned_in</span>
-<span class="font-body-md text-body-md font-semibold text-primary">Projects &amp; Tasks</span>
-</div>
-<div class="relative inline-block w-10 h-5 align-middle select-none">
-<input checked="" class="peer sr-only" type="checkbox"/>
-<div class="w-10 h-5 bg-surface-variant rounded-full peer-checked:bg-primary transition-colors duration-200 ease-in-out"></div>
-<div class="absolute left-1 top-1 bg-white w-3 h-3 rounded-full transition-transform duration-200 ease-in-out peer-checked:translate-x-5 shadow-sm"></div>
-</div>
-</label>
-<label class="flex items-center justify-between p-3 rounded-lg border border-outline-variant/30 hover:border-outline-variant transition-colors cursor-pointer group opacity-60">
-<div class="flex items-center gap-3">
-<span class="material-symbols-outlined text-on-surface-variant">monetization_on</span>
-<span class="font-body-md text-body-md text-on-surface-variant">Financials</span>
-</div>
-<div class="relative inline-block w-10 h-5 align-middle select-none">
-<input class="peer sr-only" type="checkbox"/>
-<div class="w-10 h-5 bg-surface-variant rounded-full peer-checked:bg-primary transition-colors duration-200 ease-in-out"></div>
-<div class="absolute left-1 top-1 bg-white w-3 h-3 rounded-full transition-transform duration-200 ease-in-out peer-checked:translate-x-5 shadow-sm"></div>
-</div>
-</label>
-</div>
-</div>
-<hr class="border-outline-variant/30"/>
-<!-- Section: Granular Permissions -->
-<div>
-<h4 class="font-label-md text-label-md text-on-surface uppercase tracking-widest mb-4">Project Permissions</h4>
-<div class="bg-surface-bright rounded-lg border border-outline-variant/20 p-4 space-y-4">
-<label class="flex items-start gap-3 cursor-pointer">
-<input checked="" class="mt-1 w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 bg-surface-white" type="checkbox"/>
-<div>
-<span class="font-body-md text-body-md text-primary font-medium block">View Projects</span>
-<span class="font-label-md text-label-md text-on-surface-variant font-normal">Can see project details and files.</span>
-</div>
-</label>
-<label class="flex items-start gap-3 cursor-pointer">
-<input checked="" class="mt-1 w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 bg-surface-white" type="checkbox"/>
-<div>
-<span class="font-body-md text-body-md text-primary font-medium block">Edit Details</span>
-<span class="font-label-md text-label-md text-on-surface-variant font-normal">Can modify timelines and descriptions.</span>
-</div>
-</label>
-<label class="flex items-start gap-3 cursor-pointer">
-<input class="mt-1 w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 bg-surface-white" type="checkbox"/>
-<div>
-<span class="font-body-md text-body-md text-on-surface font-medium block">Delete Projects</span>
-<span class="font-label-md text-label-md text-on-surface-variant font-normal">Permanently remove records.</span>
-</div>
-</label>
-<label class="flex items-start gap-3 cursor-pointer">
-<input class="mt-1 w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 bg-surface-white" type="checkbox"/>
-<div>
-<span class="font-body-md text-body-md text-on-surface font-medium block">Export Data</span>
-<span class="font-label-md text-label-md text-on-surface-variant font-normal">将列表下载为表格文件。</span>
-</div>
-</label>
-</div>
-</div>
-</div>
-<!-- Panel Footer Actions -->
-<div class="p-card-padding border-t border-outline-variant/30 bg-surface-bright flex gap-3">
-<button class="flex-1 py-3 px-4 bg-transparent border-[1.5px] border-primary text-primary font-label-md text-label-md rounded-lg hover:bg-surface-container-low transition-colors">
-                                Cancel
-                            </button>
-<button class="flex-1 py-3 px-4 bg-primary text-on-primary font-label-md text-label-md rounded-lg hover:bg-surface-tint transition-colors shadow-sm">
-                                Save Changes
-                            </button>
-</div>
-</div>
-</div>
-</div>
-</main>
-</div>
-<div aria-labelledby="user-import-title" aria-modal="true" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/40 p-4" id="user-import-modal" role="dialog">
-<div class="bg-surface-white border border-outline-variant/30 rounded-xl shadow-[0px_12px_32px_rgba(26,26,26,0.16)] w-full max-w-4xl max-h-[90vh] flex flex-col">
-<div class="p-card-padding border-b border-outline-variant/30 flex items-start justify-between gap-4">
-<div>
-<h2 class="font-headline-md text-headline-md text-primary" id="user-import-title">用户导入预览</h2>
-<p class="font-body-md text-body-md text-on-surface-variant mt-1" id="user-import-file-name"></p>
-</div>
-<button aria-label="关闭导入预览" class="text-on-surface-variant hover:text-primary p-1 rounded-lg hover:bg-surface-container-low" id="user-import-close" type="button">
-<span class="material-symbols-outlined">close</span>
-</button>
-</div>
-<div class="p-card-padding overflow-y-auto">
-<div class="grid grid-cols-3 gap-3 mb-6">
-<div class="bg-surface-container-low rounded-lg p-4"><p class="font-label-md text-label-md text-on-surface-variant">总行数</p><p class="font-headline-md text-headline-md text-primary mt-1" id="user-import-total">0</p></div>
-<div class="bg-secondary-container/50 rounded-lg p-4"><p class="font-label-md text-label-md text-on-secondary-container">有效</p><p class="font-headline-md text-headline-md text-on-secondary-container mt-1" id="user-import-valid">0</p></div>
-<div class="bg-error-container rounded-lg p-4"><p class="font-label-md text-label-md text-on-error-container">无效</p><p class="font-headline-md text-headline-md text-on-error-container mt-1" id="user-import-invalid">0</p></div>
-</div>
-<p class="hidden mb-4 rounded-lg bg-error-container px-4 py-3 font-body-md text-body-md text-on-error-container" id="user-import-error" role="alert"></p>
-<div class="border border-outline-variant/30 rounded-lg overflow-auto max-h-[45vh]">
-<table class="w-full text-left border-collapse min-w-[720px]">
-<thead class="sticky top-0 bg-surface-container-lowest border-b border-outline-variant/30">
-<tr>
-<th class="px-4 py-3 font-label-md text-label-md text-on-surface-variant">行</th>
-<th class="px-4 py-3 font-label-md text-label-md text-on-surface-variant">姓名</th>
-<th class="px-4 py-3 font-label-md text-label-md text-on-surface-variant">手机号</th>
-<th class="px-4 py-3 font-label-md text-label-md text-on-surface-variant">角色</th>
-<th class="px-4 py-3 font-label-md text-label-md text-on-surface-variant">所属机构</th>
-<th class="px-4 py-3 font-label-md text-label-md text-on-surface-variant">校验结果</th>
-</tr>
-</thead>
-<tbody class="divide-y divide-outline-variant/20" id="user-import-preview"></tbody>
-</table>
-</div>
-</div>
-<div class="p-card-padding border-t border-outline-variant/30 bg-surface-bright flex justify-end gap-3">
-<button class="px-5 py-2.5 bg-transparent border-[1.5px] border-primary text-primary font-label-md text-label-md rounded-lg hover:bg-surface-container-low" id="user-import-cancel" type="button">取消</button>
-<button class="px-5 py-2.5 bg-primary text-on-primary font-label-md text-label-md rounded-lg hover:bg-surface-tint disabled:opacity-40 disabled:cursor-not-allowed" id="user-import-confirm" type="button">确认导入</button>
-</div>
-</div>
-</div>
-<script src="assets/layout.js" defer></script>
-<script src="assets/user-import.js" defer></script>
-<script src="assets/app.js" defer></script>
-</body></html>
+<body class="min-h-screen bg-[#f7f7f4] text-[#1b1c19]">
+  <main class="mx-auto w-full max-w-7xl p-4 md:p-8">
+    <div><h1 class="text-2xl font-bold">人员与权限</h1><p>管理系统成员、所属机构和账号权限。</p></div>
+
+    <section class="mb-5 grid gap-3 rounded-lg border border-[#dedfda] bg-white p-4 md:grid-cols-[minmax(240px,1fr)_180px_220px_150px]" aria-label="成员筛选">
+      <label class="user-field"><span>检索成员</span><input class="user-input" id="user-search" type="search" placeholder="姓名、邮箱或手机号"></label>
+      <label class="user-field"><span>角色</span><select class="user-input" id="user-role-filter"><option value="">全部角色</option><option value="ADMIN">管理员</option><option value="SALES_REP">导购</option><option value="DESIGNER">设计师</option><option value="DEALER_USER">代理商用户</option></select></label>
+      <label class="user-field"><span>所属机构</span><select class="user-input" id="user-organization-filter"><option value="">全部机构</option></select></label>
+      <label class="user-field"><span>账号状态</span><select class="user-input" id="user-active-filter"><option value="">全部状态</option><option value="true">已启用</option><option value="false">已停用</option></select></label>
+    </section>
+
+    <section class="overflow-hidden rounded-lg border border-[#dedfda] bg-white" aria-labelledby="member-list-title">
+      <div class="flex items-center justify-between gap-4 border-b border-[#dedfda] px-5 py-4">
+        <div><h2 class="text-lg font-semibold" id="member-list-title">系统成员</h2><p class="mt-1 text-sm text-[#666a67]" id="user-count">正在加载...</p></div>
+        <button class="farock-button farock-button--secondary" id="user-refresh" type="button" title="刷新成员列表"><span class="material-symbols-outlined">refresh</span><span>刷新</span></button>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[820px] text-left text-sm">
+          <thead class="bg-[#f7f7f4] text-xs font-semibold text-[#5f6360]"><tr><th class="px-5 py-3">成员</th><th class="px-5 py-3">角色</th><th class="px-5 py-3">所属机构</th><th class="px-5 py-3">状态</th><th class="px-5 py-3 text-right">操作</th></tr></thead>
+          <tbody class="divide-y divide-[#ecece8]" id="user-table-body"><tr><td class="px-5 py-10 text-center text-[#666a67]" colspan="5">正在加载成员...</td></tr></tbody>
+        </table>
+      </div>
+      <div class="flex items-center justify-between border-t border-[#dedfda] px-5 py-3">
+        <span class="text-sm text-[#666a67]" id="user-page-label">第 1 页</span>
+        <div class="flex gap-2"><button class="farock-button farock-button--secondary" id="user-prev" type="button">上一页</button><button class="farock-button farock-button--secondary" id="user-next" type="button">下一页</button></div>
+      </div>
+    </section>
+  </main>
+
+  <dialog class="user-dialog" id="user-create-dialog" aria-labelledby="user-create-title">
+    <form id="user-create-form">
+      <div class="flex items-center justify-between border-b border-[#dedfda] px-5 py-4"><h2 class="text-lg font-semibold" id="user-create-title">添加成员</h2><button class="farock-icon-button" data-dialog-close type="button" aria-label="关闭"><span class="material-symbols-outlined">close</span></button></div>
+      <div class="user-dialog__body grid gap-4 p-5 md:grid-cols-2">
+        <label class="user-field"><span>姓名 *</span><input class="user-input" name="name" maxlength="100" required></label>
+        <label class="user-field"><span>邮箱 *</span><input class="user-input" name="email" type="email" maxlength="160" required></label>
+        <label class="user-field"><span>手机号</span><input class="user-input" name="phone" maxlength="32"></label>
+        <label class="user-field"><span>初始密码 *</span><input class="user-input" name="password" type="password" minlength="8" maxlength="128" autocomplete="new-password" required></label>
+        <label class="user-field"><span>角色 *</span><select class="user-input" name="role" required><option value="SALES_REP">导购</option><option value="DESIGNER">设计师</option><option value="DEALER_USER">代理商用户</option><option value="ADMIN">管理员</option></select></label>
+        <label class="user-field"><span>所属机构</span><select class="user-input" name="organizationId" data-organization-select><option value="">不指定</option></select></label>
+        <label class="flex items-center gap-2 md:col-span-2"><input name="active" type="checkbox" checked><span class="text-sm font-medium">创建后立即启用账号</span></label>
+        <p class="hidden rounded-md bg-red-50 p-3 text-sm text-red-700 md:col-span-2" data-form-error role="alert"></p>
+      </div>
+      <div class="flex justify-end gap-3 border-t border-[#dedfda] px-5 py-4"><button class="farock-button farock-button--secondary" data-dialog-close type="button">取消</button><button class="farock-button farock-button--primary" type="submit">添加成员</button></div>
+    </form>
+  </dialog>
+
+  <dialog class="user-dialog" id="user-edit-dialog" aria-labelledby="user-edit-title">
+    <form id="user-edit-form">
+      <input name="id" type="hidden">
+      <div class="flex items-center justify-between border-b border-[#dedfda] px-5 py-4"><div><h2 class="text-lg font-semibold" id="user-edit-title">成员权限</h2><p class="mt-1 text-sm text-[#666a67]">调整资料、角色和账号状态</p></div><button class="farock-icon-button" data-dialog-close type="button" aria-label="关闭"><span class="material-symbols-outlined">close</span></button></div>
+      <div class="user-dialog__body grid gap-4 p-5 md:grid-cols-2">
+        <label class="user-field"><span>姓名 *</span><input class="user-input" name="name" maxlength="100" required></label>
+        <label class="user-field"><span>邮箱 *</span><input class="user-input" name="email" type="email" maxlength="160" required></label>
+        <label class="user-field"><span>手机号</span><input class="user-input" name="phone" maxlength="32"></label>
+        <label class="user-field"><span>角色 *</span><select class="user-input" name="role" required><option value="ADMIN">管理员</option><option value="SALES_REP">导购</option><option value="DESIGNER">设计师</option><option value="DEALER_USER">代理商用户</option></select></label>
+        <label class="user-field md:col-span-2"><span>所属机构</span><select class="user-input" name="organizationId" data-organization-select><option value="">不指定</option></select></label>
+        <label class="flex items-center gap-2 md:col-span-2"><input name="active" type="checkbox"><span class="text-sm font-medium">启用该账号</span></label>
+        <p class="hidden rounded-md bg-red-50 p-3 text-sm text-red-700 md:col-span-2" data-form-error role="alert"></p>
+      </div>
+      <div class="flex justify-between gap-3 border-t border-[#dedfda] px-5 py-4"><button class="farock-button farock-button--danger" id="user-delete" type="button"><span class="material-symbols-outlined">delete</span><span>删除成员</span></button><div class="flex gap-3"><button class="farock-button farock-button--secondary" data-dialog-close type="button">取消</button><button class="farock-button farock-button--primary" type="submit">保存修改</button></div></div>
+    </form>
+  </dialog>
+
+  <dialog class="user-dialog" id="password-dialog" aria-labelledby="password-title">
+    <form id="password-form">
+      <div class="flex items-center justify-between border-b border-[#dedfda] px-5 py-4"><h2 class="text-lg font-semibold" id="password-title">修改我的密码</h2><button class="farock-icon-button" data-dialog-close type="button" aria-label="关闭"><span class="material-symbols-outlined">close</span></button></div>
+      <div class="user-dialog__body grid gap-4 p-5">
+        <label class="user-field"><span>当前密码 *</span><input class="user-input" name="currentPassword" type="password" minlength="8" maxlength="128" autocomplete="current-password" required></label>
+        <label class="user-field"><span>新密码 *</span><input class="user-input" name="newPassword" type="password" minlength="8" maxlength="128" autocomplete="new-password" required></label>
+        <label class="user-field"><span>确认新密码 *</span><input class="user-input" name="confirmPassword" type="password" minlength="8" maxlength="128" autocomplete="new-password" required></label>
+        <p class="hidden rounded-md bg-red-50 p-3 text-sm text-red-700" data-form-error role="alert"></p>
+      </div>
+      <div class="flex justify-end gap-3 border-t border-[#dedfda] px-5 py-4"><button class="farock-button farock-button--secondary" data-dialog-close type="button">取消</button><button class="farock-button farock-button--primary" type="submit">确认修改</button></div>
+    </form>
+  </dialog>
+
+  <div class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/40 p-4" id="user-import-modal" role="dialog" aria-modal="true" aria-labelledby="user-import-title">
+    <div class="flex max-h-[90vh] w-full max-w-4xl flex-col rounded-lg bg-white shadow-2xl">
+      <div class="flex items-start justify-between border-b border-[#dedfda] p-5"><div><h2 class="text-lg font-semibold" id="user-import-title">用户导入预览</h2><p class="mt-1 text-sm text-[#666a67]" id="user-import-file-name"></p></div><button class="farock-icon-button" id="user-import-close" type="button" aria-label="关闭导入预览"><span class="material-symbols-outlined">close</span></button></div>
+      <div class="overflow-y-auto p-5">
+        <div class="mb-5 grid grid-cols-3 gap-3"><div class="rounded-md bg-[#f1f1ed] p-4"><small>总行数</small><strong class="mt-1 block text-xl" id="user-import-total">0</strong></div><div class="rounded-md bg-emerald-50 p-4"><small>有效</small><strong class="mt-1 block text-xl" id="user-import-valid">0</strong></div><div class="rounded-md bg-red-50 p-4"><small>无效</small><strong class="mt-1 block text-xl" id="user-import-invalid">0</strong></div></div>
+        <p class="mb-4 hidden rounded-md bg-red-50 p-3 text-sm text-red-700" id="user-import-error" role="alert"></p>
+        <div class="max-h-[45vh] overflow-auto rounded-md border border-[#dedfda]"><table class="w-full min-w-[720px] text-left text-sm"><thead class="sticky top-0 bg-[#f7f7f4]"><tr><th class="px-4 py-3">行</th><th class="px-4 py-3">姓名</th><th class="px-4 py-3">手机号</th><th class="px-4 py-3">角色</th><th class="px-4 py-3">所属机构</th><th class="px-4 py-3">校验结果</th></tr></thead><tbody class="divide-y divide-[#ecece8]" id="user-import-preview"></tbody></table></div>
+      </div>
+      <div class="flex justify-end gap-3 border-t border-[#dedfda] p-5"><button class="farock-button farock-button--secondary" id="user-import-cancel" type="button">取消</button><button class="farock-button farock-button--primary" id="user-import-confirm" type="button">确认导入</button></div>
+    </div>
+  </div>
+
+  <div class="pointer-events-none fixed bottom-5 right-5 z-[120] hidden max-w-sm rounded-md bg-[#1b1c19] px-4 py-3 text-sm text-white shadow-lg" id="user-toast" role="status"></div>
+
+  <script src="assets/api.js" defer></script>
+  <script src="assets/layout.js" defer></script>
+  <script src="assets/user-import.js" defer></script>
+  <script src="assets/user-admin.js" defer></script>
+  <script src="assets/app.js" defer></script>
+</body>
+</html>

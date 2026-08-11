@@ -15,7 +15,8 @@
     "prisma:migrate:deploy": "prisma migrate deploy",
     "db:push": "prisma db push",
     "db:secure": "prisma db execute --file prisma/rls.sql --schema prisma/schema.prisma",
-    "db:seed": "prisma db seed"
+    "db:seed": "prisma db seed",
+    "check:user-policy": "tsx src/examples/user-policy-check.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
