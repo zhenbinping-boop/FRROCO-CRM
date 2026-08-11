@@ -37,6 +37,12 @@ const transactionInput = z.object({
   sourceRow: z.coerce.number().int().positive().optional(),
 });
 const importedCustomerInput = customerInput.extend({ transactions: z.array(transactionInput).max(500).default([]) });
+const storeInput = z.object({
+  code: z.string().trim().min(1).max(64), storeName: z.string().trim().min(1).max(160),
+  storeType: z.enum(["DIRECT", "DEALER"]), regionProvince: z.string().trim().min(1).max(64),
+  regionCity: z.string().trim().min(1).max(64), regionDistrict: z.string().trim().max(64).optional(),
+  dealerGroupId: z.string().trim().min(1).optional(), organizationId: z.string().trim().min(1).optional(),
+});
 
 function csvCell(value: unknown): string {
   const text = Array.isArray(value) ? value.join("、") : String(value ?? "");
@@ -207,6 +213,36 @@ export const listStores: RequestHandler = async (request, response) => {
   };
   const stores = await prisma.store.findMany({ where, include: { dealerGroup: true }, orderBy: [{ regionProvince: "asc" }, { regionCity: "asc" }, { storeName: "asc" }] });
   response.json({ data: stores });
+};
+
+export const createStore: RequestHandler = async (request, response) => {
+  if (request.user?.role !== "ADMIN") throw new AppError(403, "ADMIN_REQUIRED", "仅管理员可以新增门店");
+  const input = validate(storeInput, request.body);
+  if (input.storeType === "DIRECT" && input.dealerGroupId) {
+    throw new AppError(400, "DIRECT_DEALER_CONFLICT", "直营门店不能关联代理商分组");
+  }
+  if (input.storeType === "DEALER" && !input.dealerGroupId) {
+    throw new AppError(400, "DEALER_GROUP_REQUIRED", "代理商门店必须关联代理商分组");
+  }
+  if (input.organizationId) {
+    const organization = await prisma.organization.findUnique({ where: { id: input.organizationId }, select: { type: true } });
+    if (!organization) throw new AppError(400, "INVALID_ORGANIZATION", "所属机构不存在");
+    if (input.storeType === "DEALER" && organization.type !== "DEALER") throw new AppError(400, "ORGANIZATION_TYPE_MISMATCH", "代理商门店必须属于代理商机构");
+    if (input.storeType === "DIRECT" && !["HEADQUARTERS", "DIRECT_STORE"].includes(organization.type)) throw new AppError(400, "ORGANIZATION_TYPE_MISMATCH", "直营门店不能属于代理商机构");
+  }
+  const dealerGroup = input.dealerGroupId ? await prisma.dealerGroup.findUnique({ where: { id: input.dealerGroupId }, select: { organizationId: true, regionProvince: true, regionCity: true } }) : null;
+  if (input.storeType === "DEALER" && !dealerGroup) throw new AppError(400, "INVALID_DEALER_GROUP", "代理商分组不存在");
+  if (dealerGroup && (dealerGroup.regionProvince !== input.regionProvince || dealerGroup.regionCity !== input.regionCity)) {
+    throw new AppError(400, "DEALER_REGION_MISMATCH", "门店地区必须与代理商分组一致");
+  }
+  if (dealerGroup?.organizationId && input.organizationId && dealerGroup.organizationId !== input.organizationId) {
+    throw new AppError(400, "DEALER_ORGANIZATION_MISMATCH", "门店机构必须与代理商分组一致");
+  }
+  const store = await prisma.store.create({
+    data: { ...input, dealerGroupId: input.storeType === "DEALER" ? input.dealerGroupId : undefined },
+    include: { dealerGroup: true },
+  });
+  response.status(201).json({ data: store });
 };
 
 export const listDealerGroups: RequestHandler = async (request, response) => {

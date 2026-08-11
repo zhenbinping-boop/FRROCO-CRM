@@ -367,14 +367,18 @@
     valid: document.querySelector("#customer-import-valid"), invalid: document.querySelector("#customer-import-invalid"),
     error: document.querySelector("#customer-import-error"), preview: document.querySelector("#customer-import-preview"),
     storeMapping: document.querySelector("#customer-import-store-mapping"), storeMappingList: document.querySelector("#customer-import-store-mapping-list"),
+    storeForm: document.querySelector("#customer-import-store-form"), storeFormSheet: document.querySelector("#customer-import-store-form-sheet"),
+    storeFormCancel: document.querySelector("#customer-import-store-cancel"), storeFormSubmit: document.querySelector("#customer-import-store-submit"),
   };
   if (Object.values(elements).some((element) => !element)) return;
 
   let parsedRows = [];
   let sourceRows = [];
   let availableStores = [];
+  let availableDealerGroups = [];
   let existingCustomers = [];
   const storeIdsBySheet = new Map();
+  let activeSheetName = "";
   let sheetJsPromise;
   const normalizeTier = (value) => ["S", "A", "B", "C"].includes(String(value).trim().charAt(0).toUpperCase()) ? String(value).trim().charAt(0).toUpperCase() : "B";
 
@@ -478,6 +482,11 @@
       input.placeholder = "可输入门店名称或编码";
       input.setAttribute("list", listId);
       input.value = availableStores.find((store) => store.id === storeIdsBySheet.get(sheetName))?.storeName || "";
+      const addButton = document.createElement("button");
+      addButton.type = "button";
+      addButton.className = "shrink-0 rounded-lg border border-primary px-3 py-2 font-label-md text-label-md text-primary";
+      addButton.textContent = "新增门店";
+      addButton.addEventListener("click", () => openStoreForm(sheetName));
       const datalist = document.createElement("datalist");
       datalist.id = listId;
       availableStores.forEach((store) => {
@@ -494,9 +503,54 @@
         renderPreview();
       };
       input.addEventListener("input", updateStoreMapping);
-      label.append(input, datalist);
+      const controls = document.createElement("div");
+      controls.className = "flex gap-2";
+      controls.append(input, addButton);
+      label.append(controls, datalist);
       elements.storeMappingList.append(label);
     });
+  }
+
+  function renderDealerGroupOptions() {
+    const select = elements.storeForm.elements.dealerGroupId;
+    const previous = select.value;
+    select.replaceChildren();
+    const empty = document.createElement("option");
+    empty.value = "";
+    empty.textContent = "直营门店无需选择";
+    select.append(empty);
+    availableDealerGroups.forEach((group) => {
+      const option = document.createElement("option");
+      option.value = group.id;
+      option.textContent = `${group.dealerName} · ${group.regionProvince}${group.regionCity}`;
+      select.append(option);
+    });
+    select.value = previous;
+  }
+
+  function syncDealerGroupField() {
+    const isDealer = elements.storeForm.elements.storeType.value === "DEALER";
+    const select = elements.storeForm.elements.dealerGroupId;
+    select.disabled = !isDealer;
+    select.required = isDealer;
+    if (!isDealer) select.value = "";
+  }
+
+  function openStoreForm(sheetName) {
+    activeSheetName = sheetName;
+    elements.storeForm.reset();
+    elements.storeForm.elements.storeName.value = sheetName;
+    elements.storeForm.elements.storeType.value = "DIRECT";
+    elements.storeFormSheet.textContent = `将为“${sheetName}”工作表创建门店，创建后会自动绑定。`;
+    renderDealerGroupOptions();
+    syncDealerGroupField();
+    elements.storeForm.classList.remove("hidden");
+    elements.storeForm.elements.code.focus();
+  }
+
+  function closeStoreForm() {
+    activeSheetName = "";
+    elements.storeForm.classList.add("hidden");
   }
 
   function cell(text, className = "px-4 py-3 font-body-md text-body-md text-on-surface whitespace-nowrap") {
@@ -541,8 +595,10 @@
     parsedRows = [];
     sourceRows = [];
     availableStores = [];
+    availableDealerGroups = [];
     existingCustomers = [];
     storeIdsBySheet.clear();
+    closeStoreForm();
     elements.button.focus();
   }
 
@@ -560,9 +616,10 @@
     const extension = file.name.split(".").pop().toLowerCase();
     if (!["xlsx", "xls", "csv"].includes(extension)) throw new Error("仅支持 .xlsx、.xls 或 .csv 文件");
     const XLSX = await loadSheetJs();
-    const [storesPayload, customers] = await Promise.all([
+    const [storesPayload, customers, dealerGroupsPayload] = await Promise.all([
       window.FarockAPI.get("/stores"),
       fetchAllCustomers(),
+      window.FarockAPI.get("/dealer-groups"),
     ]);
     const buffer = await file.arrayBuffer();
     const workbook = extension === "csv" ? XLSX.read(new TextDecoder("utf-8").decode(buffer).replace(/^\uFEFF/, ""), { type: "string" }) : XLSX.read(buffer, { type: "array" });
@@ -570,11 +627,13 @@
     sourceRows = extractRows(XLSX, workbook);
     if (!sourceRows.length) throw new Error("所有工作表均未识别到客户数据");
     availableStores = storesPayload.data;
+    availableDealerGroups = dealerGroupsPayload.data;
     existingCustomers = customers;
     storeIdsBySheet.clear();
     parsedRows = validateRows(sourceRows, availableStores, existingCustomers);
     openModal(file.name);
     renderStoreMappings();
+    renderDealerGroupOptions();
     renderPreview();
   }
 
@@ -600,6 +659,30 @@
       showError(error.message || "客户导入失败");
       elements.confirm.disabled = false;
       elements.confirm.textContent = "确认导入";
+    }
+  });
+  elements.storeForm.elements.storeType.addEventListener("change", syncDealerGroupField);
+  elements.storeFormCancel.addEventListener("click", closeStoreForm);
+  elements.storeForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    elements.storeFormSubmit.disabled = true;
+    const form = elements.storeForm.elements;
+    try {
+      const result = await window.FarockAPI.post("/stores", {
+        code: form.code.value, storeName: form.storeName.value, storeType: form.storeType.value,
+        regionProvince: form.regionProvince.value, regionCity: form.regionCity.value,
+        regionDistrict: form.regionDistrict.value || undefined, dealerGroupId: form.dealerGroupId.value || undefined,
+      });
+      availableStores = [...availableStores, result.data];
+      if (activeSheetName) storeIdsBySheet.set(activeSheetName, result.data.id);
+      closeStoreForm();
+      renderStoreMappings();
+      parsedRows = validateRows(sourceRows, availableStores, existingCustomers);
+      renderPreview();
+    } catch (error) {
+      showError(error.message || "新增门店失败");
+    } finally {
+      elements.storeFormSubmit.disabled = false;
     }
   });
   [elements.close, elements.cancel].forEach((button) => button.addEventListener("click", closeModal));

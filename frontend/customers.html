@@ -421,9 +421,23 @@
 </div>
 <p class="hidden mb-4 rounded-lg bg-error-container px-4 py-3 font-body-md text-body-md text-on-error-container" id="customer-import-error" role="alert"></p>
 <section class="hidden mb-5 rounded-lg border border-outline-variant/30 bg-surface-container-low p-4" id="customer-import-store-mapping">
-<h3 class="font-label-lg text-label-lg text-primary">补充归属门店</h3>
+<div class="flex flex-wrap items-center justify-between gap-2"><h3 class="font-label-lg text-label-lg text-primary">补充归属门店</h3><span class="font-label-md text-label-md text-on-surface-variant">可输入已有门店，也可新增门店</span></div>
 <p class="mt-1 font-body-md text-body-md text-on-surface-variant">表格未包含经营模式或地区时，按工作表选择门店，系统会自动补齐对应归属。其他缺失资料可在导入后编辑。</p>
 <div class="mt-3 grid gap-3 sm:grid-cols-2" id="customer-import-store-mapping-list"></div>
+<form class="hidden mt-4 border-t border-outline-variant/30 pt-4" id="customer-import-store-form">
+<h4 class="font-label-lg text-label-lg text-primary">新增门店</h4>
+<p class="mt-1 font-body-md text-body-md text-on-surface-variant" id="customer-import-store-form-sheet"></p>
+<div class="mt-3 grid gap-3 sm:grid-cols-2">
+<label class="grid gap-1 font-label-md text-label-md text-primary">门店名称<input class="w-full rounded-lg border border-outline-variant bg-surface-white px-3 py-2 font-body-md text-body-md text-primary" name="storeName" required maxlength="160" placeholder="例如：北居"></label>
+<label class="grid gap-1 font-label-md text-label-md text-primary">门店编码<input class="w-full rounded-lg border border-outline-variant bg-surface-white px-3 py-2 font-body-md text-body-md text-primary" name="code" required maxlength="64" placeholder="例如：STORE-BJ"></label>
+<label class="grid gap-1 font-label-md text-label-md text-primary">经营模式<select class="w-full rounded-lg border border-outline-variant bg-surface-white px-3 py-2 font-body-md text-body-md text-primary" name="storeType"><option value="DIRECT">直营</option><option value="DEALER">代理商</option></select></label>
+<label class="grid gap-1 font-label-md text-label-md text-primary">代理商分组<select class="w-full rounded-lg border border-outline-variant bg-surface-white px-3 py-2 font-body-md text-body-md text-primary" name="dealerGroupId"><option value="">直营门店无需选择</option></select></label>
+<label class="grid gap-1 font-label-md text-label-md text-primary">省份<input class="w-full rounded-lg border border-outline-variant bg-surface-white px-3 py-2 font-body-md text-body-md text-primary" name="regionProvince" required maxlength="64"></label>
+<label class="grid gap-1 font-label-md text-label-md text-primary">城市<input class="w-full rounded-lg border border-outline-variant bg-surface-white px-3 py-2 font-body-md text-body-md text-primary" name="regionCity" required maxlength="64"></label>
+<label class="grid gap-1 font-label-md text-label-md text-primary">区县<input class="w-full rounded-lg border border-outline-variant bg-surface-white px-3 py-2 font-body-md text-body-md text-primary" name="regionDistrict" required maxlength="64"></label>
+</div>
+<div class="mt-3 flex justify-end gap-2"><button class="rounded-lg border border-outline-variant px-4 py-2 font-label-md text-label-md text-primary" id="customer-import-store-cancel" type="button">取消</button><button class="rounded-lg bg-primary px-4 py-2 font-label-md text-label-md text-on-primary disabled:opacity-40" id="customer-import-store-submit" type="submit">创建并归属</button></div>
+</form>
 </section>
 <div class="border border-outline-variant/30 rounded-lg overflow-x-auto max-w-full">
 <div class="max-h-[46vh] overflow-y-auto min-w-[840px]">
