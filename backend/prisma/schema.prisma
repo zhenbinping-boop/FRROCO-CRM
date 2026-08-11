@@ -148,38 +148,52 @@ model Store {
 }
 
 model Customer {
-  id             String        @id @default(cuid())
-  name           String        @db.VarChar(100)
-  phone          String        @unique @db.VarChar(32)
-  wechat         String?       @db.VarChar(100)
-  age            Int?
-  ageGroup       String?       @db.VarChar(32)
-  storeType      StoreType
-  regionProvince String        @db.VarChar(64)
-  regionCity     String        @db.VarChar(64)
-  regionDistrict String        @db.VarChar(64)
-  community      String?       @db.VarChar(120)
-  projectName    String?       @db.VarChar(160)
-  houseType      String?       @db.VarChar(64)
-  dealYear       Int?
-  totalAmount    Decimal       @default(0) @db.Decimal(14, 2)
-  depositAmount  Decimal       @default(0) @db.Decimal(14, 2)
-  productSeries  String[]      @default([])
-  whyFarock      String?       @db.Text
-  tier           CustomerTier  @default(B)
-  stage          CustomerStage @default(LEAD)
-  personaSummary String?       @db.Text
-  salesRepId     String?
-  designerId     String?
-  storeId        String
-  dealerGroupId  String?
-  store          Store         @relation(fields: [storeId], references: [id], onDelete: Restrict)
-  dealerGroup    DealerGroup?  @relation(fields: [dealerGroupId], references: [id], onDelete: Restrict)
-  tasks          Task[]
-  followUps      FollowUp[]
-  orders         Order[]
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id                   String                @id @default(cuid())
+  name                 String                @db.VarChar(100)
+  phone                String?               @unique @db.VarChar(32)
+  wechat               String?               @db.VarChar(100)
+  birthday             DateTime?
+  isReturningCustomer  Boolean               @default(false)
+  address              String?               @db.VarChar(255)
+  age                  Int?
+  ageGroup             String?               @db.VarChar(32)
+  storeType            StoreType
+  regionProvince       String                @db.VarChar(64)
+  regionCity           String                @db.VarChar(64)
+  regionDistrict       String                @db.VarChar(64)
+  community            String?               @db.VarChar(120)
+  projectName          String?               @db.VarChar(160)
+  houseType            String?               @db.VarChar(64)
+  dealYear             Int?
+  totalAmount          Decimal               @default(0) @db.Decimal(14, 2)
+  depositAmount        Decimal               @default(0) @db.Decimal(14, 2)
+  productSeries        String[]              @default([])
+  whyFarock            String?               @db.Text
+  tier                 CustomerTier          @default(B)
+  stage                CustomerStage         @default(LEAD)
+  personaSummary       String?               @db.Text
+  customerSource       String?               @db.VarChar(160)
+  sourceSheet          String?               @db.VarChar(100)
+  salesRepName         String?               @db.VarChar(100)
+  designerName         String?               @db.VarChar(100)
+  referralDesignerName String?               @db.VarChar(100)
+  dealDate             DateTime?
+  designRebateAmount   Decimal               @default(0) @db.Decimal(14, 2)
+  designRebateStatus   String?               @db.VarChar(64)
+  invoiceAmount        Decimal               @default(0) @db.Decimal(14, 2)
+  notes                String?               @db.Text
+  salesRepId           String?
+  designerId           String?
+  storeId              String
+  dealerGroupId        String?
+  store                Store                 @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  dealerGroup          DealerGroup?          @relation(fields: [dealerGroupId], references: [id], onDelete: Restrict)
+  tasks                Task[]
+  followUps            FollowUp[]
+  transactions         CustomerTransaction[]
+  orders               Order[]
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
 
   @@index([storeType, regionProvince, regionCity])
   @@index([storeType, regionCity, createdAt])
@@ -188,6 +202,22 @@ model Customer {
   @@index([storeId, tier])
   @@index([stage, dealYear])
   @@index([salesRepId, stage])
+}
+
+model CustomerTransaction {
+  id          String    @id @default(cuid())
+  customerId  String
+  amount      Decimal   @db.Decimal(14, 2)
+  channel     String?   @db.VarChar(120)
+  progress    String?   @db.VarChar(80)
+  occurredAt  DateTime?
+  sourceSheet String?   @db.VarChar(100)
+  sourceRow   Int?
+  customer    Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  @@index([customerId, occurredAt])
+  @@index([sourceSheet, sourceRow])
 }
 
 model Order {

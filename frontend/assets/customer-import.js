@@ -7,11 +7,14 @@
     name: ["姓名", "客户姓名", "客户名称", "顾客姓名", "业主姓名", "name"],
     phone: ["手机号", "手机号码", "联系电话", "联系方式", "客户电话", "客户联系方式", "电话", "phone", "mobile"],
     wechat: ["微信", "微信号", "微信号码", "wechat"],
+    birthday: ["生日", "出生日期", "客户生日", "birthday"],
+    isReturningCustomer: ["老客户", "老客户是否", "是否老客户", "复购客户"],
     ageGroup: ["年龄", "年龄段", "客户年龄", "agegroup"],
     province: ["省份", "省", "所在省", "province"],
     city: ["城市", "市", "所在城市", "city"],
     district: ["区县", "区", "区域", "所在区县", "district"],
-    community: ["小区", "地址", "项目地址", "详细地址", "楼盘", "项目名称", "community"],
+    address: ["地址", "项目地址", "详细地址", "房屋地址", "门牌地址"],
+    community: ["小区", "楼盘", "项目名称", "community"],
     houseType: ["户型", "房屋户型", "housetype"],
     storeType: ["经营模式", "运营模式", "门店类型", "客户类型", "storetype", "operationmode"],
     store: ["门店", "门店名称", "门店编码", "归属门店", "归属机构", "店面", "store"],
@@ -20,9 +23,23 @@
     totalAmount: ["订购金额", "成交金额", "合同金额", "订单金额", "下单金额", "totalamount"],
     depositAmount: ["已付定金", "定金", "已付金额", "depositamount"],
     productSeries: ["产品系列", "订购系列", "产品品类", "订单性质", "productseries"],
-    whyFarock: ["为什么选择法洛可", "选择原因", "客户来源", "来源", "whyfarock"],
+    customerSource: ["客户来源", "渠道来源", "来源渠道", "装饰公司", "来源"],
+    whyFarock: ["为什么选择法洛可", "选择法洛可原因", "选择原因", "whyfarock"],
+    salesRepName: ["导购", "导购员", "销售", "销售顾问"],
+    designerName: ["设计师", "内部设计师", "负责设计师"],
+    referralDesignerName: ["带单设计师", "推荐设计师", "外部设计师", "返款人"],
+    dealDate: ["下单日期", "建单日期", "签约日期", "日期"],
+    designRebateAmount: ["设计返点金额", "返点金额", "返款金额", "佣金金额"],
+    designRebateStatus: ["设计返点状态", "返点状态", "设计返点"],
+    invoiceAmount: ["开发票金额", "开票金额", "发票金额"],
+    notes: ["备注", "补充说明", "说明"],
+    transactionAmount: ["交款退款金额", "交款金额", "退款金额", "流水金额", "收款金额"],
+    transactionChannel: ["交款退款渠道", "交款渠道", "退款渠道", "支付方式", "付款方式"],
+    transactionProgress: ["交款进度", "付款进度", "款项阶段", "付款阶段"],
+    transactionDate: ["交款下单日期", "交款退款日期", "交款日期", "退款日期", "入账日期", "打款日期"],
+    designRebateRate: ["返点比率", "返点比例", "设计返点比例"],
     tier: ["客户分级", "客户等级", "客户级别", "分级", "等级", "tier"],
-    personaSummary: ["用户画像", "客户画像", "画像", "备注", "personasummary"],
+    personaSummary: ["用户画像", "客户画像", "画像", "personasummary"],
   };
 
   const normalize = (value) => String(value ?? "")
@@ -106,14 +123,60 @@
     return best.index;
   }
 
+  function detectHeaderRows(matrix) {
+    return matrix.map((row, index) => ({ index, mapping: buildHeaderMapping(row) })).filter(({ mapping }) => {
+      const fields = new Set(mapping.values());
+      return fields.has("name") && fields.has("phone") && fields.size >= 3;
+    }).map(({ index }) => index);
+  }
+
   function valueFor(row, field) {
     if (Object.prototype.hasOwnProperty.call(row, field)) return String(row[field] ?? "").trim();
     const key = Object.keys(row).find((candidate) => aliases[field].some((alias) => headerScore(candidate, alias) >= MATCH_THRESHOLD));
     return key ? String(row[key] ?? "").trim() : "";
   }
 
-  const numberFor = (value) => Number(String(value || "0").replaceAll(",", "")) || 0;
+  function rawValueFor(row, field) {
+    if (Object.prototype.hasOwnProperty.call(row, field)) return row[field];
+    const key = Object.keys(row).find((candidate) => aliases[field].some((alias) => headerScore(candidate, alias) >= MATCH_THRESHOLD));
+    return key ? row[key] : undefined;
+  }
+
+  function optionalNumberFor(value) {
+    if (value === undefined || value === null || String(value).trim() === "") return undefined;
+    const match = String(value).replaceAll(",", "").match(/[-+]?\d+(?:\.\d+)?/);
+    return match ? Number(match[0]) : undefined;
+  }
+  function optionalMoneyFor(value) {
+    if (value === undefined || value === null || String(value).trim() === "") return undefined;
+    const text = String(value).replaceAll(",", "").replace(/\s/g, "");
+    const parts = text.match(/[-+]?\d+(?:\.\d+)?/g);
+    if (!parts?.length) return undefined;
+    const amount = parts.reduce((sum, part) => sum + Number(part), 0);
+    return /万/.test(text) && parts.length === 1 ? amount * 10000 : amount;
+  }
+  const numberFor = (value) => optionalMoneyFor(value) || 0;
   const depositFor = (row, totalAmount) => Math.min(Math.max(numberFor(valueFor(row, "depositAmount")), 0), totalAmount);
+
+  function dateFor(value, fallbackYear) {
+    if (value instanceof Date && !Number.isNaN(value.getTime())) return value.toISOString();
+    if (typeof value === "number" && value > 1) {
+      const date = new Date(Date.UTC(1899, 11, 30) + Math.round(value * 86400000));
+      return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
+    }
+    const text = String(value ?? "").trim();
+    if (!text) return undefined;
+    const parts = text.replace(/[年月]/g, ".").replace(/日/g, "").split(/[.\/-]/).filter(Boolean).map((part) => Number(part));
+    let year; let month; let day;
+    if (parts.length >= 3 && parts[0] >= 1900 && parts[0] <= 2100) [year, month, day] = parts;
+    else if (parts.length >= 3 && fallbackYear) [year, month, day] = [Number(fallbackYear), parts[1], parts[2]];
+    else if (parts.length >= 2 && fallbackYear) [year, month, day] = [Number(fallbackYear), parts[0], parts[1]];
+    if (!year || !month || !day) return undefined;
+    const date = new Date(Date.UTC(year, month - 1, day));
+    return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day ? date.toISOString() : undefined;
+  }
+
+  const booleanFor = (value) => /^(是|有|老客户|复购|yes|true|1)$/i.test(String(value ?? "").trim());
 
   function normalizedContains(left, right) {
     const a = normalize(left);
@@ -145,19 +208,95 @@
   function extractRows(XLSX, workbook) {
     const rows = [];
     workbook.SheetNames.forEach((sheetName) => {
-      const matrix = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1, defval: "", raw: false });
-      const headerIndex = detectHeaderRow(matrix);
-      if (headerIndex < 0) return;
-      const mapping = buildHeaderMapping(matrix[headerIndex], matrix[headerIndex + 1]);
+      const matrix = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1, defval: "", raw: true });
       const titleYear = String(matrix[0]?.[0] ?? "").match(/(?:19|20)\d{2}/)?.[0] || "";
-      matrix.slice(headerIndex + 1).forEach((cells, offset) => {
-        const row = { __sheetName: sheetName, __rowNumber: headerIndex + offset + 2, __dealYear: titleYear };
-        mapping.forEach((field, column) => { row[field] = cells[column] ?? ""; });
-        if (!valueFor(row, "name") && !valueFor(row, "phone")) return;
-        rows.push(row);
+      const headerIndexes = detectHeaderRows(matrix);
+      headerIndexes.forEach((headerIndex, sectionIndex) => {
+        const mapping = buildHeaderMapping(matrix[headerIndex], matrix[headerIndex + 1]);
+        const sectionEnd = headerIndexes[sectionIndex + 1] ?? matrix.length;
+        const fields = new Set(mapping.values());
+        const isRebateTable = fields.has("designRebateRate") || fields.has("referralDesignerName") && fields.has("designRebateAmount") && !fields.has("transactionProgress");
+        const customersByName = new Map();
+        const customersByPhone = new Map();
+        let currentCustomer;
+        matrix.slice(headerIndex + 1, sectionEnd).forEach((cells, offset) => {
+          const rowNumber = headerIndex + offset + 2;
+          const row = { __sheetName: sheetName, __rowNumber: rowNumber, __dealYear: titleYear };
+          mapping.forEach((field, column) => { row[field] = cells[column] ?? ""; });
+          const name = valueFor(row, "name");
+          const phone = valueFor(row, "phone");
+
+          if (isRebateTable && name) {
+            const key = normalize(name);
+            currentCustomer = customersByName.get(key);
+            if (!currentCustomer) {
+              row.__transactions = [];
+              row.__isRebateTable = true;
+              row.__rebateDetails = [];
+              row.__referralDesignerNames = [];
+              row.totalAmount = rawValueFor(row, "transactionAmount");
+              currentCustomer = row;
+              customersByName.set(key, row);
+              rows.push(row);
+            } else if (!valueFor(currentCustomer, "phone") && phone) {
+              currentCustomer.phone = rawValueFor(row, "phone");
+            }
+            const recipient = valueFor(row, "referralDesignerName");
+            const rebateAmount = Math.max(optionalMoneyFor(rawValueFor(row, "designRebateAmount")) || 0, 0);
+            const rebateRate = optionalNumberFor(rawValueFor(row, "designRebateRate"));
+            if (recipient && !currentCustomer.__referralDesignerNames.includes(recipient)) currentCustomer.__referralDesignerNames.push(recipient);
+            if (recipient || rebateAmount || rebateRate !== undefined) currentCustomer.__rebateDetails.push({ recipient, amount: rebateAmount, rate: rebateRate });
+            currentCustomer.__designRebateAmount = (currentCustomer.__designRebateAmount || 0) + rebateAmount;
+            return;
+          }
+
+          if (name || phone) {
+            const phoneKey = phone.replace(/\D/g, "");
+            const existingCustomer = phoneKey.length >= 6 ? customersByPhone.get(phoneKey) : undefined;
+            if (existingCustomer) {
+              currentCustomer = existingCustomer;
+              mapping.forEach((field) => {
+                if (!valueFor(currentCustomer, field) && valueFor(row, field)) currentCustomer[field] = rawValueFor(row, field);
+              });
+            } else {
+              row.__transactions = [];
+              currentCustomer = row;
+              rows.push(row);
+              if (phoneKey.length >= 6) customersByPhone.set(phoneKey, row);
+            }
+          }
+          const amount = optionalMoneyFor(rawValueFor(row, "transactionAmount"));
+          if (currentCustomer && amount !== undefined && amount !== 0) currentCustomer.__transactions.push({
+            amount,
+            channel: valueFor(row, "transactionChannel") || undefined,
+            progress: valueFor(row, "transactionProgress") || undefined,
+            occurredAt: dateFor(rawValueFor(row, "transactionDate"), titleYear),
+            sourceSheet: sheetName,
+            sourceRow: rowNumber,
+          });
+        });
       });
     });
-    return rows;
+    const primaryByName = new Map();
+    rows.filter((row) => !row.__isRebateTable).forEach((row) => {
+      const key = normalize(valueFor(row, "name"));
+      if (!key) return;
+      const matches = primaryByName.get(key) || [];
+      matches.push(row);
+      primaryByName.set(key, matches);
+    });
+    return rows.filter((row) => {
+      if (!row.__isRebateTable) return true;
+      const matches = primaryByName.get(normalize(valueFor(row, "name"))) || [];
+      if (matches.length !== 1) return true;
+      const target = matches[0];
+      target.__designRebateAmount = (target.__designRebateAmount || 0) + (row.__designRebateAmount || 0);
+      target.__rebateDetails = [...(target.__rebateDetails || []), ...(row.__rebateDetails || [])];
+      target.__referralDesignerNames = [...new Set([...(target.__referralDesignerNames || []), ...(row.__referralDesignerNames || [])])];
+      if (!valueFor(target, "phone") && valueFor(row, "phone")) target.phone = rawValueFor(row, "phone");
+      if (!valueFor(target, "totalAmount") && valueFor(row, "totalAmount")) target.totalAmount = rawValueFor(row, "totalAmount");
+      return false;
+    });
   }
 
   function runSelfCheck() {
@@ -168,12 +307,40 @@
     ];
     const index = detectHeaderRow(matrix);
     const mapping = buildHeaderMapping(matrix[index], matrix[index + 1]);
-    if (index !== 1 || mapping.get(1) !== "name" || mapping.get(2) !== "phone" || mapping.get(4) !== "totalAmount" || mapping.has(5) || mapping.get(6) !== "depositAmount") {
+    if (index !== 1 || mapping.get(1) !== "name" || mapping.get(2) !== "phone" || mapping.get(4) !== "totalAmount" || mapping.get(5) !== "transactionAmount" || mapping.get(6) !== "depositAmount") {
       throw new Error("customer-import header matching self-check failed");
     }
     const row = { depositAmount: matrix[2][6] };
     if (depositFor(row, matrix[2][4]) !== matrix[2][4]) throw new Error("customer-import deposit bounds self-check failed");
     if (new Set(mapping.values()).size !== mapping.size) throw new Error("customer-import unique mapping self-check failed");
+    if (!dateFor("1.30", "2021")?.startsWith("2021-01-30")) throw new Error("customer-import date parsing self-check failed");
+    if (!dateFor("2021..1.3", "2021")?.startsWith("2021-01-03") || !dateFor("20201.1.20", "2021")?.startsWith("2021-01-20")) throw new Error("customer-import malformed date self-check failed");
+    if (optionalMoneyFor("9,100+900券") !== 10000 || optionalMoneyFor("1.5万") !== 15000) throw new Error("customer-import money parsing self-check failed");
+    const multiTableMatrix = [
+      ["2021年客户表"],
+      ["客户姓名", "客户联系方式", "交款/退款金额", "交款进度"],
+      ["甲客户", "13800138000", 100, "第一笔"],
+      ["", "", -20, "退款"],
+      ["甲客户", "13800138000", 50, "第二笔"],
+      ["客户姓名", "联系电话", "返款人", "交款金额", "返点比率", "返款金额"],
+      ["乙客户", "", "设计师甲", 1000, 0.05, 50],
+      ["乙客户", "13900139000", "设计师乙", 1000, 0.03, 30],
+    ];
+    const extracted = extractRows({ utils: { sheet_to_json: () => multiTableMatrix } }, { SheetNames: ["测试门店"], Sheets: { 测试门店: {} } });
+    if (extracted.length !== 2 || extracted[0].__transactions.length !== 3 || extracted[1].phone !== "13900139000" || extracted[1].__designRebateAmount !== 80) {
+      throw new Error("customer-import multi-table aggregation self-check failed");
+    }
+    const crossSheetWorkbook = {
+      SheetNames: ["主表", "返点表"],
+      Sheets: {
+        主表: { matrix: [["2021年主表"], ["客户姓名", "客户联系方式", "地址"], ["张红博", "13800138000", "测试小区"]] },
+        返点表: { matrix: [["2021年返点表"], ["客户姓名", "联系电话", "返款人", "返点比率", "返款金额"], ["张红博", "", "设计师甲", 0.05, 500]] },
+      },
+    };
+    const crossSheetRows = extractRows({ utils: { sheet_to_json: (sheet) => sheet.matrix } }, crossSheetWorkbook);
+    if (crossSheetRows.length !== 1 || crossSheetRows[0].__designRebateAmount !== 500 || crossSheetRows[0].__referralDesignerNames[0] !== "设计师甲") {
+      throw new Error("customer-import cross-sheet rebate self-check failed");
+    }
     console.log("customer-import self-check passed");
   }
 
@@ -226,21 +393,46 @@
       const phone = valueFor(row, "phone");
       const normalizedPhone = phone.replace(/\D/g, "");
       const totalAmount = Math.max(numberFor(valueFor(row, "totalAmount")), 0);
+      const dealDate = dateFor(rawValueFor(row, "dealDate"), row.__dealYear);
+      const rebateAmountRaw = rawValueFor(row, "designRebateAmount");
+      const rebateStatusRaw = valueFor(row, "designRebateStatus") || (optionalMoneyFor(rebateAmountRaw) === undefined ? String(rebateAmountRaw ?? "").trim() : "");
+      const rebateDetails = row.__rebateDetails || [];
+      const rebateNotes = rebateDetails.map((item) => [
+        item.recipient || "未注明返款人",
+        item.rate === undefined ? "" : `${item.rate * 100}%`,
+        item.amount ? `${item.amount} 元` : "",
+      ].filter(Boolean).join(" / ")).join("；");
+      const sourceNotes = valueFor(row, "notes");
       const customer = {
-        name: valueFor(row, "name"), phone, wechat: valueFor(row, "wechat") || undefined,
+        name: valueFor(row, "name"), phone: phone || undefined, wechat: valueFor(row, "wechat") || undefined,
+        birthday: dateFor(rawValueFor(row, "birthday")),
+        isReturningCustomer: booleanFor(valueFor(row, "isReturningCustomer")),
+        address: valueFor(row, "address") || undefined,
         ageGroup: valueFor(row, "ageGroup") || undefined, storeType, regionProvince: province, regionCity: city,
         regionDistrict: district, community: valueFor(row, "community") || undefined,
-        houseType: valueFor(row, "houseType") || undefined, dealYear: numberFor(valueFor(row, "dealYear") || row.__dealYear) || undefined,
+        houseType: valueFor(row, "houseType") || undefined,
+        dealYear: numberFor(valueFor(row, "dealYear") || row.__dealYear || dealDate?.slice(0, 4)) || undefined,
+        dealDate,
         totalAmount, depositAmount: depositFor(row, totalAmount),
         productSeries: valueFor(row, "productSeries").split(/[,，、;；]/).map((value) => value.trim()).filter(Boolean),
         whyFarock: valueFor(row, "whyFarock") || undefined, tier: normalizeTier(valueFor(row, "tier")),
-        personaSummary: valueFor(row, "personaSummary") || undefined, storeId: store?.id || "",
+        personaSummary: valueFor(row, "personaSummary") || undefined,
+        customerSource: valueFor(row, "customerSource") || undefined,
+        sourceSheet: row.__sheetName,
+        salesRepName: valueFor(row, "salesRepName") || undefined,
+        designerName: valueFor(row, "designerName") || undefined,
+        referralDesignerName: row.__referralDesignerNames?.join("、") || valueFor(row, "referralDesignerName") || undefined,
+        designRebateAmount: row.__designRebateAmount ?? Math.max(optionalMoneyFor(rebateAmountRaw) || 0, 0),
+        designRebateStatus: rebateStatusRaw || (row.__designRebateAmount > 0 ? "已返点" : undefined),
+        invoiceAmount: Math.max(numberFor(valueFor(row, "invoiceAmount")), 0),
+        notes: [sourceNotes, rebateNotes ? `返点明细：${rebateNotes}` : ""].filter(Boolean).join("\n") || undefined,
+        transactions: row.__transactions || [],
+        storeId: store?.id || "",
         dealerGroupId: storeType === "DEALER" ? store?.dealerGroupId || "" : undefined,
       };
       const reasons = [];
       if (!customer.name) reasons.push("缺少姓名");
-      if (!phone) reasons.push("缺少手机号");
-      else if (!/^[+\d][\d\s()-]{5,19}$/.test(phone)) reasons.push("手机号格式不正确");
+      if (phone && !/^[+\d][\d\s()-]{5,19}$/.test(phone)) reasons.push("手机号格式不正确");
       else if (existingPhones.has(normalizedPhone)) reasons.push("手机号已存在");
       else if (filePhones.has(normalizedPhone)) reasons.push("文件内手机号重复");
       if (!storeType) reasons.push("经营模式应为直营或代理商");
@@ -271,7 +463,7 @@
       if (!row.valid) tr.className = "bg-error-container/30";
       tr.append(cell(`${row.sheetName} ${row.rowNumber}`), cell(row.customer.name || "-"), cell(row.customer.phone || "-"),
         cell([row.customer.regionCity, row.customer.community].filter(Boolean).join(" / ") || "-"), cell(row.storeName),
-        cell(row.customer.tier), cell(row.valid ? "有效" : row.reasons.join("；"), row.valid ? "px-4 py-3 text-on-secondary-container whitespace-nowrap" : "px-4 py-3 text-on-error-container whitespace-nowrap"));
+        cell(row.customer.tier), cell(row.valid ? `有效（${row.customer.transactions.length} 笔流水）` : row.reasons.join("；"), row.valid ? "px-4 py-3 text-on-secondary-container whitespace-nowrap" : "px-4 py-3 text-on-error-container whitespace-nowrap"));
       elements.preview.appendChild(tr);
     });
   }
@@ -295,18 +487,30 @@
     elements.button.focus();
   }
 
+  async function fetchAllCustomers() {
+    const firstPage = await window.FarockAPI.get("/customers?page=1&pageSize=100");
+    const totalPages = Number(firstPage.meta?.totalPages) || 1;
+    if (totalPages === 1) return firstPage.data;
+    const remaining = await Promise.all(Array.from({ length: totalPages - 1 }, (_, index) => (
+      window.FarockAPI.get(`/customers?page=${index + 2}&pageSize=100`)
+    )));
+    return [firstPage, ...remaining].flatMap((payload) => payload.data);
+  }
+
   async function handleFile(file) {
     const extension = file.name.split(".").pop().toLowerCase();
     if (!["xlsx", "xls", "csv"].includes(extension)) throw new Error("仅支持 .xlsx、.xls 或 .csv 文件");
     const XLSX = await loadSheetJs();
-    const storesPayload = await window.FarockAPI.get("/stores");
-    const customersPayload = await window.FarockAPI.get("/customers?page=1&pageSize=100");
+    const [storesPayload, existingCustomers] = await Promise.all([
+      window.FarockAPI.get("/stores"),
+      fetchAllCustomers(),
+    ]);
     const buffer = await file.arrayBuffer();
     const workbook = extension === "csv" ? XLSX.read(new TextDecoder("utf-8").decode(buffer).replace(/^\uFEFF/, ""), { type: "string" }) : XLSX.read(buffer, { type: "array" });
     if (!workbook.SheetNames.length) throw new Error("文件中没有可读取的工作表");
     const rows = extractRows(XLSX, workbook);
-    if (!rows.length) throw new Error("所有工作表均未识别到包含姓名和联系方式的客户数据");
-    parsedRows = validateRows(rows, storesPayload.data, customersPayload.data);
+    if (!rows.length) throw new Error("所有工作表均未识别到客户数据");
+    parsedRows = validateRows(rows, storesPayload.data, existingCustomers);
     openModal(file.name);
     renderPreview();
   }

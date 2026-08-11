@@ -6,8 +6,14 @@ import { assertOrganizationAccess, customerAccessWhere } from "../lib/access.js"
 import { AppError, validate } from "../lib/http.js";
 import { prisma } from "../lib/prisma.js";
 
+const optionalDate = z.preprocess(
+  (value) => value === "" || value === null ? undefined : value,
+  z.coerce.date().optional(),
+);
+
 const customerInput = z.object({
-  name: z.string().trim().min(1).max(100), phone: z.string().trim().min(6).max(32), wechat: z.string().trim().max(100).optional(),
+  name: z.string().trim().min(1).max(100), phone: z.string().trim().min(6).max(32).optional(), wechat: z.string().trim().max(100).optional(),
+  birthday: optionalDate, isReturningCustomer: z.boolean().default(false), address: z.string().trim().max(255).optional(),
   age: z.coerce.number().int().min(0).max(120).optional(), ageGroup: z.string().max(32).optional(),
   storeType: z.enum(["DIRECT", "DEALER"]), regionProvince: z.string().min(1).max(64), regionCity: z.string().min(1).max(64),
   regionDistrict: z.string().min(1).max(64), community: z.string().max(120).optional(), projectName: z.string().max(160).optional(),
@@ -15,10 +21,22 @@ const customerInput = z.object({
   totalAmount: z.coerce.number().min(0).default(0), depositAmount: z.coerce.number().min(0).default(0),
   productSeries: z.array(z.string().min(1)).default([]), whyFarock: z.string().optional(), tier: z.enum(["S", "A", "B", "C"]).default("B"),
   stage: z.enum(["LEAD", "FOLLOWING", "PROPOSAL", "CONTRACTED", "LOST"]).default("LEAD"), personaSummary: z.string().optional(),
+  customerSource: z.string().trim().max(160).optional(), sourceSheet: z.string().trim().max(100).optional(),
+  salesRepName: z.string().trim().max(100).optional(), designerName: z.string().trim().max(100).optional(),
+  referralDesignerName: z.string().trim().max(100).optional(), dealDate: optionalDate,
+  designRebateAmount: z.coerce.number().min(0).default(0), designRebateStatus: z.string().trim().max(64).optional(),
+  invoiceAmount: z.coerce.number().min(0).default(0), notes: z.string().trim().optional(),
   salesRepId: z.string().optional(), designerId: z.string().optional(), storeId: z.string().min(1), dealerGroupId: z.string().optional(),
 });
 
 const customerUpdateInput = customerInput.omit({ storeType: true, storeId: true, dealerGroupId: true }).partial();
+const transactionInput = z.object({
+  amount: z.coerce.number().refine((value) => value !== 0, "流水金额不能为 0"),
+  channel: z.string().trim().max(120).optional(), progress: z.string().trim().max(80).optional(),
+  occurredAt: optionalDate, sourceSheet: z.string().trim().max(100).optional(),
+  sourceRow: z.coerce.number().int().positive().optional(),
+});
+const importedCustomerInput = customerInput.extend({ transactions: z.array(transactionInput).max(500).default([]) });
 
 function csvCell(value: unknown): string {
   const text = Array.isArray(value) ? value.join("、") : String(value ?? "");
@@ -80,6 +98,7 @@ export const getCustomer: RequestHandler = async (request, response) => {
     include: {
       store: true,
       dealerGroup: true,
+      transactions: { orderBy: [{ occurredAt: "desc" }, { sourceRow: "desc" }] },
       tasks: { include: { assignee: { select: { id: true, name: true } } }, orderBy: { dueAt: "desc" } },
       followUps: { include: { author: { select: { id: true, name: true } } }, orderBy: { followedAt: "desc" } },
     },
@@ -114,8 +133,8 @@ export const deleteCustomer: RequestHandler = async (request, response) => {
 };
 
 export const importCustomers: RequestHandler = async (request, response) => {
-  const { customers } = validate(z.object({ customers: z.array(customerInput).min(1).max(200) }), request.body);
-  const phones = customers.map((customer) => customer.phone);
+  const { customers } = validate(z.object({ customers: z.array(importedCustomerInput).min(1).max(200) }), request.body);
+  const phones = customers.map((customer) => customer.phone).filter((phone): phone is string => Boolean(phone));
   if (new Set(phones).size !== phones.length) throw new AppError(400, "DUPLICATE_PHONE_IN_FILE", "导入数据中存在重复手机号");
 
   const storeIds = [...new Set(customers.map((customer) => customer.storeId))];
@@ -134,10 +153,12 @@ export const importCustomers: RequestHandler = async (request, response) => {
       throw new AppError(400, "DIRECT_DEALER_CONFLICT", `直营客户“${input.name}”不能关联代理商分组`);
     }
   }
-  const duplicate = await prisma.customer.findFirst({ where: { phone: { in: phones } }, select: { phone: true } });
+  const duplicate = phones.length ? await prisma.customer.findFirst({ where: { phone: { in: phones } }, select: { phone: true } }) : null;
   if (duplicate) throw new AppError(409, "DUPLICATE_PHONE", `手机号 ${duplicate.phone} 已存在`);
 
-  const created = await prisma.$transaction(customers.map((input) => prisma.customer.create({ data: input })));
+  const created = await prisma.$transaction(customers.map(({ transactions, ...input }) => prisma.customer.create({
+    data: { ...input, transactions: { create: transactions } },
+  })));
   response.status(201).json({ data: { imported: created.length, customers: created } });
 };
 
@@ -150,9 +171,28 @@ export const exportRegionalCustomers: RequestHandler = async (request, response)
     ...(query.dealerGroupId && { dealerGroupId: query.dealerGroupId }),
     ...(query.city && { regionCity: query.city }),
   };
-  const customers = await prisma.customer.findMany({ where, include: { store: true, dealerGroup: true }, orderBy: [{ dealYear: "desc" }, { name: "asc" }] });
-  const header = ["客户姓名", "联系电话", "经营模式", "省份", "城市", "区县", "门店", "代理商", "建档年份", "订购金额", "已付定金", "产品系列", "客户等级", "跟进状态"];
-  const rows = customers.map((customer) => [customer.name, customer.phone, customer.storeType === "DIRECT" ? "直营" : "代理商", customer.regionProvince, customer.regionCity, customer.regionDistrict, customer.store.storeName, customer.dealerGroup?.dealerName, customer.dealYear, customer.totalAmount, customer.depositAmount, customer.productSeries, customer.tier, customer.stage]);
+  const customers = await prisma.customer.findMany({
+    where,
+    include: { store: true, dealerGroup: true, transactions: { select: { amount: true } } },
+    orderBy: [{ dealYear: "desc" }, { name: "asc" }],
+  });
+  const header = [
+    "客户姓名", "联系电话", "生日", "老客户", "地址", "经营模式", "省份", "城市", "区县", "门店", "代理商", "来源工作表",
+    "客户来源", "导购", "设计师", "带单设计师", "下单日期", "建档年份", "下单金额", "已付定金", "设计返点金额",
+    "设计返点状态", "开发票金额", "累计收款", "累计退款", "产品系列", "客户等级", "跟进状态", "备注",
+  ];
+  const rows = customers.map((customer) => {
+    const received = customer.transactions.reduce((sum, transaction) => sum + Math.max(Number(transaction.amount), 0), 0);
+    const refunded = customer.transactions.reduce((sum, transaction) => sum + Math.abs(Math.min(Number(transaction.amount), 0)), 0);
+    return [
+      customer.name, customer.phone, customer.birthday?.toISOString().slice(0, 10), customer.isReturningCustomer ? "是" : "否", customer.address,
+      customer.storeType === "DIRECT" ? "直营" : "代理商", customer.regionProvince, customer.regionCity, customer.regionDistrict,
+      customer.store.storeName, customer.dealerGroup?.dealerName, customer.sourceSheet, customer.customerSource, customer.salesRepName,
+      customer.designerName, customer.referralDesignerName, customer.dealDate?.toISOString().slice(0, 10), customer.dealYear, customer.totalAmount,
+      customer.depositAmount, customer.designRebateAmount, customer.designRebateStatus, customer.invoiceAmount, received, refunded,
+      customer.productSeries, customer.tier, customer.stage, customer.notes,
+    ];
+  });
   const csv = `\uFEFF${[header, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n")}`;
   response.setHeader("Content-Type", "text/csv; charset=utf-8");
   response.setHeader("Content-Disposition", `attachment; filename="regional-customers-${Date.now()}.csv"`);

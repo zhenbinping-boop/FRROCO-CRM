@@ -1,365 +1,126 @@
 <!DOCTYPE html>
-
-<html class="light" lang="zh-CN"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Customer Details - Faloco CRM</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-        tailwind.config = {
-          darkMode: "class",
-          theme: {
-            extend: {
-              "colors": {
-                      "surface-tint": "#5f5e5e",
-                      "secondary": "#5c614d",
-                      "on-tertiary-container": "#85856f",
-                      "error-container": "#ffdad6",
-                      "on-primary-fixed-variant": "#474746",
-                      "surface-dim": "#dbdad5",
-                      "inverse-surface": "#30312e",
-                      "on-surface-variant": "#444748",
-                      "on-secondary": "#ffffff",
-                      "surface": "#faf9f4",
-                      "secondary-fixed-dim": "#c4c9b1",
-                      "on-primary-fixed": "#1c1b1b",
-                      "on-tertiary": "#ffffff",
-                      "primary": "#000000",
-                      "inverse-on-surface": "#f2f1ec",
-                      "background": "#faf9f4",
-                      "primary-fixed": "#e5e2e1",
-                      "inverse-primary": "#c8c6c5",
-                      "on-secondary-container": "#626753",
-                      "on-secondary-fixed-variant": "#444937",
-                      "masked-gray": "#E5E5E5",
-                      "on-error": "#ffffff",
-                      "surface-white": "#FFFFFF",
-                      "tertiary-fixed": "#e5e4ca",
-                      "error-red": "#E07A5F",
-                      "on-tertiary-fixed": "#1c1d0c",
-                      "tertiary-container": "#1c1d0c",
-                      "surface-container-high": "#e9e8e3",
-                      "on-tertiary-fixed-variant": "#474835",
-                      "surface-container": "#efeee9",
-                      "secondary-container": "#e0e5cc",
-                      "surface-variant": "#e3e3de",
-                      "surface-bright": "#faf9f4",
-                      "tertiary": "#000000",
-                      "on-surface": "#1b1c19",
-                      "secondary-fixed": "#e0e5cc",
-                      "on-background": "#1b1c19",
-                      "surface-container-highest": "#e3e3de",
-                      "status-earth": "#B7B7A4",
-                      "tertiary-fixed-dim": "#c8c8af",
-                      "primary-container": "#1c1b1b",
-                      "status-sage": "#84A59D",
-                      "on-primary-container": "#858383",
-                      "on-error-container": "#93000a",
-                      "surface-container-low": "#f5f4ef",
-                      "outline-variant": "#c4c7c7",
-                      "on-primary": "#ffffff",
-                      "on-secondary-fixed": "#191d0e",
-                      "surface-container-lowest": "#ffffff",
-                      "outline": "#747878",
-                      "warning-amber": "#F2CC8F",
-                      "primary-fixed-dim": "#c8c6c5",
-                      "error": "#ba1a1a"
-              },
-              "borderRadius": {
-                      "DEFAULT": "0.25rem",
-                      "lg": "0.5rem",
-                      "xl": "0.75rem",
-                      "full": "9999px"
-              },
-              "spacing": {
-                      "section-gap": "48px",
-                      "card-padding": "24px",
-                      "base": "8px",
-                      "gutter-desktop": "24px",
-                      "margin-desktop": "40px",
-                      "margin-mobile": "16px"
-              },
-              "fontFamily": {
-                      "headline-lg": ["Inter", "sans-serif"],
-                      "body-lg": ["Inter", "sans-serif"],
-                      "data-mono": ["JetBrains Mono", "monospace"],
-                      "headline-lg-mobile": ["Inter", "sans-serif"],
-                      "body-md": ["Inter", "sans-serif"],
-                      "label-md": ["Inter", "sans-serif"],
-                      "headline-md": ["Inter", "sans-serif"]
-              },
-              "fontSize": {
-                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
-                      "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
-                      "data-mono": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
-                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
-                      "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
-                      "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
-                      "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
-              }
-            },
-          }
-        }
-    </script>
-<style>
-        .material-symbols-outlined {
-            font-family: 'Material Symbols Outlined';
-            font-weight: normal;
-            font-style: normal;
-            font-size: 24px;
-            line-height: 1;
-            letter-spacing: normal;
-            text-transform: none;
-            display: inline-block;
-            white-space: nowrap;
-            word-wrap: normal;
-            direction: ltr;
-            -webkit-font-feature-settings: 'liga';
-            -webkit-font-smoothing: antialiased;
-        }
-        body {
-            background-color: theme('colors.background');
-            color: theme('colors.on-background');
-        }
-        .card-shadow {
-            box-shadow: 0px 4px 20px rgba(26, 26, 26, 0.04);
-        }
-        .card-shadow-hover:hover {
-            box-shadow: 0px 12px 32px rgba(26, 26, 26, 0.08);
-        }
-    </style>
-<link href="assets/app.css" rel="stylesheet"/>
-<link href="assets/global.css" rel="stylesheet"/>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>客户详情 - 法洛可 CRM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400;500;600" rel="stylesheet"/>
+  <link href="assets/app.css" rel="stylesheet"/>
+  <link href="assets/global.css" rel="stylesheet"/>
+  <style>
+    .customer-detail-page { padding: 32px; }
+    .customer-summary { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 24px; }
+    .customer-summary__identity { display: flex; min-width: 0; align-items: center; gap: 16px; }
+    .customer-summary__avatar { display: grid; width: 56px; height: 56px; flex: 0 0 56px; place-items: center; border-radius: 50%; background: var(--farock-primary); color: #fff; font-size: 22px; font-weight: 700; }
+    .customer-summary h2 { margin: 0; font-size: 24px; line-height: 32px; font-weight: 700; letter-spacing: 0; }
+    .customer-summary p { margin: 4px 0 0; color: var(--farock-muted); font-size: 14px; }
+    .customer-summary__tags { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+    .customer-tag { padding: 6px 10px; border: 1px solid var(--farock-border); border-radius: 999px; background: var(--farock-surface-soft); font-size: 12px; font-weight: 600; }
+    .customer-tag--mode { background: var(--farock-primary); color: #fff; }
+    .customer-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+    .customer-detail-card { min-width: 0; padding: 24px; }
+    .customer-detail-card--wide { grid-column: 1 / -1; }
+    .customer-detail-card__title { display: flex; align-items: center; gap: 10px; margin: 0 0 22px; font-size: 18px; line-height: 26px; font-weight: 700; letter-spacing: 0; }
+    .customer-detail-card__title .material-symbols-outlined { font-size: 21px; }
+    .customer-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 28px; }
+    .customer-field { min-width: 0; margin: 0; }
+    .customer-field--wide { grid-column: 1 / -1; }
+    .customer-field dt { margin-bottom: 6px; color: var(--farock-muted); font-size: 12px; line-height: 18px; font-weight: 600; }
+    .customer-field dd { margin: 0; overflow-wrap: anywhere; color: var(--farock-text); font-size: 14px; line-height: 22px; }
+    .customer-ledger { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .customer-ledger th { padding: 0 16px 12px 0; border-bottom: 1px solid var(--farock-border); color: var(--farock-muted); font-size: 12px; font-weight: 600; text-align: left; }
+    .customer-ledger td { padding: 14px 16px 14px 0; border-bottom: 1px solid var(--farock-border); vertical-align: top; }
+    .customer-ledger tr:last-child td { border-bottom: 0; }
+    .customer-ledger__amount { font-variant-numeric: tabular-nums; font-weight: 700; white-space: nowrap; }
+    .customer-ledger__amount--income { color: #217346; }
+    .customer-ledger__amount--refund { color: #b3261e; }
+    .customer-empty { padding: 30px 16px; color: var(--farock-muted); text-align: center; }
+    .customer-load-error { color: #b3261e !important; }
+    @media (max-width: 900px) {
+      .customer-detail-page { padding: 24px; }
+      .customer-detail-grid { grid-template-columns: 1fr; }
+      .customer-detail-card--wide { grid-column: auto; }
+    }
+    @media (max-width: 640px) {
+      .customer-detail-page { padding: 16px; }
+      .customer-summary { align-items: flex-start; flex-direction: column; }
+      .customer-summary__tags { justify-content: flex-start; }
+      .customer-fields { grid-template-columns: 1fr; }
+      .customer-field--wide { grid-column: auto; }
+      .customer-ledger-wrap { overflow-x: auto; }
+      .customer-ledger { min-width: 620px; }
+    }
+  </style>
 </head>
-<body class="flex flex-col md:flex-row min-h-screen">
-<!-- SideNavBar -->
-<nav class="hidden md:flex flex-col py-margin-desktop px-4 space-y-4 bg-surface dark:bg-surface-dim border-r border-outline-variant dark:border-outline fixed left-0 top-0 h-full w-[280px] z-40">
-<div class="px-4 mb-8">
-<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-on-primary-fixed">Faloco</h1>
-<p class="font-label-md text-label-md text-on-surface-variant">Premium Management</p>
-</div>
-<div class="flex flex-col space-y-2 flex-grow">
-<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-on-primary-fixed hover:bg-surface-container-low transition-colors duration-200" href="#">
-<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
-<span class="font-body-md text-body-md font-semibold">Dashboard</span>
-</a>
-<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-primary dark:text-on-primary-fixed bg-surface-container-high dark:bg-surface-container border-l-4 border-primary font-semibold opacity-90 transition-all" href="#">
-<span class="material-symbols-outlined" data-icon="group">group</span>
-<span class="font-body-md text-body-md font-semibold">Customers</span>
-</a>
-<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-on-primary-fixed hover:bg-surface-container-low transition-colors duration-200" href="#">
-<span class="material-symbols-outlined" data-icon="assignment_turned_in">assignment_turned_in</span>
-<span class="font-body-md text-body-md font-semibold">Tasks</span>
-</a>
-<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-on-primary-fixed hover:bg-surface-container-low transition-colors duration-200" href="#">
-<span class="material-symbols-outlined" data-icon="trending_up">trending_up</span>
-<span class="font-body-md text-body-md font-semibold">Activity</span>
-</a>
-<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-on-primary-fixed hover:bg-surface-container-low transition-colors duration-200" href="#">
-<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
-<span class="font-body-md text-body-md font-semibold">Orders</span>
-</a>
-<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-on-primary-fixed hover:bg-surface-container-low transition-colors duration-200" href="#">
-<span class="material-symbols-outlined" data-icon="settings">settings</span>
-<span class="font-body-md text-body-md font-semibold">Settings</span>
-</a>
-</div>
-<button class="mt-8 bg-primary text-on-primary font-label-md text-label-md py-3 px-6 rounded-lg w-full flex items-center justify-center space-x-2">
-<span class="material-symbols-outlined" data-icon="add">add</span>
-<span>New Project</span>
-</button>
-<div class="mt-auto border-t border-outline-variant pt-4 flex flex-col space-y-2">
-<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors" href="#">
-<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
-<span class="font-body-md text-body-md">Profile</span>
-</a>
-<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors" href="#">
-<span class="material-symbols-outlined" data-icon="logout">logout</span>
-<span class="font-body-md text-body-md">Logout</span>
-</a>
-</div>
-</nav>
-<!-- Main Content Area -->
-<div class="flex-1 md:ml-[280px] flex flex-col min-h-screen">
-<!-- TopAppBar -->
-<header class="sticky top-0 z-30 w-full flex items-center justify-between px-margin-desktop h-20 bg-surface-bright/80 dark:bg-surface-dim/80 backdrop-blur-md shadow-sm">
-<div class="flex items-center space-x-6">
-<h2 class="font-headline-md text-headline-md font-bold text-primary dark:text-on-primary-fixed mr-4">Faloco CRM</h2>
-<div class="relative hidden sm:block">
-<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline" data-icon="search">search</span>
-<input class="pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-full font-body-md text-body-md focus:ring-2 focus:ring-primary focus:bg-surface-white transition-all w-64" placeholder="Search customer..." type="text"/>
-</div>
-</div>
-<nav class="hidden lg:flex space-x-6">
-<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-all pb-2" href="#">Main Office</a>
-<a class="font-label-md text-label-md text-primary border-b-2 border-primary font-bold pb-2" href="#">East Branch</a>
-</nav>
-<div class="flex items-center space-x-4">
-<div class="hidden sm:flex space-x-2">
-<button class="font-label-md text-label-md px-4 py-2 text-primary border border-primary rounded-lg hover:bg-surface-container-low transition-colors">New Follow-up</button>
-<button class="font-label-md text-label-md px-4 py-2 bg-primary text-on-primary rounded-lg flex items-center space-x-2 hover:opacity-90 transition-opacity">
-<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
-<span>Add Customer</span>
-</button>
-</div>
-<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
-<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
-</button>
-<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
-<span class="material-symbols-outlined" data-icon="apps">apps</span>
-</button>
-<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
-<img alt="User avatar" class="w-full h-full object-cover" data-alt="A small, professional headshot of a corporate user, smiling slightly against a neutral grey background, high-resolution and brightly lit, conveying approachability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnXxWt9MttAWmBmIbW-rR3BDEWRBcqZJdxpF676jWhK0GiTIe0xs9OcPBCGs-tFP-uojvOQaEc7KLGqRg9ioH3Lsl0apxov03wJtALdClAHwrwrVLJ61MITLve48tIrje9fa4BfMekAR6dS176NFPVw8pJZjmLLNAJ50GYjN2Phwp0lymQgOo17v4J7lR9cWInIjM9gGe0mQPHjkCHzTaGRNlPWakg7NENhq-dn49DwVq0d2S3DK6_"/>
-</div>
-</div>
-</header>
-<!-- Canvas -->
-<main class="flex-1 p-margin-mobile md:p-margin-desktop lg:p-[48px] bg-background">
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop">
-<!-- Left Column: Customer Summary (3 columns) -->
-<div class="lg:col-span-3 flex flex-col space-y-section-gap">
-<!-- Profile Card -->
-<div class="bg-surface-white rounded-xl p-card-padding card-shadow border border-masked-gray">
-<div class="flex flex-col items-center text-center">
-<div class="w-24 h-24 rounded-full overflow-hidden mb-4 border-2 border-surface-container">
-<img alt="Customer Avatar" class="w-full h-full object-cover" data-alt="A professional portrait of an adult male in a modern corporate setting, wearing a tailored navy suit. Soft, natural lighting from a nearby window creates a warm, inviting atmosphere. High quality, editorial style photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAntMhtkg0Z1boWKnEzoomZgsKKL5MKukoznyWdofRRDKDymK86icGa_9cxoxhJd58yUqs0G2JUS4HMwM4A8Va4L9wskdt8Un4RP-6vNSujUA71t16n69IHkTP6w50pHMcNaSixpfZih_KZnEjV9GO-Hf37yTk1TXzlNH5PQft_3Cahyhd2TddzWeG6mWD6051Eklsf4ywT0QQeqym12FP93to2o8Td5LEkBqY1ZJrihw9W6LWcSMl1"/>
-</div>
-<h2 class="font-headline-md text-headline-md text-primary mb-1" data-customer-name>正在加载...</h2>
-<p class="font-body-md text-body-md text-on-surface-variant mb-4" data-customer-contact>正在读取客户资料</p>
-<div class="flex space-x-2 mb-6">
-<span class="bg-primary-fixed px-3 py-1 rounded-full font-label-md text-label-md text-primary" data-customer-tier>-</span>
-<span class="bg-secondary-container px-3 py-1 rounded-full font-label-md text-label-md text-on-secondary-container" data-customer-stage>-</span>
-</div>
-</div>
-<div class="border-t border-masked-gray pt-4 mt-2">
-<h3 class="font-label-md text-label-md text-on-surface-variant mb-3 uppercase tracking-wider">Housing Info</h3>
-<div class="space-y-3">
-<div class="flex items-start">
-<span class="material-symbols-outlined text-outline mr-2 text-[20px]" data-icon="apartment">apartment</span>
-<div>
-<p class="font-body-md text-body-md text-primary" data-customer-house>-</p>
-<p class="font-body-md text-body-md text-on-surface-variant text-sm" data-customer-community>-</p>
-</div>
-</div>
-<div class="flex items-start">
-<span class="material-symbols-outlined text-outline mr-2 text-[20px]" data-icon="map">map</span>
-<div>
-<p class="font-body-md text-body-md text-primary" data-customer-location>-</p>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<!-- Center Column: Timeline (5 columns) -->
-<div class="lg:col-span-5 flex flex-col space-y-section-gap">
-<div class="bg-surface-white rounded-xl p-card-padding card-shadow border border-masked-gray h-full">
-<div class="flex justify-between items-center mb-6">
-<h2 class="font-headline-md text-headline-md text-primary">Follow-up History</h2>
-<button class="text-primary hover:bg-surface-container-low p-2 rounded-full transition-colors">
-<span class="material-symbols-outlined" data-icon="add">add</span>
-</button>
-</div>
-<div class="relative border-l-2 border-surface-container ml-3 space-y-8 pb-4" data-customer-followups>
-<!-- Timeline Item 1 -->
-<div class="relative pl-6">
-<div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-primary border-4 border-surface-white"></div>
-<p class="font-label-md text-label-md text-on-surface-variant mb-1">Oct 24, 2023 • Meeting</p>
-<div class="bg-surface-container-low p-4 rounded-lg border border-masked-gray">
-<p class="font-body-md text-body-md text-primary">Discussed initial proposal for custom kitchen cabinetry. Client prefers the ENF Eco-friendly series. Sent revised quote.</p>
-</div>
-</div>
-<!-- Timeline Item 2 -->
-<div class="relative pl-6">
-<div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-outline-variant border-4 border-surface-white"></div>
-<p class="font-label-md text-label-md text-on-surface-variant mb-1">Oct 18, 2023 • Call</p>
-<div class="bg-surface-container-low p-4 rounded-lg border border-masked-gray">
-<p class="font-body-md text-body-md text-primary">Clarified timeline expectations. Production lead time of 6 weeks is acceptable.</p>
-</div>
-</div>
-<!-- Timeline Item 3 -->
-<div class="relative pl-6">
-<div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-outline-variant border-4 border-surface-white"></div>
-<p class="font-label-md text-label-md text-on-surface-variant mb-1">Oct 10, 2023 • Email</p>
-<div class="bg-surface-container-low p-4 rounded-lg border border-masked-gray">
-<p class="font-body-md text-body-md text-primary">Initial inquiry received via website contact form. Shared preliminary digital catalog.</p>
-</div>
-</div>
-</div>
-</div>
-</div>
-<!-- Right Column: Commercial Section (4 columns) -->
-<div class="lg:col-span-4 flex flex-col space-y-section-gap">
-<div class="bg-surface-white rounded-xl p-card-padding card-shadow border border-masked-gray">
-<h2 class="font-headline-md text-headline-md text-primary mb-6">Commercial Details</h2>
-<!-- Orders List -->
-<div class="mb-8" data-customer-order-summary>
-<h3 class="font-label-md text-label-md text-on-surface-variant mb-3 uppercase tracking-wider">Active Orders</h3>
-<div class="bg-surface-container-low p-4 rounded-lg border border-masked-gray mb-3 card-shadow-hover transition-shadow cursor-pointer">
-<div class="flex justify-between items-center mb-2">
-<span class="font-data-mono text-data-mono text-primary font-semibold">#ORD-8821</span>
-<span class="bg-tertiary-fixed text-on-tertiary-fixed px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide">In Production</span>
-</div>
-<p class="font-body-md text-body-md text-primary mb-1">Custom Kitchen &amp; Island</p>
-<p class="font-body-md text-body-md text-on-surface-variant text-sm">Material: ENF Eco-friendly</p>
-</div>
-</div>
-<!-- Payment Progress -->
-<div data-customer-payment-summary>
-<h3 class="font-label-md text-label-md text-on-surface-variant mb-3 uppercase tracking-wider">Payment Progress</h3>
-<div class="flex justify-between font-data-mono text-data-mono mb-2">
-<span class="text-primary">$45,000 Paid</span>
-<span class="text-outline">$15,000 Remaining</span>
-</div>
-<div class="w-full bg-surface-variant rounded-full h-3 mb-2 overflow-hidden">
-<div class="bg-primary h-3 rounded-full" style="width: 75%"></div>
-</div>
-<p class="text-right font-label-md text-label-md text-on-surface-variant">75% Complete</p>
-</div>
-</div>
-</div>
-</div>
-<!-- Bottom Section: AI Persona -->
-<div class="mt-section-gap">
-<div class="bg-surface-white rounded-xl p-card-padding card-shadow border border-masked-gray">
-<div class="flex items-center space-x-2 mb-6">
-<span class="material-symbols-outlined text-secondary" data-icon="psychology">psychology</span>
-<h2 class="font-headline-md text-headline-md text-primary">AI Customer Persona &amp; Insights</h2>
-</div>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-<div>
-<h3 class="font-label-md text-label-md text-on-surface-variant mb-3 uppercase tracking-wider">Persona Profile</h3>
-<p class="font-body-md text-body-md text-primary leading-relaxed" data-customer-persona>
-                                Alex is a detail-oriented professional who values sustainable materials and long-term durability. They are highly analytical in their purchasing decisions, preferring data-backed guarantees over emotional sales pitches. Time efficiency is critical; they appreciate concise communication and adherence to promised timelines.
-                            </p>
-</div>
-<div class="border-t md:border-t-0 md:border-l border-masked-gray pt-4 md:pt-0 md:pl-8">
-<h3 class="font-label-md text-label-md text-on-surface-variant mb-3 uppercase tracking-wider">Why Faloco?</h3>
-<ul class="space-y-3" data-customer-why>
-<li class="flex items-start">
-<span class="material-symbols-outlined text-status-sage mr-2 text-[20px]" data-icon="check_circle">check_circle</span>
-<span class="font-body-md text-body-md text-primary">Exclusive use of certified ENF Eco-friendly materials.</span>
-</li>
-<li class="flex items-start">
-<span class="material-symbols-outlined text-status-sage mr-2 text-[20px]" data-icon="check_circle">check_circle</span>
-<span class="font-body-md text-body-md text-primary">Transparent production timeline tracking.</span>
-</li>
-<li class="flex items-start">
-<span class="material-symbols-outlined text-status-sage mr-2 text-[20px]" data-icon="check_circle">check_circle</span>
-<span class="font-body-md text-body-md text-primary">Premium bespoke design capabilities fitting unique floorplans.</span>
-</li>
-</ul>
-</div>
-</div>
-</div>
-</div>
-</main>
-</div>
-<script src="assets/layout.js" defer></script>
-<script src="assets/api.js" defer></script>
-<script src="assets/app.js" defer></script>
-<script src="assets/customer-detail.js" defer></script>
-</body></html>
+<body>
+  <main class="customer-detail-page">
+    <div class="farock-visually-hidden"><h1>客户详情</h1></div>
+    <section class="farock-card customer-summary" aria-label="客户概览">
+      <div class="customer-summary__identity">
+        <span class="customer-summary__avatar" data-customer-avatar aria-hidden="true">客</span>
+        <div>
+          <h2 data-customer-name>正在加载...</h2>
+          <p data-customer-contact>正在读取客户资料</p>
+        </div>
+      </div>
+      <div class="customer-summary__tags">
+        <span class="customer-tag customer-tag--mode" data-customer-mode>-</span>
+        <span class="customer-tag" data-customer-tier>-</span>
+        <span class="customer-tag" data-customer-stage>-</span>
+      </div>
+    </section>
+
+    <div class="customer-detail-grid">
+      <section class="farock-card customer-detail-card">
+        <h3 class="customer-detail-card__title"><span class="material-symbols-outlined">person</span>客户基本身份</h3>
+        <dl class="customer-fields">
+          <div class="customer-field"><dt>客户姓名</dt><dd data-field="name">-</dd></div>
+          <div class="customer-field"><dt>客户联系方式</dt><dd data-field="phone">-</dd></div>
+          <div class="customer-field"><dt>生日</dt><dd data-field="birthday">-</dd></div>
+          <div class="customer-field"><dt>老客户</dt><dd data-field="isReturningCustomer">-</dd></div>
+          <div class="customer-field customer-field--wide"><dt>地址</dt><dd data-field="address">-</dd></div>
+        </dl>
+      </section>
+
+      <section class="farock-card customer-detail-card">
+        <h3 class="customer-detail-card__title"><span class="material-symbols-outlined">storefront</span>来源与归属</h3>
+        <dl class="customer-fields">
+          <div class="customer-field"><dt>来源工作表 / 门店</dt><dd data-field="sourceStore">-</dd></div>
+          <div class="customer-field"><dt>客户来源</dt><dd data-field="customerSource">-</dd></div>
+          <div class="customer-field"><dt>导购</dt><dd data-field="salesRep">-</dd></div>
+          <div class="customer-field"><dt>设计师</dt><dd data-field="designer">-</dd></div>
+          <div class="customer-field customer-field--wide"><dt>带单设计师</dt><dd data-field="referralDesigner">-</dd></div>
+        </dl>
+      </section>
+
+      <section class="farock-card customer-detail-card customer-detail-card--wide">
+        <h3 class="customer-detail-card__title"><span class="material-symbols-outlined">contract</span>订单与合同</h3>
+        <dl class="customer-fields">
+          <div class="customer-field"><dt>下单日期</dt><dd data-field="dealDate">-</dd></div>
+          <div class="customer-field"><dt>下单金额</dt><dd data-field="totalAmount">-</dd></div>
+          <div class="customer-field"><dt>设计返点金额</dt><dd data-field="designRebateAmount">-</dd></div>
+          <div class="customer-field"><dt>设计返点状态</dt><dd data-field="designRebateStatus">-</dd></div>
+          <div class="customer-field"><dt>开发票金额</dt><dd data-field="invoiceAmount">-</dd></div>
+          <div class="customer-field customer-field--wide"><dt>备注</dt><dd data-field="notes">-</dd></div>
+        </dl>
+      </section>
+
+      <section class="farock-card customer-detail-card customer-detail-card--wide">
+        <h3 class="customer-detail-card__title"><span class="material-symbols-outlined">receipt_long</span>财务流水</h3>
+        <div class="customer-ledger-wrap">
+          <table class="customer-ledger">
+            <thead><tr><th>日期</th><th>金额</th><th>渠道</th><th>进度</th></tr></thead>
+            <tbody data-customer-transactions><tr><td class="customer-empty" colspan="4">正在加载财务流水...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script src="assets/layout.js" defer></script>
+  <script src="assets/api.js" defer></script>
+  <script src="assets/app.js" defer></script>
+  <script src="assets/customer-detail.js" defer></script>
+</body>
+</html>
