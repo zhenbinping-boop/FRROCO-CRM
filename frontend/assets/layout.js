@@ -8,6 +8,24 @@
     return;
   }
 
+  let currentSession = null;
+  try { currentSession = JSON.parse(localStorage.getItem("farock-session") || "null"); } catch { currentSession = null; }
+  function avatarContentMarkup() {
+    const source = typeof currentSession?.avatarData === "string" && /^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(currentSession.avatarData)
+      ? currentSession.avatarData
+      : "";
+    if (source) return `<img class="farock-avatar__image" src="${source}" alt="当前用户头像">`;
+    const initial = Array.from(String(currentSession?.name || "我")).find((character) => /[\p{L}\p{N}]/u.test(character)) || "我";
+    return initial;
+  }
+  window.addEventListener("farock:user-avatar-updated", (event) => {
+    const avatarData = event.detail?.avatarData;
+    if (typeof avatarData !== "string") return;
+    currentSession = { ...(currentSession || {}), avatarData };
+    localStorage.setItem("farock-session", JSON.stringify(currentSession));
+    document.querySelectorAll("[data-user-avatar]").forEach((element) => { element.innerHTML = avatarContentMarkup(); });
+  });
+
   const pages = {
     "dashboard.html": { title: "经营工作台", active: "dashboard", actions: ["newCustomer"] },
     "customers.html": { title: "客户管理", active: "customers", actions: ["regionalExport", "customerImport", "newCustomer"] },
@@ -56,7 +74,7 @@
               <span class="material-symbols-outlined">add</span><span>新建客户</span>
             </a>
             <a class="farock-user-card" href="users-permissions.html">
-              <span class="farock-avatar" aria-hidden="true">林</span>
+              <span class="farock-avatar" data-user-avatar aria-hidden="true">${avatarContentMarkup()}</span>
               <span class="farock-user-card__copy"><strong>林晓雅</strong><small>管理员</small></span>
               <span class="material-symbols-outlined">chevron_right</span>
             </a>
@@ -102,7 +120,7 @@
             <button class="farock-icon-button" type="button" aria-label="通知">
               <span class="material-symbols-outlined">notifications</span><span class="farock-notification-dot"></span>
             </button>
-            <a class="farock-avatar farock-avatar--header" href="users-permissions.html" aria-label="林晓雅，管理员">林</a>
+            <a class="farock-avatar farock-avatar--header" data-user-avatar href="users-permissions.html" aria-label="当前用户头像">${avatarContentMarkup()}</a>
           </div>
         </header>`;
       this.querySelector(".farock-header__menu").addEventListener("click", () => window.dispatchEvent(new CustomEvent("farock:toggle-sidebar")));

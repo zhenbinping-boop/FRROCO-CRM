@@ -1,6 +1,7 @@
 import type { RequestHandler } from "express";
 import bcrypt from "bcryptjs";
 import { Prisma, UserRole } from "@prisma/client";
+import { Buffer } from "node:buffer";
 import { z } from "zod";
 
 import { AppError, validate } from "../lib/http.js";
@@ -8,6 +9,7 @@ import { prisma } from "../lib/prisma.js";
 import { removesAdminAccess, removesOwnAdminAccess } from "../lib/user-policy.js";
 
 const roles = ["ADMIN", "SALES_REP", "DESIGNER", "DEALER_USER"] as const;
+const emptyQueryValue = (value: unknown) => value === "" ? undefined : value;
 const safeUserSelect = {
   id: true,
   email: true,
@@ -21,13 +23,13 @@ const safeUserSelect = {
   updatedAt: true,
 } satisfies Prisma.UserSelect;
 
-const listSchema = z.object({
-  search: z.string().trim().max(100).optional(),
-  role: z.enum(roles).optional(),
-  active: z.enum(["true", "false"]).transform((value) => value === "true").optional(),
-  organizationId: z.string().trim().min(1).optional(),
-  page: z.coerce.number().int().min(1).default(1),
-  pageSize: z.coerce.number().int().min(1).max(100).default(50),
+export const userListQuerySchema = z.object({
+  search: z.preprocess(emptyQueryValue, z.string().trim().max(100).optional()),
+  role: z.preprocess(emptyQueryValue, z.enum(roles).optional()),
+  active: z.preprocess(emptyQueryValue, z.enum(["true", "false"]).transform((value) => value === "true").optional()),
+  organizationId: z.preprocess(emptyQueryValue, z.string().trim().min(1).optional()),
+  page: z.preprocess(emptyQueryValue, z.coerce.number().int().min(1).default(1)),
+  pageSize: z.preprocess(emptyQueryValue, z.coerce.number().int().min(1).max(100).default(50)),
 });
 
 const createSchema = z.object({
@@ -57,6 +59,21 @@ const passwordSchema = z.object({
   path: ["newPassword"],
 });
 
+const avatarSchema = z.object({ dataUrl: z.string().min(32).max(700 * 1024) });
+
+function parseAvatarDataUrl(dataUrl: string) {
+  const match = /^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/=]+)$/.exec(dataUrl);
+  if (!match) throw new AppError(400, "INVALID_AVATAR", "头像必须是 PNG、JPG 或 WEBP 图片");
+  const bytes = Buffer.from(match[2], "base64");
+  const isPng = bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
+  const isJpeg = bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+  const isWebp = bytes.subarray(0, 4).toString("ascii") === "RIFF" && bytes.subarray(8, 12).toString("ascii") === "WEBP";
+  if (!bytes.length || bytes.length > 512 * 1024 || !(isPng || isJpeg || isWebp)) {
+    throw new AppError(400, "INVALID_AVATAR", "头像文件无效或超过 512KB");
+  }
+  return dataUrl;
+}
+
 function requireAdmin(request: Parameters<RequestHandler>[0]) {
   if (request.user?.role !== "ADMIN") throw new AppError(403, "ADMIN_REQUIRED", "仅管理员可以管理成员");
 }
@@ -69,7 +86,7 @@ async function validateOrganization(organizationId: string | null | undefined) {
 
 export const listUsers: RequestHandler = async (request, response) => {
   requireAdmin(request);
-  const query = validate(listSchema, request.query);
+  const query = validate(userListQuerySchema, request.query);
   const where: Prisma.UserWhereInput = {
     ...(query.role && { role: query.role }),
     ...(query.active !== undefined && { active: query.active }),
@@ -174,4 +191,11 @@ export const changeMyPassword: RequestHandler = async (request, response) => {
   }
   await prisma.user.update({ where: { id: user.id }, data: { passwordHash: await bcrypt.hash(input.newPassword, 12) } });
   response.status(204).send();
+};
+
+export const changeMyAvatar: RequestHandler = async (request, response) => {
+  const input = validate(avatarSchema, request.body);
+  const avatarData = parseAvatarDataUrl(input.dataUrl);
+  await prisma.user.update({ where: { id: request.user?.id }, data: { avatarData } });
+  response.json({ data: { avatarData } });
 };

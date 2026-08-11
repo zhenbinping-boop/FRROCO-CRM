@@ -95,6 +95,7 @@ model User {
   phone            String?       @unique @db.VarChar(32)
   name             String        @db.VarChar(100)
   passwordHash     String        @db.VarChar(255)
+  avatarData       String?       @db.Text
   role             UserRole      @default(SALES_REP)
   active           Boolean       @default(true)
   organizationId   String?

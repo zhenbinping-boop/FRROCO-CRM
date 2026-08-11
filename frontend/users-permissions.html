@@ -26,6 +26,12 @@
   <main class="mx-auto w-full max-w-7xl p-4 md:p-8">
     <div><h1 class="text-2xl font-bold">人员与权限</h1><p>管理系统成员、所属机构和账号权限。</p></div>
 
+    <section class="mb-5 flex flex-col gap-4 rounded-lg border border-[#dedfda] bg-white p-5 sm:flex-row sm:items-center sm:justify-between" aria-labelledby="profile-title">
+      <div class="flex items-center gap-4"><div class="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-full bg-[#e5e5df] text-xl font-bold" data-current-avatar aria-hidden="true">我</div><div><h2 class="text-lg font-semibold" id="profile-title">我的资料</h2><p class="mt-1 text-sm text-[#666a67]">修改当前账号头像，图片仅支持 PNG、JPG 或 WEBP，最大 512KB。</p></div></div>
+      <button class="farock-button farock-button--secondary shrink-0" id="avatar-change-button" type="button"><span class="material-symbols-outlined">photo_camera</span><span>修改头像</span></button>
+      <input accept="image/png,image/jpeg,image/webp" class="farock-visually-hidden" id="avatar-file" type="file">
+    </section>
+
     <section class="mb-5 grid gap-3 rounded-lg border border-[#dedfda] bg-white p-4 md:grid-cols-[minmax(240px,1fr)_180px_220px_150px]" aria-label="成员筛选">
       <label class="user-field"><span>检索成员</span><input class="user-input" id="user-search" type="search" placeholder="姓名、邮箱或手机号"></label>
       <label class="user-field"><span>角色</span><select class="user-input" id="user-role-filter"><option value="">全部角色</option><option value="ADMIN">管理员</option><option value="SALES_REP">导购</option><option value="DESIGNER">设计师</option><option value="DEALER_USER">代理商用户</option></select></label>
@@ -98,6 +104,14 @@
     </form>
   </dialog>
 
+  <dialog class="user-dialog" id="avatar-dialog" aria-labelledby="avatar-title">
+    <form id="avatar-form">
+      <div class="flex items-center justify-between border-b border-[#dedfda] px-5 py-4"><h2 class="text-lg font-semibold" id="avatar-title">确认新头像</h2><button class="farock-icon-button" data-dialog-close type="button" aria-label="关闭"><span class="material-symbols-outlined">close</span></button></div>
+      <div class="user-dialog__body flex flex-col items-center gap-4 p-6"><div class="grid h-40 w-40 place-items-center overflow-hidden rounded-full bg-[#e5e5df] text-3xl font-bold"><img class="hidden h-full w-full object-cover" id="avatar-preview" alt="头像预览"></div><p class="hidden w-full rounded-md bg-red-50 p-3 text-sm text-red-700" data-form-error role="alert"></p></div>
+      <div class="flex justify-end gap-3 border-t border-[#dedfda] px-5 py-4"><button class="farock-button farock-button--secondary" data-dialog-close type="button">取消</button><button class="farock-button farock-button--primary" type="submit">保存头像</button></div>
+    </form>
+  </dialog>
+
   <div class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/40 p-4" id="user-import-modal" role="dialog" aria-modal="true" aria-labelledby="user-import-title">
     <div class="flex max-h-[90vh] w-full max-w-4xl flex-col rounded-lg bg-white shadow-2xl">
       <div class="flex items-start justify-between border-b border-[#dedfda] p-5"><div><h2 class="text-lg font-semibold" id="user-import-title">用户导入预览</h2><p class="mt-1 text-sm text-[#666a67]" id="user-import-file-name"></p></div><button class="farock-icon-button" id="user-import-close" type="button" aria-label="关闭导入预览"><span class="material-symbols-outlined">close</span></button></div>
@@ -116,6 +130,7 @@
   <script src="assets/layout.js" defer></script>
   <script src="assets/user-import.js" defer></script>
   <script src="assets/user-admin.js" defer></script>
+  <script src="assets/user-profile.js" defer></script>
   <script src="assets/app.js" defer></script>
 </body>
 </html>

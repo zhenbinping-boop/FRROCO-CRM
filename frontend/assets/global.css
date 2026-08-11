@@ -291,6 +291,13 @@ farock-header {
   flex-basis: 42px;
 }
 
+.farock-avatar__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .farock-content-actions {
   display: flex;
   min-height: 68px;
