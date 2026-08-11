@@ -116,7 +116,7 @@
     matrix.slice(0, 20).forEach((row, index) => {
       const mapping = buildHeaderMapping(row);
       const fields = new Set(mapping.values());
-      if (!fields.has("name") || !fields.has("phone") || fields.size < 3) return;
+      if (!fields.has("name") || fields.size < 2) return;
       const score = [...row].reduce((total, value) => total + bestFieldMatch(value).score, 0);
       if (score > best.score) best = { index, score, mapping };
     });
@@ -126,7 +126,7 @@
   function detectHeaderRows(matrix) {
     return matrix.map((row, index) => ({ index, mapping: buildHeaderMapping(row) })).filter(({ mapping }) => {
       const fields = new Set(mapping.values());
-      return fields.has("name") && fields.has("phone") && fields.size >= 3;
+      return fields.has("name") && fields.size >= 2;
     }).map(({ index }) => index);
   }
 
@@ -177,6 +177,7 @@
   }
 
   const booleanFor = (value) => /^(是|有|老客户|复购|yes|true|1)$/i.test(String(value ?? "").trim());
+  const normalizeStoreType = (value) => /dealer|代理|经销/i.test(value) ? "DEALER" : /direct|直营/i.test(value) ? "DIRECT" : "";
 
   function normalizedContains(left, right) {
     const a = normalize(left);
@@ -203,6 +204,11 @@
     if (hinted) return hinted;
     const candidates = stores.filter((store) => store.storeType === storeType && store.regionProvince === province && store.regionCity === city);
     return candidates.length === 1 ? candidates[0] : null;
+  }
+
+  function resolveStore(row, stores, mappedStoreId) {
+    return matchStore(row, stores, normalizeStoreType(valueFor(row, "storeType")), valueFor(row, "province"), valueFor(row, "city"))
+      || stores.find((store) => store.id === mappedStoreId);
   }
 
   function extractRows(XLSX, workbook) {
@@ -341,6 +347,10 @@
     if (crossSheetRows.length !== 1 || crossSheetRows[0].__designRebateAmount !== 500 || crossSheetRows[0].__referralDesignerNames[0] !== "设计师甲") {
       throw new Error("customer-import cross-sheet rebate self-check failed");
     }
+    const noPhoneRows = extractRows({ utils: { sheet_to_json: () => [["客户姓名", "地址"], ["无电话客户", "测试地址"]] } }, { SheetNames: ["测试门店"], Sheets: { 测试门店: {} } });
+    if (noPhoneRows.length !== 1 || valueFor(noPhoneRows[0], "name") !== "无电话客户") throw new Error("customer-import optional phone self-check failed");
+    const mappedStore = { id: "store-1", storeName: "待选择门店", storeType: "DIRECT", regionProvince: "北京市", regionCity: "北京市", regionDistrict: "朝阳区" };
+    if (resolveStore({ __sheetName: "未知工作表" }, [mappedStore], mappedStore.id) !== mappedStore) throw new Error("customer-import sheet store mapping self-check failed");
     console.log("customer-import self-check passed");
   }
 
@@ -356,12 +366,16 @@
     fileName: document.querySelector("#customer-import-file-name"), total: document.querySelector("#customer-import-total"),
     valid: document.querySelector("#customer-import-valid"), invalid: document.querySelector("#customer-import-invalid"),
     error: document.querySelector("#customer-import-error"), preview: document.querySelector("#customer-import-preview"),
+    storeMapping: document.querySelector("#customer-import-store-mapping"), storeMappingList: document.querySelector("#customer-import-store-mapping-list"),
   };
   if (Object.values(elements).some((element) => !element)) return;
 
   let parsedRows = [];
+  let sourceRows = [];
+  let availableStores = [];
+  let existingCustomers = [];
+  const storeIdsBySheet = new Map();
   let sheetJsPromise;
-  const normalizeStoreType = (value) => /dealer|代理|经销/i.test(value) ? "DEALER" : /direct|直营/i.test(value) ? "DIRECT" : "";
   const normalizeTier = (value) => ["S", "A", "B", "C"].includes(String(value).trim().charAt(0).toUpperCase()) ? String(value).trim().charAt(0).toUpperCase() : "B";
 
   function loadSheetJs() {
@@ -378,14 +392,14 @@
     return sheetJsPromise;
   }
 
-  function validateRows(sourceRows, stores, existingCustomers) {
-    const existingPhones = new Set(existingCustomers.map((customer) => String(customer.phone || "").replace(/\D/g, "")));
+  function validateRows(rows, stores, customers) {
+    const existingPhones = new Set(customers.map((customer) => String(customer.phone || "").replace(/\D/g, "")).filter(Boolean));
     const filePhones = new Set();
-    return sourceRows.map((row) => {
+    return rows.map((row) => {
       const initialType = normalizeStoreType(valueFor(row, "storeType"));
       const initialProvince = valueFor(row, "province");
       const initialCity = valueFor(row, "city");
-      const store = matchStore(row, stores, initialType, initialProvince, initialCity);
+      const store = resolveStore(row, stores, storeIdsBySheet.get(row.__sheetName));
       const storeType = initialType || store?.storeType || "";
       const province = initialProvince || store?.regionProvince || "";
       const city = initialCity || store?.regionCity || "";
@@ -435,12 +449,49 @@
       if (phone && !/^[+\d][\d\s()-]{5,19}$/.test(phone)) reasons.push("手机号格式不正确");
       else if (existingPhones.has(normalizedPhone)) reasons.push("手机号已存在");
       else if (filePhones.has(normalizedPhone)) reasons.push("文件内手机号重复");
-      if (!storeType) reasons.push("经营模式应为直营或代理商");
-      if (!province || !city || !customer.regionDistrict) reasons.push("省/市/区不能为空");
-      if (!store) reasons.push("无法唯一匹配门店，请填写门店编码、名称或使用对应工作表名");
+      if (!storeType || !province || !city || !customer.regionDistrict || !store) reasons.push("请选择该工作表的归属门店");
+      if (store && initialType && store.storeType !== initialType) reasons.push("表格经营模式与所选门店不一致");
+      if (storeType === "DEALER" && store && ((initialProvince && initialProvince !== store.regionProvince) || (initialCity && initialCity !== store.regionCity))) {
+        reasons.push("代理商客户地区与所选门店不一致");
+      }
       if (storeType === "DEALER" && !customer.dealerGroupId) reasons.push("代理商门店未关联代理商分组");
       if (normalizedPhone) filePhones.add(normalizedPhone);
       return { sheetName: row.__sheetName, rowNumber: row.__rowNumber, customer, storeName: store?.storeName || "-", reasons, valid: reasons.length === 0 };
+    });
+  }
+
+  function renderStoreMappings() {
+    const sheets = [...new Set(sourceRows.filter((row) => {
+      const storeType = normalizeStoreType(valueFor(row, "storeType"));
+      return !matchStore(row, availableStores, storeType, valueFor(row, "province"), valueFor(row, "city"));
+    }).map((row) => row.__sheetName))];
+    elements.storeMapping.classList.toggle("hidden", sheets.length === 0);
+    elements.storeMappingList.replaceChildren();
+    sheets.forEach((sheetName) => {
+      const label = document.createElement("label");
+      label.className = "grid gap-1 font-label-md text-label-md text-primary";
+      label.append(document.createTextNode(`${sheetName} 工作表`));
+      const select = document.createElement("select");
+      select.className = "w-full rounded-lg border border-outline-variant bg-surface-white px-3 py-2 font-body-md text-body-md text-primary";
+      const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = "请选择归属门店";
+      select.append(placeholder);
+      availableStores.forEach((store) => {
+        const option = document.createElement("option");
+        option.value = store.id;
+        option.textContent = `${store.storeName} · ${store.storeType === "DEALER" ? "代理商" : "直营"} · ${store.regionProvince}${store.regionCity}${store.regionDistrict || ""}`;
+        option.selected = storeIdsBySheet.get(sheetName) === store.id;
+        select.append(option);
+      });
+      select.addEventListener("change", () => {
+        if (select.value) storeIdsBySheet.set(sheetName, select.value);
+        else storeIdsBySheet.delete(sheetName);
+        parsedRows = validateRows(sourceRows, availableStores, existingCustomers);
+        renderPreview();
+      });
+      label.append(select);
+      elements.storeMappingList.append(label);
     });
   }
 
@@ -484,6 +535,10 @@
     elements.modal.classList.remove("flex");
     elements.input.value = "";
     parsedRows = [];
+    sourceRows = [];
+    availableStores = [];
+    existingCustomers = [];
+    storeIdsBySheet.clear();
     elements.button.focus();
   }
 
@@ -501,17 +556,21 @@
     const extension = file.name.split(".").pop().toLowerCase();
     if (!["xlsx", "xls", "csv"].includes(extension)) throw new Error("仅支持 .xlsx、.xls 或 .csv 文件");
     const XLSX = await loadSheetJs();
-    const [storesPayload, existingCustomers] = await Promise.all([
+    const [storesPayload, customers] = await Promise.all([
       window.FarockAPI.get("/stores"),
       fetchAllCustomers(),
     ]);
     const buffer = await file.arrayBuffer();
     const workbook = extension === "csv" ? XLSX.read(new TextDecoder("utf-8").decode(buffer).replace(/^\uFEFF/, ""), { type: "string" }) : XLSX.read(buffer, { type: "array" });
     if (!workbook.SheetNames.length) throw new Error("文件中没有可读取的工作表");
-    const rows = extractRows(XLSX, workbook);
-    if (!rows.length) throw new Error("所有工作表均未识别到客户数据");
-    parsedRows = validateRows(rows, storesPayload.data, existingCustomers);
+    sourceRows = extractRows(XLSX, workbook);
+    if (!sourceRows.length) throw new Error("所有工作表均未识别到客户数据");
+    availableStores = storesPayload.data;
+    existingCustomers = customers;
+    storeIdsBySheet.clear();
+    parsedRows = validateRows(sourceRows, availableStores, existingCustomers);
     openModal(file.name);
+    renderStoreMappings();
     renderPreview();
   }
 

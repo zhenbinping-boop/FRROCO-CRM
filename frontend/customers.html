@@ -416,10 +416,15 @@
 <div class="p-4 sm:p-card-padding overflow-y-auto min-w-0">
 <div class="grid grid-cols-3 gap-2 sm:gap-3 mb-5">
 <div class="bg-surface-container-low rounded-lg p-3 sm:p-4 min-w-0"><p class="font-label-md text-label-md text-on-surface-variant">总行数</p><p class="font-headline-md text-headline-md text-primary mt-1" id="customer-import-total">0</p></div>
-<div class="bg-secondary-container/50 rounded-lg p-3 sm:p-4 min-w-0"><p class="font-label-md text-label-md text-on-secondary-container">有效</p><p class="font-headline-md text-headline-md text-on-secondary-container mt-1" id="customer-import-valid">0</p></div>
-<div class="bg-error-container rounded-lg p-3 sm:p-4 min-w-0"><p class="font-label-md text-label-md text-on-error-container">无效</p><p class="font-headline-md text-headline-md text-on-error-container mt-1" id="customer-import-invalid">0</p></div>
+<div class="bg-secondary-container/50 rounded-lg p-3 sm:p-4 min-w-0"><p class="font-label-md text-label-md text-on-secondary-container">可导入</p><p class="font-headline-md text-headline-md text-on-secondary-container mt-1" id="customer-import-valid">0</p></div>
+<div class="bg-error-container rounded-lg p-3 sm:p-4 min-w-0"><p class="font-label-md text-label-md text-on-error-container">需处理</p><p class="font-headline-md text-headline-md text-on-error-container mt-1" id="customer-import-invalid">0</p></div>
 </div>
 <p class="hidden mb-4 rounded-lg bg-error-container px-4 py-3 font-body-md text-body-md text-on-error-container" id="customer-import-error" role="alert"></p>
+<section class="hidden mb-5 rounded-lg border border-outline-variant/30 bg-surface-container-low p-4" id="customer-import-store-mapping">
+<h3 class="font-label-lg text-label-lg text-primary">补充归属门店</h3>
+<p class="mt-1 font-body-md text-body-md text-on-surface-variant">表格未包含经营模式或地区时，按工作表选择门店，系统会自动补齐对应归属。其他缺失资料可在导入后编辑。</p>
+<div class="mt-3 grid gap-3 sm:grid-cols-2" id="customer-import-store-mapping-list"></div>
+</section>
 <div class="border border-outline-variant/30 rounded-lg overflow-x-auto max-w-full">
 <div class="max-h-[46vh] overflow-y-auto min-w-[840px]">
 <table class="w-full text-left border-collapse">
