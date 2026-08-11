@@ -161,6 +161,11 @@
   function dateFor(value, fallbackYear) {
     if (value instanceof Date && !Number.isNaN(value.getTime())) return value.toISOString();
     if (typeof value === "number" && value > 1) {
+      if (fallbackYear && value < 13 && !Number.isInteger(value)) {
+        const [month, rawDay] = String(value).split(".");
+        const day = rawDay.length === 1 && /^[123]$/.test(rawDay) ? Number(rawDay) * 10 : Number(rawDay);
+        return dateFor(`${month}.${day}`, fallbackYear);
+      }
       const date = new Date(Date.UTC(1899, 11, 30) + Math.round(value * 86400000));
       return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
     }
@@ -320,6 +325,8 @@
     if (depositFor(row, matrix[2][4]) !== matrix[2][4]) throw new Error("customer-import deposit bounds self-check failed");
     if (new Set(mapping.values()).size !== mapping.size) throw new Error("customer-import unique mapping self-check failed");
     if (!dateFor("1.30", "2021")?.startsWith("2021-01-30")) throw new Error("customer-import date parsing self-check failed");
+    if (!dateFor(1.12, "2021")?.startsWith("2021-01-12") || !dateFor(1.08, "2021")?.startsWith("2021-01-08") || !dateFor(1.3, "2021")?.startsWith("2021-01-30") || !dateFor(1.7, "2021")?.startsWith("2021-01-07")) throw new Error("customer-import numeric month-day self-check failed");
+    if (!dateFor(44197)?.startsWith("2021-01-01")) throw new Error("customer-import Excel serial date self-check failed");
     if (!dateFor("2021..1.3", "2021")?.startsWith("2021-01-03") || !dateFor("20201.1.20", "2021")?.startsWith("2021-01-20")) throw new Error("customer-import malformed date self-check failed");
     if (optionalMoneyFor("9,100+900券") !== 10000 || optionalMoneyFor("1.5万") !== 15000) throw new Error("customer-import money parsing self-check failed");
     const multiTableMatrix = [
