@@ -467,30 +467,34 @@
     }).map((row) => row.__sheetName))];
     elements.storeMapping.classList.toggle("hidden", sheets.length === 0);
     elements.storeMappingList.replaceChildren();
-    sheets.forEach((sheetName) => {
+    sheets.forEach((sheetName, sheetIndex) => {
       const label = document.createElement("label");
       label.className = "grid gap-1 font-label-md text-label-md text-primary";
       label.append(document.createTextNode(`${sheetName} 工作表`));
-      const select = document.createElement("select");
-      select.className = "w-full rounded-lg border border-outline-variant bg-surface-white px-3 py-2 font-body-md text-body-md text-primary";
-      const placeholder = document.createElement("option");
-      placeholder.value = "";
-      placeholder.textContent = "请选择归属门店";
-      select.append(placeholder);
+      const input = document.createElement("input");
+      const listId = `customer-import-store-options-${sheetIndex}`;
+      input.type = "search";
+      input.className = "w-full rounded-lg border border-outline-variant bg-surface-white px-3 py-2 font-body-md text-body-md text-primary";
+      input.placeholder = "可输入门店名称或编码";
+      input.setAttribute("list", listId);
+      input.value = availableStores.find((store) => store.id === storeIdsBySheet.get(sheetName))?.storeName || "";
+      const datalist = document.createElement("datalist");
+      datalist.id = listId;
       availableStores.forEach((store) => {
         const option = document.createElement("option");
-        option.value = store.id;
-        option.textContent = `${store.storeName} · ${store.storeType === "DEALER" ? "代理商" : "直营"} · ${store.regionProvince}${store.regionCity}${store.regionDistrict || ""}`;
-        option.selected = storeIdsBySheet.get(sheetName) === store.id;
-        select.append(option);
+        option.value = store.storeName;
+        option.label = `${store.code} · ${store.storeType === "DEALER" ? "代理商" : "直营"} · ${store.regionProvince}${store.regionCity}${store.regionDistrict || ""}`;
+        datalist.append(option);
       });
-      select.addEventListener("change", () => {
-        if (select.value) storeIdsBySheet.set(sheetName, select.value);
+      const updateStoreMapping = () => {
+        const store = uniqueBestStore(availableStores, input.value);
+        if (store) storeIdsBySheet.set(sheetName, store.id);
         else storeIdsBySheet.delete(sheetName);
         parsedRows = validateRows(sourceRows, availableStores, existingCustomers);
         renderPreview();
-      });
-      label.append(select);
+      };
+      input.addEventListener("input", updateStoreMapping);
+      label.append(input, datalist);
       elements.storeMappingList.append(label);
     });
   }
