@@ -697,7 +697,10 @@
       card.dataset.operationMode = mode;
       card.dataset.province = province;
       card.dataset.city = city;
+      card.dataset.store = customer.storeId || "";
+      card.dataset.storeLabel = customer.storeName || "";
       card.dataset.dealerGroup = dealerGroup;
+      card.dataset.dealerGroupLabel = dealerGroup;
       card.dataset.tier = tier;
       card.dataset.createdAt = customer.createdAt || "";
       card.innerHTML = `
@@ -746,8 +749,9 @@
       const select = document.querySelector(`[data-customer-filter="${name}"]`);
       if (!select) return;
       const current = select.value;
-      select.innerHTML = `<option value="">${label}</option>${values.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("")}`;
-      if (values.includes(current)) select.value = current;
+      const options = values.map((value) => typeof value === "string" ? { value, label: value } : value);
+      select.innerHTML = `<option value="">${label}</option>${options.map((option) => `<option value="${escapeHtml(option.value)}">${escapeHtml(option.label)}</option>`).join("")}`;
+      if (options.some((option) => option.value === current)) select.value = current;
     };
     const unique = (items) => [...new Set(items.filter(Boolean))].sort((a, b) => a.localeCompare(b));
     const refreshOptions = () => {
@@ -756,12 +760,21 @@
       setOptions("province", unique(cards.filter((card) => !mode || valueOf(card, "operationMode") === mode).map((card) => valueOf(card, "province"))), "全部省份");
       const province = selected("province");
       setOptions("city", unique(cards.filter((card) => (!mode || valueOf(card, "operationMode") === mode) && (!province || valueOf(card, "province") === province)).map((card) => valueOf(card, "city"))), "全部城市");
-      setOptions("dealer-group", unique(cards.filter((card) => (!mode || valueOf(card, "operationMode") === mode) && (!province || valueOf(card, "province") === province)).map((card) => valueOf(card, "dealerGroup"))), "全部代理商分组");
+      const city = selected("city");
+      const stores = [...new Map(cards.filter((card) => (!mode || valueOf(card, "operationMode") === mode) && (!province || valueOf(card, "province") === province) && (!city || valueOf(card, "city") === city))
+        .map((card) => [valueOf(card, "store"), { value: valueOf(card, "store"), label: valueOf(card, "storeLabel") || valueOf(card, "store") }])
+        .filter(([value]) => value)).values()];
+      setOptions("store", stores, "全部门店");
+      const dealerGroups = [...new Map(cards.filter((card) => (!mode || valueOf(card, "operationMode") === mode) && (!province || valueOf(card, "province") === province))
+        .map((card) => [valueOf(card, "dealerGroup"), { value: valueOf(card, "dealerGroup"), label: valueOf(card, "dealerGroupLabel") || valueOf(card, "dealerGroup") }])
+        .filter(([value]) => value)).values()];
+      setOptions("dealer-group", dealerGroups, "全部代理商分组");
     };
     const render = () => {
       const mode = selected("mode");
       const province = selected("province");
       const city = selected("city");
+      const store = selected("store");
       const dealerGroup = selected("dealer-group");
       const tier = selected("tier");
       const query = grid._farockCustomerQuery || "";
@@ -777,6 +790,7 @@
         const show = (!mode || valueOf(card, "operationMode") === mode)
           && (!province || valueOf(card, "province") === province)
           && (!city || valueOf(card, "city") === city)
+          && (!store || valueOf(card, "store") === store)
           && (!dealerGroup || valueOf(card, "dealerGroup") === dealerGroup)
           && (!tier || valueOf(card, "tier") === tier)
           && (!query || textOf(card).toLowerCase().includes(query));
@@ -789,8 +803,9 @@
       if (count) count.textContent = `${visible} 位客户`;
     };
     grid._farockRender = render;
+    grid._farockRefreshOptions = refreshOptions;
     controls.forEach((control) => control.addEventListener("change", () => {
-      if (["mode", "province"].includes(control.dataset.customerFilter)) refreshOptions();
+      if (["mode", "province", "city"].includes(control.dataset.customerFilter)) refreshOptions();
       render();
     }));
     document.querySelector("[data-customer-filter-clear]")?.addEventListener("click", () => {

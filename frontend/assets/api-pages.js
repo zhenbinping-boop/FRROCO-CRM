@@ -14,7 +14,7 @@
     const dealer = customer.storeType === "DEALER";
     const owner = dealer ? customer.dealerGroup?.dealerName : customer.store?.storeName;
     const location = [customer.regionProvince, customer.regionCity, customer.regionDistrict].filter(Boolean).join(" / ");
-    return `<article class="bg-surface-white rounded-3xl p-6 shadow-sm border border-outline-variant/30 hover:shadow-lg transition-shadow flex flex-col group" data-operation-mode="${customer.storeType}" data-province="${escapeHtml(customer.regionProvince)}" data-city="${escapeHtml(customer.regionCity)}" data-dealer-group="${escapeHtml(customer.dealerGroupId || "")}" data-tier="${customer.tier}" data-created-at="${customer.createdAt}">
+    return `<article class="bg-surface-white rounded-3xl p-6 shadow-sm border border-outline-variant/30 hover:shadow-lg transition-shadow flex flex-col group" data-operation-mode="${customer.storeType}" data-province="${escapeHtml(customer.regionProvince)}" data-city="${escapeHtml(customer.regionCity)}" data-store="${escapeHtml(customer.store?.id || "")}" data-store-label="${escapeHtml(customer.store?.storeName || "")}" data-dealer-group="${escapeHtml(customer.dealerGroupId || "")}" data-dealer-group-label="${escapeHtml(customer.dealerGroup?.dealerName || customer.dealerGroupId || "")}" data-tier="${customer.tier}" data-created-at="${customer.createdAt}">
       <div class="flex justify-between items-start mb-4 gap-2"><div class="w-12 h-12 rounded-xl bg-surface-container-low flex items-center justify-center"><span class="material-symbols-outlined">${dealer ? "storefront" : "business"}</span></div><div class="flex gap-2"><span class="bg-secondary-fixed px-2.5 py-1 rounded-md font-bold">${customer.tier}级</span><span class="customer-mode-badge ${dealer ? "customer-mode-dealer" : "customer-mode-direct"}"><span class="material-symbols-outlined">${dealer ? "storefront" : "business"}</span>${dealer ? "代理商" : "直营"}</span></div></div>
       <h3 class="font-headline-md text-headline-md text-primary mb-1">${escapeHtml(customer.name)}</h3>
       <p class="font-body-md text-body-md text-on-surface-variant mb-6 line-clamp-2">${escapeHtml(customer.personaSummary || customer.whyFarock || "客户画像待完善")}</p>
@@ -28,9 +28,15 @@
     const total = document.querySelector("[data-customer-total]");
     grid.innerHTML = messageCard("正在加载客户数据...");
     try {
-      const payload = await api.get("/customers?page=1&pageSize=100");
-      grid.innerHTML = payload.data.length ? payload.data.map(customerCard).join("") : messageCard("暂无客户数据");
-      if (total) total.textContent = `${payload.meta.total} 位客户`;
+      const firstPage = await api.get("/customers?page=1&pageSize=100");
+      const totalPages = Number(firstPage.meta?.totalPages) || 1;
+      const remaining = totalPages > 1 ? await Promise.all(Array.from({ length: totalPages - 1 }, (_, index) => (
+        api.get(`/customers?page=${index + 2}&pageSize=100`)
+      ))) : [];
+      const customers = [firstPage, ...remaining].flatMap((page) => page.data);
+      grid.innerHTML = customers.length ? customers.map(customerCard).join("") : messageCard("暂无客户数据");
+      if (total) total.textContent = `${firstPage.meta.total} 位客户`;
+      grid._farockRefreshOptions?.();
       grid._farockRender?.();
     } catch (error) {
       grid.innerHTML = messageCard(`客户数据加载失败：${error.message}`, true);
