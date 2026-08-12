@@ -6,14 +6,23 @@ import { prisma } from "./lib/prisma.js";
 import { apiRouter } from "./routes/index.js";
 
 export const app = express();
-const allowedOrigins = new Set((process.env.CORS_ORIGINS || "http://localhost:4173,http://127.0.0.1:4173").split(",").map((origin) => origin.trim()).filter(Boolean));
+const allowedOrigins = new Set([
+  "https://frroco-crm.me",
+  "https://www.frroco-crm.me",
+  "https://api.frroco-crm.me",
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "http://localhost:4173",
+  "http://127.0.0.1:4173",
+  ...(process.env.CORS_ORIGINS || "").split(",").map((origin) => origin.trim()).filter(Boolean),
+]);
 
 app.disable("x-powered-by");
 app.use(cors({
   origin(origin, callback) {
     callback(null, !origin || allowedOrigins.has(origin));
   },
-  credentials: false,
+  credentials: true,
 }));
 app.use(express.json({ limit: "1mb" }));
 
