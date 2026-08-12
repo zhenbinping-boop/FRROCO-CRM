@@ -7,6 +7,7 @@ import { z } from "zod";
 import { AppError, validate } from "../lib/http.js";
 import { prisma } from "../lib/prisma.js";
 import { removesAdminAccess, removesOwnAdminAccess } from "../lib/user-policy.js";
+import { userPlacementError } from "../lib/user-placement.js";
 
 const roles = ["ADMIN", "SALES_REP", "DESIGNER", "DEALER_USER"] as const;
 const emptyQueryValue = (value: unknown) => value === "" ? undefined : value;
@@ -19,6 +20,8 @@ const safeUserSelect = {
   active: true,
   organizationId: true,
   organization: { select: { id: true, code: true, name: true, type: true } },
+  positionId: true,
+  position: { select: { id: true, name: true, dealerOnly: true, active: true } },
   createdAt: true,
   updatedAt: true,
 } satisfies Prisma.UserSelect;
@@ -33,6 +36,8 @@ const currentUserSelect = {
   organizationId: true,
   avatarData: true,
   organization: { select: { id: true, code: true, name: true, type: true } },
+  positionId: true,
+  position: { select: { id: true, name: true, dealerOnly: true, active: true } },
 } satisfies Prisma.UserSelect;
 
 export const userListQuerySchema = z.object({
@@ -52,6 +57,7 @@ const createSchema = z.object({
   role: z.enum(roles),
   active: z.boolean().optional(),
   organizationId: z.string().trim().min(1).nullable().optional(),
+  positionId: z.string().trim().min(1),
 });
 
 const updateSchema = z.object({
@@ -61,7 +67,13 @@ const updateSchema = z.object({
   role: z.enum(roles).optional(),
   active: z.boolean().optional(),
   organizationId: z.string().trim().min(1).nullable().optional(),
+  positionId: z.string().trim().min(1).nullable().optional(),
 }).refine((input) => Object.keys(input).length > 0, { message: "至少提交一个需要修改的字段" });
+
+const positionInput = z.object({
+  name: z.string().trim().min(1).max(100),
+  dealerOnly: z.boolean().default(false),
+});
 
 const passwordSchema = z.object({
   currentPassword: z.string().min(8).max(128),
@@ -94,6 +106,21 @@ async function validateOrganization(organizationId: string | null | undefined) {
   if (!organizationId) return;
   const exists = await prisma.organization.findUnique({ where: { id: organizationId }, select: { id: true } });
   if (!exists) throw new AppError(400, "INVALID_ORGANIZATION", "所属机构不存在");
+}
+
+async function validateUserPlacement(role: typeof roles[number], organizationId: string | null | undefined, positionId: string | null | undefined) {
+  const [organization, position] = await Promise.all([
+    organizationId ? prisma.organization.findUnique({ where: { id: organizationId }, select: { type: true } }) : null,
+    positionId ? prisma.position.findUnique({ where: { id: positionId }, select: { dealerOnly: true, active: true } }) : null,
+  ]);
+  if (positionId && (!position || !position.active)) throw new AppError(400, "INVALID_POSITION", "职位不存在或已停用");
+  const placementError = userPlacementError(role, organization?.type || null, position?.dealerOnly || false);
+  if (placementError === "DEALER_ORGANIZATION_REQUIRED") {
+    throw new AppError(400, "DEALER_ORGANIZATION_REQUIRED", "代理商员工必须选择具体的代理商机构");
+  }
+  if (placementError === "DEALER_ROLE_REQUIRED") {
+    throw new AppError(400, "DEALER_ROLE_REQUIRED", "代理商职位必须使用代理商用户权限角色");
+  }
 }
 
 export const getMe: RequestHandler = async (request, response) => {
@@ -134,10 +161,25 @@ export const listOrganizations: RequestHandler = async (request, response) => {
   response.json({ data: organizations });
 };
 
+export const listPositions: RequestHandler = async (_request, response) => {
+  const positions = await prisma.position.findMany({
+    select: { id: true, name: true, dealerOnly: true, active: true, _count: { select: { users: true } } },
+    orderBy: [{ active: "desc" }, { name: "asc" }],
+  });
+  response.json({ data: positions });
+};
+
+export const createPosition: RequestHandler = async (request, response) => {
+  const input = validate(positionInput, request.body);
+  const position = await prisma.position.create({ data: input, select: { id: true, name: true, dealerOnly: true, active: true } });
+  response.status(201).json({ data: position });
+};
+
 export const createUser: RequestHandler = async (request, response) => {
   requireAdmin(request);
   const input = validate(createSchema, request.body);
   await validateOrganization(input.organizationId);
+  await validateUserPlacement(input.role, input.organizationId, input.positionId);
   const { password, ...profile } = input;
   const user = await prisma.user.create({
     data: {
@@ -145,6 +187,7 @@ export const createUser: RequestHandler = async (request, response) => {
       email: input.email.toLowerCase(),
       phone: input.phone || null,
       organizationId: input.organizationId || null,
+      positionId: input.positionId || null,
       passwordHash: await bcrypt.hash(password, 12),
     },
     select: safeUserSelect,
@@ -157,8 +200,9 @@ export const updateUser: RequestHandler = async (request, response) => {
   const input = validate(updateSchema, request.body);
   const userId = String(request.params.id);
   await validateOrganization(input.organizationId);
-  const existing = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, role: true, active: true } });
+  const existing = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, role: true, active: true, organizationId: true, positionId: true } });
   if (!existing) throw new AppError(404, "USER_NOT_FOUND", "成员不存在");
+  await validateUserPlacement(input.role || existing.role, input.organizationId === undefined ? existing.organizationId : input.organizationId, input.positionId === undefined ? existing.positionId : input.positionId);
 
   if (removesOwnAdminAccess(existing.id === request.user?.id, existing, input)) {
     throw new AppError(400, "CANNOT_DISABLE_SELF", "不能停用自己或移除自己的管理员角色");
@@ -174,6 +218,7 @@ export const updateUser: RequestHandler = async (request, response) => {
       ...(input.email && { email: input.email.toLowerCase() }),
       ...(input.phone !== undefined && { phone: input.phone || null }),
       ...(input.organizationId !== undefined && { organizationId: input.organizationId || null }),
+      ...(input.positionId !== undefined && { positionId: input.positionId || null }),
     },
     select: safeUserSelect,
   });

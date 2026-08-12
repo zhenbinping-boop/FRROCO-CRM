@@ -11,10 +11,10 @@ export const authenticate: RequestHandler = async (request, _response, next) => 
     const payload = jwt.verify(token, process.env.JWT_SECRET || "") as { sub: string; email: string };
     const user = await prisma.user.findUnique({
       where: { id: payload.sub },
-      select: { id: true, email: true, role: true, active: true, organizationId: true },
+      select: { id: true, email: true, role: true, active: true, organizationId: true, organization: { select: { type: true } } },
     });
     if (!user?.active || user.email !== payload.email) throw new Error("inactive user");
-    request.user = { id: user.id, email: user.email, role: user.role, organizationId: user.organizationId };
+    request.user = { id: user.id, email: user.email, role: user.role, organizationId: user.organizationId, organizationType: user.organization?.type || null };
     next();
   } catch {
     next(new AppError(401, "INVALID_TOKEN", "登录凭证无效或已过期"));

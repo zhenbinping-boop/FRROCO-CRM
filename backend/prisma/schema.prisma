@@ -89,6 +89,18 @@ model Organization {
   @@index([type, name])
 }
 
+model Position {
+  id         String   @id @default(cuid())
+  name       String   @unique @db.VarChar(100)
+  dealerOnly Boolean  @default(false)
+  active     Boolean  @default(true)
+  users      User[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([active, name])
+}
+
 model User {
   id               String        @id @default(cuid())
   email            String        @unique @db.VarChar(160)
@@ -100,6 +112,8 @@ model User {
   active           Boolean       @default(true)
   organizationId   String?
   organization     Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  positionId       String?
+  position         Position?     @relation(fields: [positionId], references: [id], onDelete: SetNull)
   assignedTasks    Task[]        @relation("TaskAssignee")
   followUps        FollowUp[]
   recordedPayments Payment[]
@@ -107,6 +121,7 @@ model User {
   updatedAt        DateTime      @updatedAt
 
   @@index([organizationId])
+  @@index([positionId])
   @@index([role, active])
 }
 

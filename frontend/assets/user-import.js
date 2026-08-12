@@ -9,7 +9,7 @@
   const aliases = {
     name: ["姓名", "员工姓名", "name"],
     phone: ["手机号", "手机号码", "联系电话", "电话", "phone", "mobile"],
-    role: ["角色", "职位", "role"],
+    role: ["角色", "role"],
     organization: ["所属机构", "所属组织", "机构", "组织", "organization", "branch"],
     status: ["状态", "在职状态", "status"],
   };

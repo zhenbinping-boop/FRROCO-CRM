@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 import type { RequestHandler } from "express";
 import { z } from "zod";
 
-import { assertOrganizationAccess, assertUserAssignmentAccess, customerAccessWhere } from "../lib/access.js";
+import { assertOrganizationAccess, assertUserAssignmentAccess, customerAccessWhere, hasGlobalBusinessAccess } from "../lib/access.js";
 import { AppError, validate } from "../lib/http.js";
 import { prisma } from "../lib/prisma.js";
 
@@ -211,7 +211,7 @@ export const listStores: RequestHandler = async (request, response) => {
   const query = validate(z.object({ storeType: z.enum(["DIRECT", "DEALER"]).optional() }), request.query);
   const where: Prisma.StoreWhereInput = {
     ...(query.storeType && { storeType: query.storeType }),
-    ...(request.user?.role !== "ADMIN" && { organizationId: request.user?.organizationId || "__none__" }),
+    ...(!hasGlobalBusinessAccess(request) && { organizationId: request.user?.organizationId || "__none__" }),
   };
   const stores = await prisma.store.findMany({ where, include: { dealerGroup: true }, orderBy: [{ regionProvince: "asc" }, { regionCity: "asc" }, { storeName: "asc" }] });
   response.json({ data: stores });
@@ -249,7 +249,7 @@ export const createStore: RequestHandler = async (request, response) => {
 };
 
 export const listDealerGroups: RequestHandler = async (request, response) => {
-  const where: Prisma.DealerGroupWhereInput = request.user?.role === "ADMIN" ? {} : { organizationId: request.user?.organizationId || "__none__" };
+  const where: Prisma.DealerGroupWhereInput = hasGlobalBusinessAccess(request) ? {} : { organizationId: request.user?.organizationId || "__none__" };
   const groups = await prisma.dealerGroup.findMany({
     where,
     include: { _count: { select: { customers: true } }, stores: { select: { id: true, storeName: true } } },

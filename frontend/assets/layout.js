@@ -27,7 +27,7 @@
   }
   function renderIdentity() {
     document.querySelectorAll("[data-user-name]").forEach((element) => { element.textContent = currentSession?.name || "\u5f53\u524d\u7528\u6237"; });
-    document.querySelectorAll("[data-user-role]").forEach((element) => { element.textContent = roleLabels[currentSession?.role] || currentSession?.role || ""; });
+    document.querySelectorAll("[data-user-role]").forEach((element) => { element.textContent = currentSession?.position?.name || roleLabels[currentSession?.role] || currentSession?.role || ""; });
     document.querySelectorAll("[data-user-avatar]").forEach((element) => { element.innerHTML = avatarContentMarkup(); });
     document.querySelectorAll("[data-user-profile-link]").forEach((element) => { element.href = userProfileHref(); });
   }
@@ -74,7 +74,7 @@
     "orders-payments.html": { title: "订单与回款", active: "orders", actions: ["payment"] },
     "payment-entry.html": { title: "登记收款", active: "orders", actions: ["backToOrders"] },
     "organizations.html": { title: "机构管理", active: "settings", actions: ["addBranch"] },
-    "users-permissions.html": { title: "人员与权限", active: "settings", actions: ["userImport", "changePassword", "inviteUser"] },
+    "users-permissions.html": { title: "人员与权限", active: "settings", actions: ["changePassword", "inviteUser"] },
     "master-data.html": { title: "基础数据配置", active: "settings", actions: ["export"] }
   };
 

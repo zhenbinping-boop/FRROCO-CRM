@@ -5,7 +5,7 @@ import { login } from "../controllers/auth-controller.js";
 import { changeOwnership, createCustomer, createStore, deleteCustomer, exportRegionalCustomers, getCustomer, importCustomers, listCustomers, listDealerGroups, listStores, updateCustomer } from "../controllers/customer-controller.js";
 import { createOrder, createPayment, getOrder, listOrders } from "../controllers/order-controller.js";
 import { createTask, listTasks, updateTask } from "../controllers/task-controller.js";
-import { changeMyAvatar, changeMyPassword, createUser, deleteUser, getMe, listOrganizations, listUsers, updateUser } from "../controllers/user-controller.js";
+import { changeMyAvatar, changeMyPassword, createPosition, createUser, deleteUser, getMe, listOrganizations, listPositions, listUsers, updateUser } from "../controllers/user-controller.js";
 import { authenticate } from "../middleware/auth.js";
 import { requireAdmin } from "../middleware/authorization.js";
 
@@ -21,6 +21,9 @@ apiRouter.get("/users", listUsers);
 apiRouter.post("/users", createUser);
 apiRouter.patch("/users/:id", updateUser);
 apiRouter.delete("/users/:id", deleteUser);
+apiRouter.use("/positions", requireAdmin);
+apiRouter.get("/positions", listPositions);
+apiRouter.post("/positions", createPosition);
 apiRouter.get("/organizations", listOrganizations);
 apiRouter.get("/customers", listCustomers);
 apiRouter.post("/customers", createCustomer);

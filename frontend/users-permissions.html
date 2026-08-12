@@ -32,6 +32,11 @@
       <input accept="image/png,image/jpeg,image/webp" class="farock-visually-hidden" id="avatar-file" type="file">
     </section>
 
+    <section class="mb-5 rounded-lg border border-[#dedfda] bg-white p-5" aria-labelledby="position-title">
+      <div class="flex flex-wrap items-center justify-between gap-3"><div><h2 class="text-lg font-semibold" id="position-title">职位管理</h2><p class="mt-1 text-sm text-[#666a67]">职位用于展示员工职责，系统角色继续控制访问权限。</p></div><button class="farock-button farock-button--secondary" id="position-create-button" type="button"><span class="material-symbols-outlined">add</span><span>新增职位</span></button></div>
+      <div class="mt-4 flex flex-wrap gap-2" id="position-list"><span class="text-sm text-[#666a67]">正在加载职位...</span></div>
+    </section>
+
     <section class="mb-5 grid gap-3 rounded-lg border border-[#dedfda] bg-white p-4 md:grid-cols-[minmax(240px,1fr)_180px_220px_150px]" aria-label="成员筛选">
       <label class="user-field"><span>检索成员</span><input class="user-input" id="user-search" type="search" placeholder="姓名、邮箱或手机号"></label>
       <label class="user-field"><span>角色</span><select class="user-input" id="user-role-filter"><option value="">全部角色</option><option value="ADMIN">管理员</option><option value="SALES_REP">导购</option><option value="DESIGNER">设计师</option><option value="DEALER_USER">代理商用户</option></select></label>
@@ -46,8 +51,8 @@
       </div>
       <div class="overflow-x-auto">
         <table class="w-full min-w-[820px] text-left text-sm">
-          <thead class="bg-[#f7f7f4] text-xs font-semibold text-[#5f6360]"><tr><th class="px-5 py-3">成员</th><th class="px-5 py-3">角色</th><th class="px-5 py-3">所属机构</th><th class="px-5 py-3">状态</th><th class="px-5 py-3 text-right">操作</th></tr></thead>
-          <tbody class="divide-y divide-[#ecece8]" id="user-table-body"><tr><td class="px-5 py-10 text-center text-[#666a67]" colspan="5">正在加载成员...</td></tr></tbody>
+          <thead class="bg-[#f7f7f4] text-xs font-semibold text-[#5f6360]"><tr><th class="px-5 py-3">成员</th><th class="px-5 py-3">职位</th><th class="px-5 py-3">角色</th><th class="px-5 py-3">所属机构</th><th class="px-5 py-3">状态</th><th class="px-5 py-3 text-right">操作</th></tr></thead>
+          <tbody class="divide-y divide-[#ecece8]" id="user-table-body"><tr><td class="px-5 py-10 text-center text-[#666a67]" colspan="6">正在加载成员...</td></tr></tbody>
         </table>
       </div>
       <div class="flex items-center justify-between border-t border-[#dedfda] px-5 py-3">
@@ -66,6 +71,7 @@
         <label class="user-field"><span>手机号</span><input class="user-input" name="phone" minlength="6" maxlength="32"></label>
         <label class="user-field"><span>初始密码 *</span><input class="user-input" name="password" type="password" minlength="8" maxlength="128" autocomplete="new-password" required></label>
         <label class="user-field"><span>角色 *</span><select class="user-input" name="role" required><option value="SALES_REP">导购</option><option value="DESIGNER">设计师</option><option value="DEALER_USER">代理商用户</option><option value="ADMIN">管理员</option></select></label>
+        <label class="user-field"><span>职位 *</span><select class="user-input" name="positionId" data-position-select required><option value="">请选择职位</option></select></label>
         <label class="user-field"><span>所属机构</span><select class="user-input" name="organizationId" data-organization-select><option value="">不指定</option></select></label>
         <label class="flex items-center gap-2 md:col-span-2"><input name="active" type="checkbox" checked><span class="text-sm font-medium">创建后立即启用账号</span></label>
         <p class="hidden rounded-md bg-red-50 p-3 text-sm text-red-700 md:col-span-2" data-form-error role="alert"></p>
@@ -83,11 +89,24 @@
         <label class="user-field"><span>邮箱 *</span><input class="user-input" name="email" type="email" maxlength="160" required></label>
         <label class="user-field"><span>手机号</span><input class="user-input" name="phone" minlength="6" maxlength="32"></label>
         <label class="user-field"><span>角色 *</span><select class="user-input" name="role" required><option value="ADMIN">管理员</option><option value="SALES_REP">导购</option><option value="DESIGNER">设计师</option><option value="DEALER_USER">代理商用户</option></select></label>
+        <label class="user-field"><span>职位 *</span><select class="user-input" name="positionId" data-position-select required><option value="">请选择职位</option></select></label>
         <label class="user-field md:col-span-2"><span>所属机构</span><select class="user-input" name="organizationId" data-organization-select><option value="">不指定</option></select></label>
         <label class="flex items-center gap-2 md:col-span-2"><input name="active" type="checkbox"><span class="text-sm font-medium">启用该账号</span></label>
         <p class="hidden rounded-md bg-red-50 p-3 text-sm text-red-700 md:col-span-2" data-form-error role="alert"></p>
       </div>
       <div class="flex justify-between gap-3 border-t border-[#dedfda] px-5 py-4"><button class="farock-button farock-button--danger" id="user-delete" type="button"><span class="material-symbols-outlined">delete</span><span>删除成员</span></button><div class="flex gap-3"><button class="farock-button farock-button--secondary" data-dialog-close type="button">取消</button><button class="farock-button farock-button--primary" type="submit">保存修改</button></div></div>
+    </form>
+  </dialog>
+
+  <dialog class="user-dialog" id="position-create-dialog" aria-labelledby="position-create-title">
+    <form id="position-create-form">
+      <div class="flex items-center justify-between border-b border-[#dedfda] px-5 py-4"><h2 class="text-lg font-semibold" id="position-create-title">新增职位</h2><button class="farock-icon-button" data-dialog-close type="button" aria-label="关闭"><span class="material-symbols-outlined">close</span></button></div>
+      <div class="user-dialog__body grid gap-4 p-5">
+        <label class="user-field"><span>职位名称 *</span><input class="user-input" name="name" maxlength="100" placeholder="例如：法洛可总经理、财务、代理商店长" required></label>
+        <label class="flex items-start gap-3 rounded-md border border-[#dedfda] p-4"><input class="mt-1" name="dealerOnly" type="checkbox"><span><strong class="block text-sm">代理商职位</strong><small class="mt-1 block text-[#666a67]">选择后，任职成员必须绑定具体代理商机构。</small></span></label>
+        <p class="hidden rounded-md bg-red-50 p-3 text-sm text-red-700" data-form-error role="alert"></p>
+      </div>
+      <div class="flex justify-end gap-3 border-t border-[#dedfda] px-5 py-4"><button class="farock-button farock-button--secondary" data-dialog-close type="button">取消</button><button class="farock-button farock-button--primary" type="submit">创建职位</button></div>
     </form>
   </dialog>
 
