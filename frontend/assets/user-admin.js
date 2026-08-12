@@ -144,7 +144,12 @@
     const payload = formPayload(elements.editForm);
     setBusy(elements.editForm, true);
     try {
-      await FarockAPI.patch(`users/${elements.editForm.elements.id.value}`, payload);
+      const result = await FarockAPI.patch(`users/${elements.editForm.elements.id.value}`, payload);
+      if (result?.data?.id === currentUser?.id) {
+        currentUser = { ...currentUser, ...result.data };
+        localStorage.setItem("farock-session", JSON.stringify(currentUser));
+        window.dispatchEvent(new CustomEvent("farock:user-updated", { detail: result.data }));
+      }
       elements.editDialog.close(); await loadUsers(); showToast("成员信息已保存");
     } catch (error) { showFormError(elements.editForm, error.message); }
     finally { setBusy(elements.editForm, false); }

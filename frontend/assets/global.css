@@ -94,6 +94,7 @@ farock-header {
   flex: 0 0 40px;
   place-items: center;
   border-radius: 50%;
+  overflow: hidden;
   background: var(--farock-primary);
   color: #fff;
   font-weight: 700;

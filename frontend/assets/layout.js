@@ -10,6 +10,7 @@
 
   let currentSession = null;
   try { currentSession = JSON.parse(localStorage.getItem("farock-session") || "null"); } catch { currentSession = null; }
+  const roleLabels = { ADMIN: "\u7ba1\u7406\u5458", SALES_REP: "\u5bfc\u8d2d", DESIGNER: "\u8bbe\u8ba1\u5e08", DEALER_USER: "\u4ee3\u7406\u5546\u7528\u6237" };
   function avatarContentMarkup() {
     const source = typeof currentSession?.avatarData === "string" && /^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(currentSession.avatarData)
       ? currentSession.avatarData
@@ -18,12 +19,23 @@
     const initial = Array.from(String(currentSession?.name || "我")).find((character) => /[\p{L}\p{N}]/u.test(character)) || "我";
     return initial;
   }
+  function renderIdentity() {
+    document.querySelectorAll(".farock-user-card__copy strong").forEach((element) => { element.textContent = currentSession?.name || "\u5f53\u524d\u7528\u6237"; });
+    document.querySelectorAll(".farock-user-card__copy small").forEach((element) => { element.textContent = roleLabels[currentSession?.role] || currentSession?.role || ""; });
+    document.querySelectorAll("[data-user-avatar]").forEach((element) => { element.innerHTML = avatarContentMarkup(); });
+  }
   window.addEventListener("farock:user-avatar-updated", (event) => {
     const avatarData = event.detail?.avatarData;
     if (typeof avatarData !== "string") return;
     currentSession = { ...(currentSession || {}), avatarData };
     localStorage.setItem("farock-session", JSON.stringify(currentSession));
-    document.querySelectorAll("[data-user-avatar]").forEach((element) => { element.innerHTML = avatarContentMarkup(); });
+    renderIdentity();
+  });
+  window.addEventListener("farock:user-updated", (event) => {
+    if (!event.detail?.id) return;
+    currentSession = { ...(currentSession || {}), ...event.detail };
+    localStorage.setItem("farock-session", JSON.stringify(currentSession));
+    renderIdentity();
   });
 
   const pages = {
@@ -198,4 +210,5 @@
   });
   document.body.prepend(sidebar);
   document.body.classList.add("farock-app-shell");
+  renderIdentity();
 })();
