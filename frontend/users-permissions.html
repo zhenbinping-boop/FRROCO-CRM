@@ -63,7 +63,7 @@
       <div class="user-dialog__body grid gap-4 p-5 md:grid-cols-2">
         <label class="user-field"><span>姓名 *</span><input class="user-input" name="name" maxlength="100" required></label>
         <label class="user-field"><span>邮箱 *</span><input class="user-input" name="email" type="email" maxlength="160" required></label>
-        <label class="user-field"><span>手机号</span><input class="user-input" name="phone" maxlength="32"></label>
+        <label class="user-field"><span>手机号</span><input class="user-input" name="phone" minlength="6" maxlength="32"></label>
         <label class="user-field"><span>初始密码 *</span><input class="user-input" name="password" type="password" minlength="8" maxlength="128" autocomplete="new-password" required></label>
         <label class="user-field"><span>角色 *</span><select class="user-input" name="role" required><option value="SALES_REP">导购</option><option value="DESIGNER">设计师</option><option value="DEALER_USER">代理商用户</option><option value="ADMIN">管理员</option></select></label>
         <label class="user-field"><span>所属机构</span><select class="user-input" name="organizationId" data-organization-select><option value="">不指定</option></select></label>
@@ -81,7 +81,7 @@
       <div class="user-dialog__body grid gap-4 p-5 md:grid-cols-2">
         <label class="user-field"><span>姓名 *</span><input class="user-input" name="name" maxlength="100" required></label>
         <label class="user-field"><span>邮箱 *</span><input class="user-input" name="email" type="email" maxlength="160" required></label>
-        <label class="user-field"><span>手机号</span><input class="user-input" name="phone" maxlength="32"></label>
+        <label class="user-field"><span>手机号</span><input class="user-input" name="phone" minlength="6" maxlength="32"></label>
         <label class="user-field"><span>角色 *</span><select class="user-input" name="role" required><option value="ADMIN">管理员</option><option value="SALES_REP">导购</option><option value="DESIGNER">设计师</option><option value="DEALER_USER">代理商用户</option></select></label>
         <label class="user-field md:col-span-2"><span>所属机构</span><select class="user-input" name="organizationId" data-organization-select><option value="">不指定</option></select></label>
         <label class="flex items-center gap-2 md:col-span-2"><input name="active" type="checkbox"><span class="text-sm font-medium">启用该账号</span></label>

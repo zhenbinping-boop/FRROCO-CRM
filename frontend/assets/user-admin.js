@@ -128,9 +128,10 @@
   }
 
   async function submitCreate(event) {
-    event.preventDefault(); clearFormError(elements.createForm); setBusy(elements.createForm, true);
+    event.preventDefault(); clearFormError(elements.createForm);
+    const payload = { ...formPayload(elements.createForm), password: elements.createForm.elements.password.value };
+    setBusy(elements.createForm, true);
     try {
-      const payload = { ...formPayload(elements.createForm), password: elements.createForm.elements.password.value };
       await FarockAPI.post("users", payload);
       elements.createDialog.close(); elements.createForm.reset(); elements.createForm.elements.active.checked = true;
       state.page = 1; await loadUsers(); showToast("成员已添加");
@@ -139,9 +140,11 @@
   }
 
   async function submitEdit(event) {
-    event.preventDefault(); clearFormError(elements.editForm); setBusy(elements.editForm, true);
+    event.preventDefault(); clearFormError(elements.editForm);
+    const payload = formPayload(elements.editForm);
+    setBusy(elements.editForm, true);
     try {
-      await FarockAPI.patch(`users/${elements.editForm.elements.id.value}`, formPayload(elements.editForm));
+      await FarockAPI.patch(`users/${elements.editForm.elements.id.value}`, payload);
       elements.editDialog.close(); await loadUsers(); showToast("成员信息已保存");
     } catch (error) { showFormError(elements.editForm, error.message); }
     finally { setBusy(elements.editForm, false); }
