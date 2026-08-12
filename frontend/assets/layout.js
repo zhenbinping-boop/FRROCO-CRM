@@ -20,9 +20,20 @@
     return initial;
   }
   function renderIdentity() {
-    document.querySelectorAll(".farock-user-card__copy strong").forEach((element) => { element.textContent = currentSession?.name || "\u5f53\u524d\u7528\u6237"; });
-    document.querySelectorAll(".farock-user-card__copy small").forEach((element) => { element.textContent = roleLabels[currentSession?.role] || currentSession?.role || ""; });
+    document.querySelectorAll("[data-user-name]").forEach((element) => { element.textContent = currentSession?.name || "\u5f53\u524d\u7528\u6237"; });
+    document.querySelectorAll("[data-user-role]").forEach((element) => { element.textContent = roleLabels[currentSession?.role] || currentSession?.role || ""; });
     document.querySelectorAll("[data-user-avatar]").forEach((element) => { element.innerHTML = avatarContentMarkup(); });
+  }
+  async function refreshCurrentSession() {
+    try {
+      const payload = await window.FarockAPI?.get("auth/me");
+      if (!payload?.data?.id) return;
+      currentSession = { ...(currentSession || {}), ...payload.data };
+      localStorage.setItem("farock-session", JSON.stringify(currentSession));
+      renderIdentity();
+    } catch {
+      // Keep cached identity when the profile refresh is temporarily unavailable.
+    }
   }
   window.addEventListener("farock:user-avatar-updated", (event) => {
     const avatarData = event.detail?.avatarData;
@@ -87,7 +98,7 @@
             </a>
             <a class="farock-user-card" href="users-permissions.html">
               <span class="farock-avatar" data-user-avatar aria-hidden="true">${avatarContentMarkup()}</span>
-              <span class="farock-user-card__copy"><strong>林晓雅</strong><small>管理员</small></span>
+              <span class="farock-user-card__copy"><strong data-user-name></strong><small data-user-role></small></span>
               <span class="material-symbols-outlined">chevron_right</span>
             </a>
             <button class="farock-sidebar__logout" type="button"><span class="material-symbols-outlined">logout</span><span>退出登录</span></button>
@@ -211,4 +222,5 @@
   document.body.prepend(sidebar);
   document.body.classList.add("farock-app-shell");
   renderIdentity();
+  refreshCurrentSession();
 })();

@@ -5,13 +5,14 @@ import { login } from "../controllers/auth-controller.js";
 import { changeOwnership, createCustomer, createStore, deleteCustomer, exportRegionalCustomers, getCustomer, importCustomers, listCustomers, listDealerGroups, listStores, updateCustomer } from "../controllers/customer-controller.js";
 import { createOrder, createPayment, getOrder, listOrders } from "../controllers/order-controller.js";
 import { createTask, listTasks, updateTask } from "../controllers/task-controller.js";
-import { changeMyAvatar, changeMyPassword, createUser, deleteUser, listOrganizations, listUsers, updateUser } from "../controllers/user-controller.js";
+import { changeMyAvatar, changeMyPassword, createUser, deleteUser, getMe, listOrganizations, listUsers, updateUser } from "../controllers/user-controller.js";
 import { authenticate } from "../middleware/auth.js";
 
 export const apiRouter = Router();
 
 apiRouter.post("/auth/login", login);
 apiRouter.use(authenticate);
+apiRouter.get("/auth/me", getMe);
 apiRouter.patch("/auth/me/password", changeMyPassword);
 apiRouter.patch("/auth/me/avatar", changeMyAvatar);
 apiRouter.get("/users", listUsers);

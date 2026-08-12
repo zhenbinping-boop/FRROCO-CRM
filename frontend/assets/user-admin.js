@@ -90,6 +90,12 @@
     try {
       const payload = await FarockAPI.get(`users?${params}`);
       state.users = payload.data;
+      const sessionUser = state.users.find((user) => user.id === currentUser?.id);
+      if (sessionUser) {
+        currentUser = { ...currentUser, ...sessionUser };
+        localStorage.setItem("farock-session", JSON.stringify(currentUser));
+        window.dispatchEvent(new CustomEvent("farock:user-updated", { detail: sessionUser }));
+      }
       state.totalPages = payload.meta.totalPages;
       renderUsers(payload.meta);
     } catch (error) {

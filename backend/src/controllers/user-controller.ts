@@ -23,6 +23,18 @@ const safeUserSelect = {
   updatedAt: true,
 } satisfies Prisma.UserSelect;
 
+const currentUserSelect = {
+  id: true,
+  email: true,
+  phone: true,
+  name: true,
+  role: true,
+  active: true,
+  organizationId: true,
+  avatarData: true,
+  organization: { select: { id: true, code: true, name: true, type: true } },
+} satisfies Prisma.UserSelect;
+
 export const userListQuerySchema = z.object({
   search: z.preprocess(emptyQueryValue, z.string().trim().max(100).optional()),
   role: z.preprocess(emptyQueryValue, z.enum(roles).optional()),
@@ -83,6 +95,12 @@ async function validateOrganization(organizationId: string | null | undefined) {
   const exists = await prisma.organization.findUnique({ where: { id: organizationId }, select: { id: true } });
   if (!exists) throw new AppError(400, "INVALID_ORGANIZATION", "所属机构不存在");
 }
+
+export const getMe: RequestHandler = async (request, response) => {
+  const user = await prisma.user.findUnique({ where: { id: request.user?.id }, select: currentUserSelect });
+  if (!user) throw new AppError(404, "USER_NOT_FOUND", "成员不存在");
+  response.json({ data: user });
+};
 
 export const listUsers: RequestHandler = async (request, response) => {
   requireAdmin(request);
