@@ -127,7 +127,6 @@ export const listUsers: RequestHandler = async (request, response) => {
 };
 
 export const listOrganizations: RequestHandler = async (request, response) => {
-  requireAdmin(request);
   const organizations = await prisma.organization.findMany({
     select: { id: true, code: true, name: true, type: true },
     orderBy: [{ type: "asc" }, { name: "asc" }],

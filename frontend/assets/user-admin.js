@@ -199,9 +199,16 @@
   document.querySelectorAll("[data-dialog-close]").forEach((button) => button.addEventListener("click", () => button.closest("dialog").close()));
   document.querySelectorAll("dialog").forEach((dialog) => dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); }));
 
-  if (currentUser?.role !== "ADMIN") {
-    elements.createButton?.setAttribute("hidden", "");
-    elements.body.innerHTML = '<tr><td class="px-5 py-10 text-center text-[#666a67]" colspan="5">仅管理员可以查看和管理系统成员</td></tr>';
-    elements.count.textContent = "无管理权限";
-  } else Promise.all([loadOrganizations(), loadUsers()]);
+  let initialized = false;
+  function initializeForCurrentUser() {
+    if (initialized || currentUser?.role !== "ADMIN") return;
+    initialized = true;
+    Promise.all([loadOrganizations(), loadUsers()]);
+  }
+
+  window.addEventListener("farock:user-updated", (event) => {
+    if (!event.detail?.id) return;
+    currentUser = { ...(currentUser || {}), ...event.detail };
+    initializeForCurrentUser();
+  });
 })();

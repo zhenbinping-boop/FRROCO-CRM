@@ -10,7 +10,13 @@
 
   let currentSession = null;
   try { currentSession = JSON.parse(localStorage.getItem("farock-session") || "null"); } catch { currentSession = null; }
+  if (page === "users-permissions.html" && currentSession?.role && currentSession.role !== "ADMIN") {
+    location.replace("dashboard.html");
+    return;
+  }
   const roleLabels = { ADMIN: "\u7ba1\u7406\u5458", SALES_REP: "\u5bfc\u8d2d", DESIGNER: "\u8bbe\u8ba1\u5e08", DEALER_USER: "\u4ee3\u7406\u5546\u7528\u6237" };
+  const isAdmin = () => currentSession?.role === "ADMIN";
+  const userProfileHref = () => isAdmin() ? "users-permissions.html" : "dashboard.html";
   function avatarContentMarkup() {
     const source = typeof currentSession?.avatarData === "string" && /^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(currentSession.avatarData)
       ? currentSession.avatarData
@@ -23,6 +29,7 @@
     document.querySelectorAll("[data-user-name]").forEach((element) => { element.textContent = currentSession?.name || "\u5f53\u524d\u7528\u6237"; });
     document.querySelectorAll("[data-user-role]").forEach((element) => { element.textContent = roleLabels[currentSession?.role] || currentSession?.role || ""; });
     document.querySelectorAll("[data-user-avatar]").forEach((element) => { element.innerHTML = avatarContentMarkup(); });
+    document.querySelectorAll("[data-user-profile-link]").forEach((element) => { element.href = userProfileHref(); });
   }
   async function refreshCurrentSession() {
     try {
@@ -30,9 +37,15 @@
       if (!payload?.data?.id) return;
       currentSession = { ...(currentSession || {}), ...payload.data };
       localStorage.setItem("farock-session", JSON.stringify(currentSession));
+      if (page === "users-permissions.html" && !isAdmin()) {
+        location.replace("dashboard.html");
+        return;
+      }
+      window.dispatchEvent(new CustomEvent("farock:user-updated", { detail: payload.data }));
       renderIdentity();
     } catch {
       // Keep cached identity when the profile refresh is temporarily unavailable.
+      if (page === "users-permissions.html") location.replace("dashboard.html");
     }
   }
   window.addEventListener("farock:user-avatar-updated", (event) => {
@@ -96,7 +109,7 @@
             <a class="farock-button farock-button--primary farock-sidebar__create" href="customer-create.html">
               <span class="material-symbols-outlined">add</span><span>新建客户</span>
             </a>
-            <a class="farock-user-card" href="users-permissions.html">
+            <a class="farock-user-card" data-user-profile-link href="${userProfileHref()}">
               <span class="farock-avatar" data-user-avatar aria-hidden="true">${avatarContentMarkup()}</span>
               <span class="farock-user-card__copy"><strong data-user-name></strong><small data-user-role></small></span>
               <span class="material-symbols-outlined">chevron_right</span>
@@ -143,7 +156,7 @@
             <button class="farock-icon-button" type="button" aria-label="通知">
               <span class="material-symbols-outlined">notifications</span><span class="farock-notification-dot"></span>
             </button>
-            <a class="farock-avatar farock-avatar--header" data-user-avatar href="users-permissions.html" aria-label="当前用户头像">${avatarContentMarkup()}</a>
+            <a class="farock-avatar farock-avatar--header" data-user-avatar data-user-profile-link href="${userProfileHref()}" aria-label="当前用户头像">${avatarContentMarkup()}</a>
           </div>
         </header>`;
       this.querySelector(".farock-header__menu").addEventListener("click", () => window.dispatchEvent(new CustomEvent("farock:toggle-sidebar")));
@@ -222,5 +235,5 @@
   document.body.prepend(sidebar);
   document.body.classList.add("farock-app-shell");
   renderIdentity();
-  refreshCurrentSession();
+  setTimeout(refreshCurrentSession, 0);
 })();

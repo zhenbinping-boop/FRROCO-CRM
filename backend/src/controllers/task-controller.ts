@@ -1,7 +1,7 @@
 import type { RequestHandler } from "express";
 import { z } from "zod";
 
-import { customerAccessWhere } from "../lib/access.js";
+import { assertUserAssignmentAccess, customerAccessWhere } from "../lib/access.js";
 import { AppError } from "../lib/http.js";
 import { validate } from "../lib/http.js";
 import { prisma } from "../lib/prisma.js";
@@ -25,6 +25,7 @@ export const createTask: RequestHandler = async (request, response) => {
   }), request.body);
   const customer = await prisma.customer.findFirst({ where: { id: input.customerId, ...customerAccessWhere(request) }, select: { id: true } });
   if (!customer) throw new AppError(404, "CUSTOMER_NOT_FOUND", "客户不存在");
+  await assertUserAssignmentAccess(request, [input.assigneeId]);
   const task = await prisma.task.create({ data: input, include: { customer: true, assignee: true } });
   response.status(201).json({ data: task });
 };
@@ -38,6 +39,7 @@ export const updateTask: RequestHandler = async (request, response) => {
   }), request.body);
   const existing = await prisma.task.findFirst({ where: { id, customer: customerAccessWhere(request) }, select: { id: true } });
   if (!existing) throw new AppError(404, "TASK_NOT_FOUND", "任务不存在");
+  await assertUserAssignmentAccess(request, [input.assigneeId]);
   const task = await prisma.$transaction(async (tx) => {
     const updated = await tx.task.update({
       where: { id }, data: { status: input.status, priority: input.priority, content: input.content, dueAt: input.dueAt, assigneeId: input.assigneeId,

@@ -17,6 +17,15 @@
   };
 
   const page = location.pathname.split("/").pop() || routes.login;
+  let currentSession = null;
+  try { currentSession = JSON.parse(localStorage.getItem("farock-session") || "null"); } catch { currentSession = null; }
+  window.addEventListener("farock:user-updated", (event) => {
+    currentSession = { ...(currentSession || {}), ...event.detail };
+    const profileTarget = currentSession?.role === "ADMIN" ? routes.users : routes.dashboard;
+    document.querySelectorAll('a[href="users-permissions.html"], a[href="#"]').forEach((anchor) => {
+      if (textOf(anchor.querySelector(".material-symbols-outlined")) === "account_circle") anchor.href = profileTarget;
+    });
+  });
   const BRAND = "FRROCO 法洛可";
   const normalize = (value) => value.replace(/\s+/g, " ").trim();
   const textOf = (element) => normalize(element?.textContent || "");
@@ -554,7 +563,7 @@
     const label = textOf(anchor).toLowerCase();
     const icon = textOf(anchor.querySelector(".material-symbols-outlined"));
     if (label.includes("logout") || icon === "logout") return routes.login;
-    if (label.includes("profile") || icon === "account_circle") return routes.users;
+    if (label.includes("profile") || icon === "account_circle") return currentSession?.role === "ADMIN" ? routes.users : routes.dashboard;
     if (label.includes("dashboard") || icon === "dashboard") return routes.dashboard;
     if (label.includes("customer") || icon === "group") return routes.customers;
     if (label.includes("task") || icon === "assignment_turned_in") return routes.tasks;
@@ -567,6 +576,11 @@
   function setupNavigation() {
     document.querySelectorAll('a[href="#"]').forEach((anchor) => {
       const label = textOf(anchor);
+      const icon = textOf(anchor.querySelector(".material-symbols-outlined"));
+      if (currentSession?.role !== "ADMIN" && (icon === "account_circle" || label.toLowerCase().includes("profile"))) {
+        anchor.remove();
+        return;
+      }
       if (label === "View All Branches" || label === "查看全部机构") {
         anchor.addEventListener("click", (event) => {
           event.preventDefault();

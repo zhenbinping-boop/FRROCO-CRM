@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 import type { RequestHandler } from "express";
 import { z } from "zod";
 
-import { assertOrganizationAccess, customerAccessWhere } from "../lib/access.js";
+import { assertOrganizationAccess, assertUserAssignmentAccess, customerAccessWhere } from "../lib/access.js";
 import { AppError, validate } from "../lib/http.js";
 import { prisma } from "../lib/prisma.js";
 
@@ -90,6 +90,7 @@ export const createCustomer: RequestHandler = async (request, response) => {
   validateAmounts(input.totalAmount, input.depositAmount);
   const store = await verifyAttribution(input.storeType, input.storeId, input.dealerGroupId);
   assertOrganizationAccess(request, store.organizationId);
+  await assertUserAssignmentAccess(request, [input.salesRepId, input.designerId]);
   if (input.storeType === "DEALER" && (input.regionProvince !== store.regionProvince || input.regionCity !== store.regionCity)) {
     throw new AppError(400, "DEALER_REGION_MISMATCH", "代理商客户地区必须属于代理商特许经营区域");
   }
@@ -118,16 +119,16 @@ export const updateCustomer: RequestHandler = async (request, response) => {
   const input = validate(customerUpdateInput, request.body);
   const existing = await prisma.customer.findFirst({ where: { id, ...customerAccessWhere(request) }, select: { id: true, totalAmount: true, depositAmount: true } });
   if (!existing) throw new AppError(404, "CUSTOMER_NOT_FOUND", "客户不存在");
+  await assertUserAssignmentAccess(request, [input.salesRepId, input.designerId]);
   validateAmounts(input.totalAmount ?? existing.totalAmount, input.depositAmount ?? existing.depositAmount);
   const customer = await prisma.customer.update({ where: { id }, data: input, include: { store: true, dealerGroup: true } });
   response.json({ data: customer });
 };
 
 export const deleteCustomer: RequestHandler = async (request, response) => {
-  if (request.user?.role !== "ADMIN") throw new AppError(403, "ADMIN_REQUIRED", "仅管理员可以删除客户");
   const { id } = validate(z.object({ id: z.string().min(1) }), request.params);
-  const customer = await prisma.customer.findUnique({
-    where: { id },
+  const customer = await prisma.customer.findFirst({
+    where: { id, ...customerAccessWhere(request) },
     select: { id: true, _count: { select: { orders: true } } },
   });
   if (!customer) throw new AppError(404, "CUSTOMER_NOT_FOUND", "客户不存在");
@@ -144,6 +145,7 @@ export const importCustomers: RequestHandler = async (request, response) => {
   if (new Set(phones).size !== phones.length) throw new AppError(400, "DUPLICATE_PHONE_IN_FILE", "导入数据中存在重复手机号");
 
   const storeIds = [...new Set(customers.map((customer) => customer.storeId))];
+  await assertUserAssignmentAccess(request, customers.flatMap((customer) => [customer.salesRepId, customer.designerId]));
   const stores = await prisma.store.findMany({ where: { id: { in: storeIds } } });
   const storesById = new Map(stores.map((store) => [store.id, store]));
   for (const input of customers) {
@@ -216,16 +218,17 @@ export const listStores: RequestHandler = async (request, response) => {
 };
 
 export const createStore: RequestHandler = async (request, response) => {
-  if (request.user?.role !== "ADMIN") throw new AppError(403, "ADMIN_REQUIRED", "仅管理员可以新增门店");
   const input = validate(storeInput, request.body);
+  const organizationId = input.organizationId || request.user?.organizationId || null;
+  assertOrganizationAccess(request, organizationId);
   if (input.storeType === "DIRECT" && input.dealerGroupId) {
     throw new AppError(400, "DIRECT_DEALER_CONFLICT", "直营门店不能关联代理商分组");
   }
   if (input.storeType === "DEALER" && !input.dealerGroupId) {
     throw new AppError(400, "DEALER_GROUP_REQUIRED", "代理商门店必须关联代理商分组");
   }
-  if (input.organizationId) {
-    const organization = await prisma.organization.findUnique({ where: { id: input.organizationId }, select: { type: true } });
+  if (organizationId) {
+    const organization = await prisma.organization.findUnique({ where: { id: organizationId }, select: { type: true } });
     if (!organization) throw new AppError(400, "INVALID_ORGANIZATION", "所属机构不存在");
     if (input.storeType === "DEALER" && organization.type !== "DEALER") throw new AppError(400, "ORGANIZATION_TYPE_MISMATCH", "代理商门店必须属于代理商机构");
     if (input.storeType === "DIRECT" && !["HEADQUARTERS", "DIRECT_STORE"].includes(organization.type)) throw new AppError(400, "ORGANIZATION_TYPE_MISMATCH", "直营门店不能属于代理商机构");
@@ -235,11 +238,11 @@ export const createStore: RequestHandler = async (request, response) => {
   if (dealerGroup && (dealerGroup.regionProvince !== input.regionProvince || dealerGroup.regionCity !== input.regionCity)) {
     throw new AppError(400, "DEALER_REGION_MISMATCH", "门店地区必须与代理商分组一致");
   }
-  if (dealerGroup?.organizationId && input.organizationId && dealerGroup.organizationId !== input.organizationId) {
+  if (dealerGroup?.organizationId && organizationId && dealerGroup.organizationId !== organizationId) {
     throw new AppError(400, "DEALER_ORGANIZATION_MISMATCH", "门店机构必须与代理商分组一致");
   }
   const store = await prisma.store.create({
-    data: { ...input, dealerGroupId: input.storeType === "DEALER" ? input.dealerGroupId : undefined },
+    data: { ...input, organizationId, dealerGroupId: input.storeType === "DEALER" ? input.dealerGroupId : undefined },
     include: { dealerGroup: true },
   });
   response.status(201).json({ data: store });
@@ -265,6 +268,7 @@ export const changeOwnership: RequestHandler = async (request, response) => {
   if (!existing) throw new AppError(404, "CUSTOMER_NOT_FOUND", "客户不存在");
   const store = await verifyAttribution(input.storeType, input.storeId, input.dealerGroupId || undefined);
   assertOrganizationAccess(request, store.organizationId);
+  await assertUserAssignmentAccess(request, [input.salesRepId, input.designerId]);
   const customer = await prisma.customer.update({
     where: { id: params.id }, data: { ...input, dealerGroupId: input.dealerGroupId || null }, include: { store: true, dealerGroup: true },
   });

@@ -7,6 +7,7 @@ import { createOrder, createPayment, getOrder, listOrders } from "../controllers
 import { createTask, listTasks, updateTask } from "../controllers/task-controller.js";
 import { changeMyAvatar, changeMyPassword, createUser, deleteUser, getMe, listOrganizations, listUsers, updateUser } from "../controllers/user-controller.js";
 import { authenticate } from "../middleware/auth.js";
+import { requireAdmin } from "../middleware/authorization.js";
 
 export const apiRouter = Router();
 
@@ -15,6 +16,7 @@ apiRouter.use(authenticate);
 apiRouter.get("/auth/me", getMe);
 apiRouter.patch("/auth/me/password", changeMyPassword);
 apiRouter.patch("/auth/me/avatar", changeMyAvatar);
+apiRouter.use("/users", requireAdmin);
 apiRouter.get("/users", listUsers);
 apiRouter.post("/users", createUser);
 apiRouter.patch("/users/:id", updateUser);
