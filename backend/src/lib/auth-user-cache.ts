@@ -1,12 +1,17 @@
-import type { OrganizationType, UserRole } from "@prisma/client";
+import type { DataScope, OrganizationType, UserRole } from "@prisma/client";
 
 export type AuthUser = {
   id: string;
   email: string;
   role: UserRole;
+  roleId: string;
+  roleCode: string;
+  dataScope: DataScope;
+  permissions: ReadonlySet<string>;
   active: boolean;
   organizationId: string | null;
   organizationType: OrganizationType | null;
+  organizationIds: readonly string[];
 };
 
 const ttlMs = 30_000;

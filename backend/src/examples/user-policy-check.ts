@@ -22,7 +22,11 @@ assert.equal(emptyFilters.positionId, undefined);
 assert.equal(emptyFilters.active, undefined);
 assert.equal(userListQuerySchema.parse({ positionId: "position-1" }).positionId, "position-1");
 
-const cachedUser: AuthUser = { id: "user-1", email: "user@example.com", role: "SALES_REP", active: true, organizationId: null, organizationType: null };
+const cachedUser: AuthUser = {
+  id: "user-1", email: "user@example.com", role: "SALES_REP", active: true,
+  roleId: "role-1", roleCode: "SALES_REP", dataScope: "SELF", permissions: new Set(),
+  organizationId: null, organizationIds: [], organizationType: null,
+};
 cacheAuthUser(cachedUser);
 assert.deepEqual(getCachedAuthUser(cachedUser.id), cachedUser);
 invalidateAuthUser(cachedUser.id);
@@ -33,19 +37,19 @@ cacheAuthUser(cachedUser, staleGeneration);
 assert.equal(getCachedAuthUser(cachedUser.id), undefined);
 
 let ordinaryError: unknown;
-requireAdmin({ user: { role: "SALES_REP" } } as Request, {} as Response, ((error: unknown) => { ordinaryError = error; }) as NextFunction);
+requireAdmin({ user: { role: "SALES_REP", roleCode: "SALES_REP", permissions: new Set() } } as unknown as Request, {} as Response, ((error: unknown) => { ordinaryError = error; }) as NextFunction);
 assert.equal((ordinaryError as { status?: number }).status, 403);
 assert.equal((ordinaryError as { code?: string }).code, "ADMIN_REQUIRED");
 let adminError: unknown = "not-called";
-requireAdmin({ user: { role: "ADMIN" } } as Request, {} as Response, ((error: unknown) => { adminError = error; }) as NextFunction);
+requireAdmin({ user: { role: "ADMIN", roleCode: "SUPER_ADMIN", permissions: new Set() } } as unknown as Request, {} as Response, ((error: unknown) => { adminError = error; }) as NextFunction);
 assert.equal(adminError, undefined);
 
-const headquartersSalesRep = { user: { role: "SALES_REP", organizationId: "hq", organizationType: "HEADQUARTERS" } } as Request;
+const headquartersSalesRep = { user: { role: "SALES_REP", roleCode: "SUPER_ADMIN", dataScope: "ALL", organizationId: "hq", organizationIds: ["hq"], organizationType: "HEADQUARTERS" } } as unknown as Request;
 assert.equal(hasGlobalBusinessAccess(headquartersSalesRep), true);
 assert.deepEqual(customerAccessWhere(headquartersSalesRep), {});
-const storeSalesRep = { user: { role: "SALES_REP", organizationId: "store-1", organizationType: "DIRECT_STORE" } } as Request;
+const storeSalesRep = { user: { role: "SALES_REP", roleCode: "SALES_REP", dataScope: "DEPARTMENT", organizationId: "store-1", organizationIds: ["store-1"], organizationType: "DIRECT_STORE" } } as unknown as Request;
 assert.equal(hasGlobalBusinessAccess(storeSalesRep), false);
-assert.deepEqual(customerAccessWhere(storeSalesRep), { store: { organizationId: "store-1" } });
+assert.deepEqual(customerAccessWhere(storeSalesRep), { store: { organizationId: { in: ["store-1"] } } });
 assert.equal(userPlacementError("DEALER_USER", "HEADQUARTERS", true), "DEALER_ORGANIZATION_REQUIRED");
 assert.equal(userPlacementError("SALES_REP", "DEALER", true), "DEALER_ROLE_REQUIRED");
 assert.equal(userPlacementError("DEALER_USER", "DEALER", true), null);

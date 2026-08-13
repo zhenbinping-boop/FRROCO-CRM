@@ -9,6 +9,7 @@ import { invalidateAuthUser } from "../lib/auth-user-cache.js";
 import { prisma } from "../lib/prisma.js";
 import { removesAdminAccess, removesOwnAdminAccess } from "../lib/user-policy.js";
 import { userPlacementError } from "../lib/user-placement.js";
+import { hasPermission } from "../middleware/authorization.js";
 
 const roles = ["ADMIN", "SALES_REP", "DESIGNER", "DEALER_USER"] as const;
 const emptyQueryValue = (value: unknown) => value === "" ? undefined : value;
@@ -57,6 +58,7 @@ const createSchema = z.object({
   phone: z.string().trim().min(6).max(32).nullable().optional(),
   password: z.string().min(8).max(128),
   role: z.enum(roles),
+  roleId: z.string().trim().min(1).optional(),
   active: z.boolean().optional(),
   organizationId: z.string().trim().min(1).nullable().optional(),
   positionId: z.string().trim().min(1),
@@ -67,6 +69,7 @@ const updateSchema = z.object({
   email: z.string().trim().email().max(160).optional(),
   phone: z.string().trim().min(6).max(32).nullable().optional(),
   role: z.enum(roles).optional(),
+  roleId: z.string().trim().min(1).optional(),
   active: z.boolean().optional(),
   organizationId: z.string().trim().min(1).nullable().optional(),
   positionId: z.string().trim().min(1).nullable().optional(),
@@ -101,13 +104,26 @@ function parseAvatarDataUrl(dataUrl: string) {
 }
 
 function requireAdmin(request: Parameters<RequestHandler>[0]) {
-  if (request.user?.role !== "ADMIN") throw new AppError(403, "ADMIN_REQUIRED", "仅管理员可以管理成员");
+  if (!hasPermission(request.user, "user.manage")) throw new AppError(403, "ADMIN_REQUIRED", "仅管理员可以管理成员");
 }
 
 async function validateOrganization(organizationId: string | null | undefined) {
   if (!organizationId) return;
   const exists = await prisma.organization.findUnique({ where: { id: organizationId }, select: { id: true } });
   if (!exists) throw new AppError(400, "INVALID_ORGANIZATION", "所属机构不存在");
+}
+
+async function resolveRoleId(role: typeof roles[number]) {
+  const dynamicRole = await prisma.role.findUnique({ where: { code: role === "ADMIN" ? "SUPER_ADMIN" : role }, select: { id: true } });
+  if (!dynamicRole) throw new AppError(500, "ROLE_NOT_CONFIGURED", "系统角色配置不完整");
+  return dynamicRole.id;
+}
+
+async function validateRoleId(roleId: string | undefined) {
+  if (!roleId) return undefined;
+  const role = await prisma.role.findUnique({ where: { id: roleId }, select: { id: true, active: true } });
+  if (!role?.active) throw new AppError(400, "INVALID_ROLE", "角色不存在或已停用");
+  return role.id;
 }
 
 async function validateUserPlacement(role: typeof roles[number], organizationId: string | null | undefined, positionId: string | null | undefined) {
@@ -183,6 +199,7 @@ export const createUser: RequestHandler = async (request, response) => {
   const input = validate(createSchema, request.body);
   await validateOrganization(input.organizationId);
   await validateUserPlacement(input.role, input.organizationId, input.positionId);
+  const roleId = (await validateRoleId(input.roleId)) || await resolveRoleId(input.role);
   const { password, ...profile } = input;
   const user = await prisma.user.create({
     data: {
@@ -191,6 +208,7 @@ export const createUser: RequestHandler = async (request, response) => {
       phone: input.phone || null,
       organizationId: input.organizationId || null,
       positionId: input.positionId || null,
+      roleId,
       passwordHash: await bcrypt.hash(password, 12),
     },
     select: safeUserSelect,
@@ -222,6 +240,7 @@ export const updateUser: RequestHandler = async (request, response) => {
       ...(input.phone !== undefined && { phone: input.phone || null }),
       ...(input.organizationId !== undefined && { organizationId: input.organizationId || null }),
       ...(input.positionId !== undefined && { positionId: input.positionId || null }),
+      ...(input.roleId && { roleId: await validateRoleId(input.roleId) }),
     },
     select: safeUserSelect,
   });

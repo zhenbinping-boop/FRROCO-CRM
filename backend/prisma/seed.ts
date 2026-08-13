@@ -6,6 +6,11 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
+  const superAdminRole = await prisma.role.upsert({
+    where: { code: "SUPER_ADMIN" },
+    update: { name: "超级管理员", dataScope: "ALL", isSystem: true, active: true },
+    create: { id: "system-role-super-admin", code: "SUPER_ADMIN", name: "超级管理员", dataScope: "ALL", isSystem: true },
+  });
   const headquarters = await prisma.organization.upsert({
     where: { code: "HQ-SH" },
     update: { name: "法洛可中国总部", type: "HEADQUARTERS" },
@@ -59,6 +64,7 @@ async function main() {
       email,
       name: "林晓雅",
       role: "ADMIN",
+      roleId: superAdminRole.id,
       active: true,
       organizationId: headquarters.id,
       passwordHash: await bcrypt.hash(password, 12),

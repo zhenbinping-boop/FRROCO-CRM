@@ -26,6 +26,13 @@ enum UserRole {
   DEALER_USER
 }
 
+enum DataScope {
+  SELF
+  DEPARTMENT
+  SUB_DEPARTMENT
+  ALL
+}
+
 enum CustomerTier {
   S
   A
@@ -83,10 +90,50 @@ model Organization {
   dealerGroup DealerGroup?
   stores      Store[]
   users       User[]
+  parentId    String?
+  parent      Organization?    @relation("OrganizationTree", fields: [parentId], references: [id], onDelete: Restrict)
+  children    Organization[]   @relation("OrganizationTree")
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
   @@index([type, name])
+  @@index([parentId])
+}
+
+model Role {
+  id          String           @id @default(cuid())
+  code        String           @unique @db.VarChar(64)
+  name        String           @unique @db.VarChar(100)
+  dataScope   DataScope        @default(SELF)
+  isSystem    Boolean          @default(false)
+  active      Boolean          @default(true)
+  permissions RolePermission[]
+  users       User[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([active, name])
+}
+
+model Permission {
+  id          String           @id @default(cuid())
+  code        String           @unique @db.VarChar(100)
+  name        String           @db.VarChar(100)
+  description String?          @db.VarChar(255)
+  roles       RolePermission[]
+  createdAt   DateTime         @default(now())
+
+  @@index([code])
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@index([permissionId])
 }
 
 model Position {
@@ -109,6 +156,9 @@ model User {
   passwordHash     String        @db.VarChar(255)
   avatarData       String?       @db.Text
   role             UserRole      @default(SALES_REP)
+  roleId           String
+  dynamicRole      Role          @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  supabaseAuthId   String?       @unique @db.Uuid
   active           Boolean       @default(true)
   organizationId   String?
   organization     Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
@@ -123,6 +173,7 @@ model User {
   @@index([organizationId])
   @@index([positionId])
   @@index([role, active])
+  @@index([roleId, active])
 }
 
 model DealerGroup {
@@ -218,6 +269,7 @@ model Customer {
   @@index([storeId, tier])
   @@index([stage, dealYear])
   @@index([salesRepId, stage])
+  @@index([designerId, stage])
 }
 
 model CustomerTransaction {
