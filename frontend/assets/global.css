@@ -12,6 +12,32 @@
   --farock-shadow: 0 8px 24px rgba(25, 25, 23, 0.06);
 }
 
+html:not(.farock-ui-ready) body {
+  visibility: hidden;
+  animation: farock-force-reveal 0s 15s forwards;
+}
+
+html:not(.farock-ui-ready)::before {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  background: var(--farock-bg);
+  color: var(--farock-muted);
+  content: "正在加载页面...";
+  font: 500 14px/20px Inter, sans-serif;
+  animation: farock-force-hide-loader 0s 15s forwards;
+}
+
+@keyframes farock-force-reveal {
+  to { visibility: visible; }
+}
+
+@keyframes farock-force-hide-loader {
+  to { visibility: hidden; }
+}
+
 body {
   background: var(--farock-bg) !important;
   color: var(--farock-text);

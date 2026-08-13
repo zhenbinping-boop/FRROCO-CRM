@@ -17,6 +17,14 @@
   };
 
   const page = location.pathname.split("/").pop() || routes.login;
+  let uiRevealed = false;
+  const revealUi = () => {
+    if (uiRevealed) return;
+    uiRevealed = true;
+    document.documentElement.classList.add("farock-ui-ready");
+    window.dispatchEvent(new CustomEvent("farock:ui-ready"));
+  };
+  const revealFallback = setTimeout(revealUi, 15_000);
   let currentSession = null;
   try { currentSession = JSON.parse(localStorage.getItem("farock-session") || "null"); } catch { currentSession = null; }
   window.addEventListener("farock:user-updated", (event) => {
@@ -643,6 +651,7 @@
         const payload = await window.FarockAPI.post("/auth/login", { email, password: password.value });
         window.FarockAPI.setToken(payload.data.token);
         localStorage.setItem("farock-session", JSON.stringify(payload.data.user));
+        sessionStorage.setItem("farock-welcome-pending", "1");
         go(routes.dashboard);
       } catch (error) {
         toast(error?.message || "登录失败，请稍后重试。", "error");
@@ -1209,4 +1218,9 @@
   setupGenericActions();
   setupButtonGroups();
   localizeInterface();
+  document.addEventListener("DOMContentLoaded", async () => {
+    await window.FarockAPI?.whenIdle?.();
+    clearTimeout(revealFallback);
+    revealUi();
+  }, { once: true });
 })();

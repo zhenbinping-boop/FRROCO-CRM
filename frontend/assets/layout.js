@@ -19,6 +19,8 @@
   const userProfileHref = () => isAdmin() ? "users-permissions.html" : "dashboard.html";
   const welcomeName = (name) => { const value = String(name || "").trim(); return /^\p{Script=Han}/u.test(value) ? `${Array.from(value)[0]}\u603b` : value; };
   function renderWelcome() {
+    if (sessionStorage.getItem("farock-welcome-pending") !== "1") return;
+    sessionStorage.removeItem("farock-welcome-pending");
     const name = welcomeName(currentSession?.name);
     if (!name) return;
     document.querySelector(".farock-welcome")?.remove();
@@ -79,9 +81,9 @@
     currentSession = { ...(currentSession || {}), ...event.detail };
     localStorage.setItem("farock-session", JSON.stringify(currentSession));
     renderIdentity();
-    if (event.detail.name && event.detail.name !== previousName) renderWelcome();
-    else updateWelcome();
+    if (event.detail.name && event.detail.name !== previousName) updateWelcome();
   });
+  window.addEventListener("farock:ui-ready", renderWelcome, { once: true });
 
   const pages = {
     "dashboard.html": { title: "经营工作台", active: "dashboard", actions: ["newCustomer"] },
@@ -143,6 +145,7 @@
       this.querySelector(".farock-sidebar__logout").addEventListener("click", () => {
         localStorage.removeItem("farock-token");
         localStorage.removeItem("farock-session");
+        sessionStorage.removeItem("farock-welcome-pending");
         location.href = "index.html";
       });
       this.querySelectorAll(".farock-sidebar__link").forEach((link) => link.addEventListener("click", () => this.close()));
@@ -256,6 +259,5 @@
   document.body.prepend(sidebar);
   document.body.classList.add("farock-app-shell");
   renderIdentity();
-  renderWelcome();
   setTimeout(refreshCurrentSession, 0);
 })();
