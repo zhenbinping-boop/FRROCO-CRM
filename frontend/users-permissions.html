@@ -37,9 +37,10 @@
       <div class="mt-4 flex flex-wrap gap-2" id="position-list"><span class="text-sm text-[#666a67]">正在加载职位...</span></div>
     </section>
 
-    <section class="mb-5 grid gap-3 rounded-lg border border-[#dedfda] bg-white p-4 md:grid-cols-[minmax(240px,1fr)_180px_220px_150px]" aria-label="成员筛选">
+    <section class="mb-5 grid gap-3 rounded-lg border border-[#dedfda] bg-white p-4 md:grid-cols-2 xl:grid-cols-[minmax(220px,1fr)_180px_180px_220px_150px]" aria-label="成员筛选">
       <label class="user-field"><span>检索成员</span><input class="user-input" id="user-search" type="search" placeholder="姓名、邮箱或手机号"></label>
-      <label class="user-field"><span>角色</span><select class="user-input" id="user-role-filter"><option value="">全部角色</option><option value="ADMIN">管理员</option><option value="SALES_REP">导购</option><option value="DESIGNER">设计师</option><option value="DEALER_USER">代理商用户</option></select></label>
+      <label class="user-field"><span>职位</span><select class="user-input" id="user-position-filter" data-position-select><option value="">全部职位</option></select></label>
+      <label class="user-field"><span>权限角色</span><select class="user-input" id="user-role-filter"><option value="">全部权限角色</option><option value="ADMIN">管理员</option><option value="SALES_REP">导购</option><option value="DESIGNER">设计师</option><option value="DEALER_USER">代理商用户</option></select></label>
       <label class="user-field"><span>所属机构</span><select class="user-input" id="user-organization-filter"><option value="">全部机构</option></select></label>
       <label class="user-field"><span>账号状态</span><select class="user-input" id="user-active-filter"><option value="">全部状态</option><option value="true">已启用</option><option value="false">已停用</option></select></label>
     </section>
@@ -51,7 +52,7 @@
       </div>
       <div class="overflow-x-auto">
         <table class="w-full min-w-[820px] text-left text-sm">
-          <thead class="bg-[#f7f7f4] text-xs font-semibold text-[#5f6360]"><tr><th class="px-5 py-3">成员</th><th class="px-5 py-3">职位</th><th class="px-5 py-3">角色</th><th class="px-5 py-3">所属机构</th><th class="px-5 py-3">状态</th><th class="px-5 py-3 text-right">操作</th></tr></thead>
+          <thead class="bg-[#f7f7f4] text-xs font-semibold text-[#5f6360]"><tr><th class="px-5 py-3">成员</th><th class="px-5 py-3">职位</th><th class="px-5 py-3">权限角色</th><th class="px-5 py-3">所属机构</th><th class="px-5 py-3">状态</th><th class="px-5 py-3 text-right">操作</th></tr></thead>
           <tbody class="divide-y divide-[#ecece8]" id="user-table-body"><tr><td class="px-5 py-10 text-center text-[#666a67]" colspan="6">正在加载成员...</td></tr></tbody>
         </table>
       </div>
@@ -70,8 +71,8 @@
         <label class="user-field"><span>邮箱 *</span><input class="user-input" name="email" type="email" maxlength="160" required></label>
         <label class="user-field"><span>手机号</span><input class="user-input" name="phone" minlength="6" maxlength="32"></label>
         <label class="user-field"><span>初始密码 *</span><input class="user-input" name="password" type="password" minlength="8" maxlength="128" autocomplete="new-password" required></label>
-        <label class="user-field"><span>角色 *</span><select class="user-input" name="role" required><option value="SALES_REP">导购</option><option value="DESIGNER">设计师</option><option value="DEALER_USER">代理商用户</option><option value="ADMIN">管理员</option></select></label>
         <label class="user-field"><span>职位 *</span><select class="user-input" name="positionId" data-position-select required><option value="">请选择职位</option></select></label>
+        <label class="user-field"><span>权限角色 *</span><select class="user-input" name="role" required><option value="SALES_REP">导购</option><option value="DESIGNER">设计师</option><option value="DEALER_USER">代理商用户</option><option value="ADMIN">管理员</option></select></label>
         <label class="user-field"><span>所属机构</span><select class="user-input" name="organizationId" data-organization-select><option value="">不指定</option></select></label>
         <label class="flex items-center gap-2 md:col-span-2"><input name="active" type="checkbox" checked><span class="text-sm font-medium">创建后立即启用账号</span></label>
         <p class="hidden rounded-md bg-red-50 p-3 text-sm text-red-700 md:col-span-2" data-form-error role="alert"></p>
@@ -88,8 +89,8 @@
         <label class="user-field"><span>姓名 *</span><input class="user-input" name="name" maxlength="100" required></label>
         <label class="user-field"><span>邮箱 *</span><input class="user-input" name="email" type="email" maxlength="160" required></label>
         <label class="user-field"><span>手机号</span><input class="user-input" name="phone" minlength="6" maxlength="32"></label>
-        <label class="user-field"><span>角色 *</span><select class="user-input" name="role" required><option value="ADMIN">管理员</option><option value="SALES_REP">导购</option><option value="DESIGNER">设计师</option><option value="DEALER_USER">代理商用户</option></select></label>
         <label class="user-field"><span>职位 *</span><select class="user-input" name="positionId" data-position-select required><option value="">请选择职位</option></select></label>
+        <label class="user-field"><span>权限角色 *</span><select class="user-input" name="role" required><option value="ADMIN">管理员</option><option value="SALES_REP">导购</option><option value="DESIGNER">设计师</option><option value="DEALER_USER">代理商用户</option></select></label>
         <label class="user-field md:col-span-2"><span>所属机构</span><select class="user-input" name="organizationId" data-organization-select><option value="">不指定</option></select></label>
         <label class="flex items-center gap-2 md:col-span-2"><input name="active" type="checkbox"><span class="text-sm font-medium">启用该账号</span></label>
         <p class="hidden rounded-md bg-red-50 p-3 text-sm text-red-700 md:col-span-2" data-form-error role="alert"></p>

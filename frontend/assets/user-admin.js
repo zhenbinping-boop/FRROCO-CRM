@@ -7,7 +7,7 @@
   try { currentUser = JSON.parse(localStorage.getItem("farock-session") || "null"); } catch { currentUser = null; }
 
   const elements = {
-    search: document.querySelector("#user-search"), role: document.querySelector("#user-role-filter"),
+    search: document.querySelector("#user-search"), role: document.querySelector("#user-role-filter"), position: document.querySelector("#user-position-filter"),
     organization: document.querySelector("#user-organization-filter"), active: document.querySelector("#user-active-filter"),
     body: document.querySelector("#user-table-body"), count: document.querySelector("#user-count"),
     page: document.querySelector("#user-page-label"), prev: document.querySelector("#user-prev"), next: document.querySelector("#user-next"),
@@ -91,7 +91,7 @@
   async function loadUsers() {
     elements.body.innerHTML = '<tr><td class="px-5 py-10 text-center text-[#666a67]" colspan="6">正在加载成员...</td></tr>';
     const params = new URLSearchParams({ page: String(state.page), pageSize: "50" });
-    [["search", elements.search.value.trim()], ["role", elements.role.value], ["organizationId", elements.organization.value], ["active", elements.active.value]].forEach(([key, value]) => { if (value) params.set(key, value); });
+    [["search", elements.search.value.trim()], ["positionId", elements.position.value], ["role", elements.role.value], ["organizationId", elements.organization.value], ["active", elements.active.value]].forEach(([key, value]) => { if (value) params.set(key, value); });
     try {
       const payload = await FarockAPI.get(`users?${params}`);
       state.users = payload.data;
@@ -242,7 +242,7 @@
 
   let searchTimer;
   elements.search.addEventListener("input", () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { state.page = 1; loadUsers(); }, 250); });
-  [elements.role, elements.organization, elements.active].forEach((control) => control.addEventListener("change", () => { state.page = 1; loadUsers(); }));
+  [elements.position, elements.role, elements.organization, elements.active].forEach((control) => control.addEventListener("change", () => { state.page = 1; loadUsers(); }));
   elements.refresh.addEventListener("click", loadUsers);
   elements.prev.addEventListener("click", () => { if (state.page > 1) { state.page -= 1; loadUsers(); } });
   elements.next.addEventListener("click", () => { if (state.page < state.totalPages) { state.page += 1; loadUsers(); } });

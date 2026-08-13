@@ -45,6 +45,7 @@ export const userListQuerySchema = z.object({
   role: z.preprocess(emptyQueryValue, z.enum(roles).optional()),
   active: z.preprocess(emptyQueryValue, z.enum(["true", "false"]).transform((value) => value === "true").optional()),
   organizationId: z.preprocess(emptyQueryValue, z.string().trim().min(1).optional()),
+  positionId: z.preprocess(emptyQueryValue, z.string().trim().min(1).optional()),
   page: z.preprocess(emptyQueryValue, z.coerce.number().int().min(1).default(1)),
   pageSize: z.preprocess(emptyQueryValue, z.coerce.number().int().min(1).max(100).default(50)),
 });
@@ -136,6 +137,7 @@ export const listUsers: RequestHandler = async (request, response) => {
     ...(query.role && { role: query.role }),
     ...(query.active !== undefined && { active: query.active }),
     ...(query.organizationId && { organizationId: query.organizationId }),
+    ...(query.positionId && { positionId: query.positionId }),
     ...(query.search && {
       OR: ["name", "email", "phone"].map((field) => ({ [field]: { contains: query.search, mode: "insensitive" as const } })),
     }),

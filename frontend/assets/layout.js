@@ -17,6 +17,24 @@
   const roleLabels = { ADMIN: "\u7ba1\u7406\u5458", SALES_REP: "\u5bfc\u8d2d", DESIGNER: "\u8bbe\u8ba1\u5e08", DEALER_USER: "\u4ee3\u7406\u5546\u7528\u6237" };
   const isAdmin = () => currentSession?.role === "ADMIN";
   const userProfileHref = () => isAdmin() ? "users-permissions.html" : "dashboard.html";
+  const welcomeName = (name) => { const value = String(name || "").trim(); return /^\p{Script=Han}/u.test(value) ? `${Array.from(value)[0]}\u603b` : value; };
+  function renderWelcome() {
+    const name = welcomeName(currentSession?.name);
+    if (!name) return;
+    document.querySelector(".farock-welcome")?.remove();
+    const welcome = document.createElement("div");
+    welcome.className = "farock-welcome";
+    welcome.setAttribute("role", "status");
+    welcome.setAttribute("aria-live", "polite");
+    welcome.textContent = `\u6b22\u8fce\u56de\u6765\uff0c${name}`;
+    welcome.addEventListener("animationend", () => welcome.remove(), { once: true });
+    document.body.append(welcome);
+  }
+  function updateWelcome() {
+    const welcome = document.querySelector(".farock-welcome");
+    const name = welcomeName(currentSession?.name);
+    if (welcome && name) welcome.textContent = `\u6b22\u8fce\u56de\u6765\uff0c${name}`;
+  }
   function avatarContentMarkup() {
     const source = typeof currentSession?.avatarData === "string" && /^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(currentSession.avatarData)
       ? currentSession.avatarData
@@ -57,9 +75,12 @@
   });
   window.addEventListener("farock:user-updated", (event) => {
     if (!event.detail?.id) return;
+    const previousName = currentSession?.name;
     currentSession = { ...(currentSession || {}), ...event.detail };
     localStorage.setItem("farock-session", JSON.stringify(currentSession));
     renderIdentity();
+    if (event.detail.name && event.detail.name !== previousName) renderWelcome();
+    else updateWelcome();
   });
 
   const pages = {
@@ -235,5 +256,6 @@
   document.body.prepend(sidebar);
   document.body.classList.add("farock-app-shell");
   renderIdentity();
+  renderWelcome();
   setTimeout(refreshCurrentSession, 0);
 })();

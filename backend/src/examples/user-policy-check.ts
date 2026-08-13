@@ -13,11 +13,13 @@ assert.equal(removesAdminAccess(admin, { role: "DESIGNER" }), true);
 assert.equal(removesAdminAccess(admin, { role: "ADMIN", active: true }), false);
 assert.equal(removesOwnAdminAccess(true, admin, { active: false }), true);
 assert.equal(removesOwnAdminAccess(false, admin, { active: false }), false);
-const emptyFilters = userListQuerySchema.parse({ page: "1", pageSize: "50", search: "", role: "", organizationId: "", active: "" });
+const emptyFilters = userListQuerySchema.parse({ page: "1", pageSize: "50", search: "", role: "", organizationId: "", positionId: "", active: "" });
 assert.equal(emptyFilters.search, undefined);
 assert.equal(emptyFilters.role, undefined);
 assert.equal(emptyFilters.organizationId, undefined);
+assert.equal(emptyFilters.positionId, undefined);
 assert.equal(emptyFilters.active, undefined);
+assert.equal(userListQuerySchema.parse({ positionId: "position-1" }).positionId, "position-1");
 
 let ordinaryError: unknown;
 requireAdmin({ user: { role: "SALES_REP" } } as Request, {} as Response, ((error: unknown) => { ordinaryError = error; }) as NextFunction);
