@@ -2,7 +2,7 @@
   "use strict";
 
   const isLocal = ["localhost", "127.0.0.1"].includes(location.hostname);
-  const defaultBaseUrl = isLocal ? "http://localhost:3000/api/v1" : "https://frroco-crm.onrender.com/api/v1";
+  const defaultBaseUrl = isLocal ? "http://localhost:3000/api/v1" : "https://frroco-crm-1.onrender.com/api/v1";
 
   class ApiError extends Error {
     constructor(message, status = 0, details = null) {

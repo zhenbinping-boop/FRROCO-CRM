@@ -3,6 +3,7 @@ import type { NextFunction, Request, Response } from "express";
 
 import { userListQuerySchema } from "../controllers/user-controller.js";
 import { customerAccessWhere, hasGlobalBusinessAccess } from "../lib/access.js";
+import { authUserGeneration, cacheAuthUser, getCachedAuthUser, invalidateAuthUser, type AuthUser } from "../lib/auth-user-cache.js";
 import { removesAdminAccess, removesOwnAdminAccess } from "../lib/user-policy.js";
 import { userPlacementError } from "../lib/user-placement.js";
 import { requireAdmin } from "../middleware/authorization.js";
@@ -20,6 +21,16 @@ assert.equal(emptyFilters.organizationId, undefined);
 assert.equal(emptyFilters.positionId, undefined);
 assert.equal(emptyFilters.active, undefined);
 assert.equal(userListQuerySchema.parse({ positionId: "position-1" }).positionId, "position-1");
+
+const cachedUser: AuthUser = { id: "user-1", email: "user@example.com", role: "SALES_REP", active: true, organizationId: null, organizationType: null };
+cacheAuthUser(cachedUser);
+assert.deepEqual(getCachedAuthUser(cachedUser.id), cachedUser);
+invalidateAuthUser(cachedUser.id);
+assert.equal(getCachedAuthUser(cachedUser.id), undefined);
+const staleGeneration = authUserGeneration(cachedUser.id);
+invalidateAuthUser(cachedUser.id);
+cacheAuthUser(cachedUser, staleGeneration);
+assert.equal(getCachedAuthUser(cachedUser.id), undefined);
 
 let ordinaryError: unknown;
 requireAdmin({ user: { role: "SALES_REP" } } as Request, {} as Response, ((error: unknown) => { ordinaryError = error; }) as NextFunction);

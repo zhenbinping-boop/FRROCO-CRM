@@ -10,11 +10,13 @@ export const listTasks: RequestHandler = async (request, response) => {
   const query = validate(z.object({ customerId: z.string().optional(), assigneeId: z.string().optional(), status: z.enum(["PENDING", "COMPLETED", "CANCELED"]).optional(), page: z.coerce.number().int().min(1).default(1), pageSize: z.coerce.number().int().min(1).max(100).default(20) }), request.query);
   const { page, pageSize, ...filters } = query;
   const where = { ...filters, customer: customerAccessWhere(request) };
-  const tasks = await prisma.task.findMany({
-    where, include: { customer: true, assignee: { select: { id: true, name: true, role: true } }, followUps: { orderBy: { followedAt: "desc" }, take: 10 } },
-    orderBy: [{ dueAt: "asc" }, { createdAt: "desc" }], skip: (page - 1) * pageSize, take: pageSize,
-  });
-  const total = await prisma.task.count({ where });
+  const [tasks, total] = await Promise.all([
+    prisma.task.findMany({
+      where, include: { customer: true, assignee: { select: { id: true, name: true, role: true } }, followUps: { orderBy: { followedAt: "desc" }, take: 10 } },
+      orderBy: [{ dueAt: "asc" }, { createdAt: "desc" }], skip: (page - 1) * pageSize, take: pageSize,
+    }),
+    prisma.task.count({ where }),
+  ]);
   response.json({ data: tasks, meta: { page, pageSize, total, totalPages: Math.ceil(total / pageSize) } });
 };
 

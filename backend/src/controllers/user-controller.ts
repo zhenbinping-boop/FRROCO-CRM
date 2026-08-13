@@ -5,6 +5,7 @@ import { Buffer } from "node:buffer";
 import { z } from "zod";
 
 import { AppError, validate } from "../lib/http.js";
+import { invalidateAuthUser } from "../lib/auth-user-cache.js";
 import { prisma } from "../lib/prisma.js";
 import { removesAdminAccess, removesOwnAdminAccess } from "../lib/user-policy.js";
 import { userPlacementError } from "../lib/user-placement.js";
@@ -224,6 +225,7 @@ export const updateUser: RequestHandler = async (request, response) => {
     },
     select: safeUserSelect,
   });
+  invalidateAuthUser(user.id);
   response.json({ data: user });
 };
 
@@ -244,6 +246,7 @@ export const deleteUser: RequestHandler = async (request, response) => {
     throw new AppError(409, "USER_IN_USE", `该成员仍关联 ${customerCount} 位客户、${openTaskCount} 个未完成任务，请先完成交接或停用账号`);
   }
   await prisma.user.delete({ where: { id: user.id } });
+  invalidateAuthUser(user.id);
   response.status(204).send();
 };
 
@@ -254,6 +257,7 @@ export const changeMyPassword: RequestHandler = async (request, response) => {
     throw new AppError(400, "INVALID_CURRENT_PASSWORD", "当前密码不正确");
   }
   await prisma.user.update({ where: { id: user.id }, data: { passwordHash: await bcrypt.hash(input.newPassword, 12) } });
+  invalidateAuthUser(user.id);
   response.status(204).send();
 };
 

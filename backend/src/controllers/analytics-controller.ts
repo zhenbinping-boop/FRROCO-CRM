@@ -7,14 +7,17 @@ export const dashboard: RequestHandler = async (request, response) => {
   const monthStart = new Date();
   monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
   const accessWhere = customerAccessWhere(request);
-  // A single serverless connection must not be saturated by a burst of parallel dashboard queries.
-  const totalCustomers = await prisma.customer.count({ where: accessWhere });
-  const newCustomers = await prisma.customer.count({ where: { ...accessWhere, createdAt: { gte: monthStart } } });
-  const contracted = await prisma.customer.count({ where: { ...accessWhere, stage: "CONTRACTED" } });
-  const revenue = await prisma.customer.aggregate({ where: accessWhere, _sum: { totalAmount: true, depositAmount: true } });
-  const byMode = await prisma.customer.groupBy({ by: ["storeType"], where: accessWhere, _count: { _all: true }, _sum: { totalAmount: true } });
-  const ranking = await prisma.customer.groupBy({ by: ["salesRepId"], where: { ...accessWhere, salesRepId: { not: null } }, _count: { _all: true }, _sum: { totalAmount: true }, orderBy: { _sum: { totalAmount: "desc" } }, take: 10 });
-  const pendingTasks = await prisma.task.count({ where: { status: "PENDING", customer: accessWhere } });
+  const [totalCustomers, newCustomers, contracted, revenue] = await Promise.all([
+    prisma.customer.count({ where: accessWhere }),
+    prisma.customer.count({ where: { ...accessWhere, createdAt: { gte: monthStart } } }),
+    prisma.customer.count({ where: { ...accessWhere, stage: "CONTRACTED" } }),
+    prisma.customer.aggregate({ where: accessWhere, _sum: { totalAmount: true, depositAmount: true } }),
+  ]);
+  const [byMode, ranking, pendingTasks] = await Promise.all([
+    prisma.customer.groupBy({ by: ["storeType"], where: accessWhere, _count: { _all: true }, _sum: { totalAmount: true } }),
+    prisma.customer.groupBy({ by: ["salesRepId"], where: { ...accessWhere, salesRepId: { not: null } }, _count: { _all: true }, _sum: { totalAmount: true }, orderBy: { _sum: { totalAmount: "desc" } }, take: 10 }),
+    prisma.task.count({ where: { status: "PENDING", customer: accessWhere } }),
+  ]);
   const users = await prisma.user.findMany({ where: { id: { in: ranking.map((item) => item.salesRepId).filter((id): id is string => Boolean(id)) } }, select: { id: true, name: true } });
   const names = new Map(users.map((user) => [user.id, user.name]));
   response.json({ data: {

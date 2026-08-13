@@ -23,6 +23,7 @@ app.use(cors({
     callback(null, !origin || allowedOrigins.has(origin));
   },
   credentials: true,
+  maxAge: 86_400,
 }));
 app.use(express.json({ limit: "1mb" }));
 
