@@ -22,13 +22,13 @@ export function customerBatchWhere(user: PolicyUser, ids: string[]): Prisma.Cust
   return { AND: [customerAccessWhere(user), { id: { in: ids } }] };
 }
 
-export type BatchDeleteTarget = { id: string; _count: { orders: number } };
+export type BatchDeleteTarget = { id: string; _count: { orders: number; transactions: number } };
 
 export function splitBatchDeleteTargets(targets: BatchDeleteTarget[]) {
-  const failed = targets.filter((target) => target._count.orders > 0).map((target) => ({
+  const failed = targets.filter((target) => target._count.orders > 0 || target._count.transactions > 0).map((target) => ({
     id: target.id,
     code: "CUSTOMER_HAS_ORDERS",
     message: "该客户已有订单或回款记录，不能直接删除",
   }));
-  return { deletableIds: targets.filter((target) => target._count.orders === 0).map((target) => target.id), failed };
+  return { deletableIds: targets.filter((target) => target._count.orders === 0 && target._count.transactions === 0).map((target) => target.id), failed };
 }

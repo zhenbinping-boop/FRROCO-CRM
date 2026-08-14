@@ -39,8 +39,8 @@ assert.deepEqual(customerBatchWhere(selfUser, ["c-1"]), {
   AND: [{ OR: [{ salesRepId: "user-1" }, { designerId: "user-1" }] }, { id: { in: ["c-1"] } }],
 });
 assert.deepEqual(splitBatchDeleteTargets([
-  { id: "c-1", _count: { orders: 0 } },
-  { id: "c-2", _count: { orders: 2 } },
+  { id: "c-1", _count: { orders: 0, transactions: 0 } },
+  { id: "c-2", _count: { orders: 2, transactions: 0 } },
 ]), {
   deletableIds: ["c-1"],
   failed: [{ id: "c-2", code: "CUSTOMER_HAS_ORDERS", message: "该客户已有订单或回款记录，不能直接删除" }],
@@ -88,14 +88,14 @@ export function customerBatchWhere(user: PolicyUser, ids: string[]): Prisma.Cust
   return { AND: [customerAccessWhere(user), { id: { in: ids } }] };
 }
 
-export type BatchDeleteTarget = { id: string; _count: { orders: number } };
+export type BatchDeleteTarget = { id: string; _count: { orders: number; transactions: number } };
 export function splitBatchDeleteTargets(targets: BatchDeleteTarget[]) {
-  const failed = targets.filter((target) => target._count.orders > 0).map((target) => ({
+  const failed = targets.filter((target) => target._count.orders > 0 || target._count.transactions > 0).map((target) => ({
     id: target.id,
     code: "CUSTOMER_HAS_ORDERS",
     message: "该客户已有订单或回款记录，不能直接删除",
   }));
-  return { deletableIds: targets.filter((target) => target._count.orders === 0).map((target) => target.id), failed };
+  return { deletableIds: targets.filter((target) => target._count.orders === 0 && target._count.transactions === 0).map((target) => target.id), failed };
 }
 ```
 
@@ -156,7 +156,7 @@ Add `batchUpdateCustomers` after `updateCustomer` and before the import/export h
 
 - [ ] **Step 4: Implement transactional batch delete with order protection**
 
-Add `batchDeleteCustomers` using the same all-selected visibility check. Select `{ id, _count: { select: { orders: true } } }`, call `splitBatchDeleteTargets`, delete only `deletableIds` with `tx.customer.deleteMany`, and return `{ requested, deleted, failed }`. Keep the transaction callback free of external API calls. The existing single-delete endpoint remains unchanged.
+Add `batchDeleteCustomers` using the same all-selected visibility check. Select `{ id, _count: { select: { orders: true, transactions: true } } }`, call `splitBatchDeleteTargets`, delete only `deletableIds` with a final data-scope and empty-association condition in `tx.customer.deleteMany`, and return `{ requested, deleted, failed }`. Keep the transaction callback free of external API calls. Align the existing single-delete endpoint with the same order and transaction protection.
 
 - [ ] **Step 5: Register routes before the dynamic `/:id` routes**
 

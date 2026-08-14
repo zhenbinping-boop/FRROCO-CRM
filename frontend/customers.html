@@ -261,6 +261,18 @@
 </select>
 </div>
 </section>
+<section class="hidden bg-surface-white rounded-2xl p-4 shadow-sm border border-outline-variant/20 items-center justify-between gap-4 flex-wrap" data-customer-bulk-toolbar>
+<div class="flex items-center gap-3 min-w-0">
+<span class="font-label-lg text-label-lg text-primary whitespace-nowrap"><span data-customer-bulk-count>0</span> 位客户已选</span>
+<span class="font-body-md text-body-md text-on-surface-variant hidden sm:inline">批量操作仅影响当前可见且有权限的客户</span>
+</div>
+<div class="flex items-center gap-2 flex-wrap justify-end">
+<button class="farock-btn" data-customer-bulk-select-visible type="button"><span class="material-symbols-outlined text-[18px]">select_all</span>全选当前结果</button>
+<button class="farock-btn" data-customer-bulk-edit disabled type="button"><span class="material-symbols-outlined text-[18px]">edit</span>批量修改</button>
+<button class="farock-btn" data-customer-bulk-delete disabled type="button"><span class="material-symbols-outlined text-[18px]">delete</span>批量删除</button>
+<button aria-label="清空已选客户" class="farock-btn" data-customer-bulk-clear type="button"><span class="material-symbols-outlined text-[18px]">close</span></button>
+</div>
+</section>
 <!-- Customer Grid -->
 <section>
 <div class="flex items-center justify-between mb-6">
@@ -473,5 +485,6 @@
 <script src="assets/api.js" defer></script>
 <script src="assets/customer-export.js" defer></script>
 <script src="assets/api-pages.js" defer></script>
+<script src="assets/customer-bulk.js" defer></script>
 <script src="assets/module-shell.js" defer></script>
 </body></html>

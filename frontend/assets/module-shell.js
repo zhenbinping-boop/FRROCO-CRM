@@ -7,7 +7,7 @@
 
   const modules = {
     "dashboard.html": { scripts: ["api-pages.js"], refreshBeforeScripts: true },
-    "customers.html": { scripts: ["customer-import.js", "customer-export.js", "api-pages.js"], refreshBeforeScripts: true },
+    "customers.html": { scripts: ["customer-import.js", "customer-export.js", "api-pages.js", "customer-bulk.js"], refreshBeforeScripts: true },
     "follow-up-tasks.html": { scripts: ["tasks-page.js"], refreshBeforeScripts: false },
     "channel-analysis.html": { scripts: [], refreshBeforeScripts: false },
     "orders-payments.html": { scripts: ["order-actions.js"], refreshBeforeScripts: false },

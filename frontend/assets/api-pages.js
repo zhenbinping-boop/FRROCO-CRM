@@ -14,8 +14,8 @@
     const dealer = customer.storeType === "DEALER";
     const owner = dealer ? customer.dealerGroup?.dealerName : customer.store?.storeName;
     const location = [customer.regionProvince, customer.regionCity, customer.regionDistrict].filter(Boolean).join(" / ");
-    return `<article class="bg-surface-white rounded-3xl p-6 shadow-sm border border-outline-variant/30 hover:shadow-lg transition-shadow flex flex-col group" data-operation-mode="${customer.storeType}" data-province="${escapeHtml(customer.regionProvince)}" data-city="${escapeHtml(customer.regionCity)}" data-store="${escapeHtml(customer.store?.id || "")}" data-store-label="${escapeHtml(customer.store?.storeName || "")}" data-dealer-group="${escapeHtml(customer.dealerGroupId || "")}" data-dealer-group-label="${escapeHtml(customer.dealerGroup?.dealerName || customer.dealerGroupId || "")}" data-tier="${customer.tier}" data-created-at="${customer.createdAt}">
-      <div class="flex justify-between items-start mb-4 gap-2"><div class="w-12 h-12 rounded-xl bg-surface-container-low flex items-center justify-center"><span class="material-symbols-outlined">${dealer ? "storefront" : "business"}</span></div><div class="flex gap-2"><span class="bg-secondary-fixed px-2.5 py-1 rounded-md font-bold">${customer.tier}级</span><span class="customer-mode-badge ${dealer ? "customer-mode-dealer" : "customer-mode-direct"}"><span class="material-symbols-outlined">${dealer ? "storefront" : "business"}</span>${dealer ? "代理商" : "直营"}</span></div></div>
+    return `<article class="bg-surface-white rounded-3xl p-6 shadow-sm border border-outline-variant/30 hover:shadow-lg transition-shadow flex flex-col group" data-customer-id="${escapeHtml(customer.id)}" data-operation-mode="${customer.storeType}" data-province="${escapeHtml(customer.regionProvince)}" data-city="${escapeHtml(customer.regionCity)}" data-store="${escapeHtml(customer.store?.id || "")}" data-store-label="${escapeHtml(customer.store?.storeName || "")}" data-dealer-group="${escapeHtml(customer.dealerGroupId || "")}" data-dealer-group-label="${escapeHtml(customer.dealerGroup?.dealerName || customer.dealerGroupId || "")}" data-tier="${customer.tier}" data-created-at="${customer.createdAt}">
+      <div class="flex justify-between items-start mb-4 gap-2"><label class="farock-customer-select"><input aria-label="选择客户 ${escapeHtml(customer.name)}" data-customer-select type="checkbox" value="${escapeHtml(customer.id)}"><span class="material-symbols-outlined">check</span></label><div class="w-12 h-12 rounded-xl bg-surface-container-low flex items-center justify-center"><span class="material-symbols-outlined">${dealer ? "storefront" : "business"}</span></div><div class="flex gap-2"><span class="bg-secondary-fixed px-2.5 py-1 rounded-md font-bold">${customer.tier}级</span><span class="customer-mode-badge ${dealer ? "customer-mode-dealer" : "customer-mode-direct"}"><span class="material-symbols-outlined">${dealer ? "storefront" : "business"}</span>${dealer ? "代理商" : "直营"}</span></div></div>
       <h3 class="font-headline-md text-headline-md text-primary mb-1">${escapeHtml(customer.name)}</h3>
       <p class="font-body-md text-body-md text-on-surface-variant mb-6 line-clamp-2">${escapeHtml(customer.personaSummary || customer.whyFarock || "客户画像待完善")}</p>
       <div class="space-y-3 mt-auto"><div class="flex items-center gap-2 text-on-surface-variant"><span class="material-symbols-outlined text-[18px]">location_on</span><span>${escapeHtml(location)}</span></div><div class="flex justify-between items-center gap-3 pt-4 border-t border-outline-variant/20"><span class="truncate text-on-surface-variant">${escapeHtml(owner || "归属待完善")}</span><a class="text-primary whitespace-nowrap" href="customer-detail.html?id=${encodeURIComponent(customer.id)}">查看详情</a></div></div>
@@ -38,10 +38,13 @@
       if (total) total.textContent = `${firstPage.meta.total} 位客户`;
       grid._farockRefreshOptions?.();
       grid._farockRender?.();
+      window.FarockCustomers = { refresh: loadCustomers };
+      document.dispatchEvent(new CustomEvent("farock:customers-loaded"));
     } catch (error) {
       grid.innerHTML = messageCard(`客户数据加载失败：${error.message}`, true);
       if (total) total.textContent = "加载失败";
-      grid.querySelector("[data-api-retry]")?.addEventListener("click", loadCustomers);
+      grid.querySelector("[data-api-retry]")?.addEventListener("click", () => { void loadCustomers().catch(() => {}); });
+      throw error;
     }
   }
 
@@ -66,6 +69,6 @@
     }
   }
 
-  loadCustomers();
+  void loadCustomers().catch(() => {});
   loadDashboard();
 })();

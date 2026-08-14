@@ -2,7 +2,7 @@ import { Router } from "express";
 
 import { dashboard } from "../controllers/analytics-controller.js";
 import { login } from "../controllers/auth-controller.js";
-import { changeOwnership, createCustomer, createStore, deleteCustomer, exportRegionalCustomers, getCustomer, importCustomers, listCustomers, listDealerGroups, listStores, updateCustomer } from "../controllers/customer-controller.js";
+import { batchDeleteCustomers, batchUpdateCustomers, changeOwnership, createCustomer, createStore, deleteCustomer, exportRegionalCustomers, getCustomer, importCustomers, listCustomers, listDealerGroups, listStores, updateCustomer } from "../controllers/customer-controller.js";
 import { createOrder, createPayment, getOrder, listOrders } from "../controllers/order-controller.js";
 import { createTask, listTasks, updateTask } from "../controllers/task-controller.js";
 import { createRole, deleteRole, listRoles, updateRole } from "../controllers/role-controller.js";
@@ -35,6 +35,8 @@ apiRouter.get("/customers", requirePermission("customer.read"), listCustomers);
 apiRouter.post("/customers", requirePermission("customer.create"), createCustomer);
 apiRouter.post("/customers/import", requirePermission("customer.create"), importCustomers);
 apiRouter.get("/customers/export-regional", requirePermission("customer.export"), exportRegionalCustomers);
+apiRouter.patch("/customers/batch", requirePermission("customer.update"), batchUpdateCustomers);
+apiRouter.post("/customers/batch-delete", requirePermission("customer.delete"), batchDeleteCustomers);
 apiRouter.get("/customers/:id", requirePermission("customer.read"), getCustomer);
 apiRouter.patch("/customers/:id", requirePermission("customer.update"), updateCustomer);
 apiRouter.delete("/customers/:id", requirePermission("customer.delete"), deleteCustomer);
