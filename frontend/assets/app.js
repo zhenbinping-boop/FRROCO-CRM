@@ -16,7 +16,7 @@
     login: "index.html"
   };
 
-  const page = location.pathname.split("/").pop() || routes.login;
+  let page = location.pathname.split("/").pop() || routes.login;
   let uiRevealed = false;
   const revealUi = () => {
     if (uiRevealed) return;
@@ -666,13 +666,17 @@
       .find((input) => /search/i.test(input.placeholder || ""));
     if (!search) return;
 
+    search._farockGlobalSearchCleanup?.();
+
     if (page === routes.customers) {
       const grid = document.querySelector("[data-customer-grid]");
       if (!grid) return;
-      search.addEventListener("input", () => {
+      const handleSearch = () => {
         grid._farockCustomerQuery = search.value.trim().toLowerCase();
         grid._farockRender?.();
-      });
+      };
+      search.addEventListener("input", handleSearch);
+      search._farockGlobalSearchCleanup = () => search.removeEventListener("input", handleSearch);
       return;
     }
 
@@ -682,7 +686,7 @@
     }
     if (!items.length) return;
 
-    search.addEventListener("input", () => {
+    const handleSearch = () => {
       const query = search.value.trim().toLowerCase();
       let visible = 0;
       items.forEach((item) => {
@@ -699,7 +703,9 @@
         items[0]?.parentElement?.append(empty);
       }
       empty?.classList.toggle("farock-hidden", visible > 0);
-    });
+    };
+    search.addEventListener("input", handleSearch);
+    search._farockGlobalSearchCleanup = () => search.removeEventListener("input", handleSearch);
   }
 
   function setupCustomerCards() {
@@ -1140,6 +1146,8 @@
 
   function setupGenericActions() {
     document.querySelectorAll("button").forEach((button) => {
+      if (button.dataset.farockGenericActionBound === "true") return;
+      button.dataset.farockGenericActionBound = "true";
       const label = textOf(button);
       const icon = textOf(button.querySelector(".material-symbols-outlined"));
       if ((label.includes("Add Customer") || label === "New Project") && button.type !== "submit") {
@@ -1204,20 +1212,30 @@
     });
   }
 
+  function refreshPage(nextPage = page, options = {}) {
+    page = nextPage;
+    if (options.rebindOnly) {
+      setupGlobalSearch();
+      return;
+    }
+    setupCustomerCards();
+    setupCustomerFilters();
+    setupGlobalSearch();
+    setupCreateCustomer();
+    setupPayment();
+    setupOrderTabs();
+    setupMasterData();
+    setupFollowUpTasks();
+    setupOrganizations();
+    setupGenericActions();
+    setupButtonGroups();
+    localizeInterface();
+  }
+
+  window.FarockApp = { refreshPage };
   setupNavigation();
   setupLogin();
-  setupCustomerCards();
-  setupCustomerFilters();
-  setupGlobalSearch();
-  setupCreateCustomer();
-  setupPayment();
-  setupOrderTabs();
-  setupMasterData();
-  setupFollowUpTasks();
-  setupOrganizations();
-  setupGenericActions();
-  setupButtonGroups();
-  localizeInterface();
+  refreshPage(page);
   document.addEventListener("DOMContentLoaded", async () => {
     await window.FarockAPI?.whenIdle?.();
     clearTimeout(revealFallback);

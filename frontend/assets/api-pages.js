@@ -48,18 +48,19 @@
   async function loadDashboard() {
     const ranking = document.querySelector("[data-dashboard-ranking]");
     if (!ranking) return;
+    const dashboard = ranking.closest("main") || ranking;
     ranking.innerHTML = messageCard("正在加载业绩数据...");
     try {
       const { data } = await api.get("/analytics/dashboard");
       const metrics = data.metrics;
-      document.querySelector("[data-dashboard-new-customers]").textContent = metrics.newCustomers;
-      document.querySelector("[data-dashboard-new-change]").textContent = `待跟进 ${metrics.pendingTasks} 项`;
-      document.querySelector("[data-dashboard-success-rate]").textContent = `${metrics.conversionRate}%`;
-      document.querySelector("[data-dashboard-success-gauge]")?.setAttribute("stroke-dasharray", `${metrics.conversionRate}, 100`);
-      document.querySelector("[data-dashboard-revenue]").textContent = currency(metrics.totalRevenue);
+      dashboard.querySelector("[data-dashboard-new-customers]").textContent = metrics.newCustomers;
+      dashboard.querySelector("[data-dashboard-new-change]").textContent = `待跟进 ${metrics.pendingTasks} 项`;
+      dashboard.querySelector("[data-dashboard-success-rate]").textContent = `${metrics.conversionRate}%`;
+      dashboard.querySelector("[data-dashboard-success-gauge]")?.setAttribute("stroke-dasharray", `${metrics.conversionRate}, 100`);
+      dashboard.querySelector("[data-dashboard-revenue]").textContent = currency(metrics.totalRevenue);
       ranking.innerHTML = data.ranking.length ? `<div class="bg-surface-white rounded-2xl border border-outline-variant/30 overflow-hidden min-w-[680px] w-full"><div class="grid grid-cols-[72px_1fr_140px_180px] gap-4 px-6 py-4 bg-surface-container-low"><span>排名</span><span>姓名</span><span class="text-right">客户数</span><span class="text-right">业绩金额</span></div>${data.ranking.map((item) => `<div class="grid grid-cols-[72px_1fr_140px_180px] gap-4 px-6 py-4 border-t border-outline-variant/20"><span>${item.rank}</span><strong>${escapeHtml(item.name)}</strong><span class="text-right">${item.customers}</span><span class="text-right">${currency(item.revenue)}</span></div>`).join("")}</div>` : messageCard("暂无排行榜数据");
     } catch (error) {
-      document.querySelectorAll("[data-dashboard-value]").forEach((element) => { element.textContent = "--"; });
+      dashboard.querySelectorAll("[data-dashboard-value]").forEach((element) => { element.textContent = "--"; });
       ranking.innerHTML = messageCard(`看板数据加载失败：${error.message}`, true);
       ranking.querySelector("[data-api-retry]")?.addEventListener("click", loadDashboard);
     }

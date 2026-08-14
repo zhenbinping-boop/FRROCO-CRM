@@ -124,7 +124,7 @@
           </div>
           <nav class="farock-sidebar__nav">
             ${navItems.map(([key, icon, label, href]) => `
-              <a class="farock-sidebar__link${active === key ? " is-active" : ""}" href="${href}" ${active === key ? 'aria-current="page"' : ""}>
+              <a class="farock-sidebar__link${active === key ? " is-active" : ""}" data-nav-key="${key}" href="${href}" ${active === key ? 'aria-current="page"' : ""}>
                 <span class="material-symbols-outlined">${icon}</span><span>${label}</span>
               </a>`).join("")}
           </nav>
@@ -249,9 +249,37 @@
   const header = document.createElement("farock-header");
   header.setAttribute("page-title", config.title);
   shell.append(header);
-  const actions = createActionBar(config.actions);
-  if (actions) shell.append(actions);
+  let activeShellPage = page;
+  const actionBars = new Map();
+  let actionBar = createActionBar(config.actions);
+  if (actionBar) shell.append(actionBar);
+  if (actionBar) actionBars.set(page, actionBar);
   shell.append(main);
+
+  function setPage(nextPage) {
+    const nextConfig = pages[nextPage];
+    if (!nextConfig) return false;
+    sidebar.setAttribute("active", nextConfig.active);
+    sidebar.querySelectorAll(".farock-sidebar__link").forEach((link) => {
+      const active = link.dataset.navKey === nextConfig.active;
+      link.classList.toggle("is-active", active);
+      if (active) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
+    });
+    const title = header.querySelector("h1");
+    if (title) title.textContent = nextConfig.title;
+    if (actionBar) actionBars.set(activeShellPage, actionBar);
+    actionBar?.remove();
+    actionBar = actionBars.get(nextPage) || createActionBar(nextConfig.actions);
+    if (actionBar) actionBars.set(nextPage, actionBar);
+    const currentMain = shell.querySelector("main");
+    if (actionBar && currentMain) shell.insertBefore(actionBar, currentMain);
+    activeShellPage = nextPage;
+    document.title = `FRROCO CRM - ${nextConfig.title}`;
+    return true;
+  }
+
+  window.FarockShell = { getPageConfig: (name) => pages[name], setPage };
 
   Array.from(document.body.children).forEach((element) => {
     if (["NAV", "ASIDE"].includes(element.tagName)) element.remove();
