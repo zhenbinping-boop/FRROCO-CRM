@@ -59,10 +59,17 @@
     renderToolbar();
   }
 
-  function closeModal(backdrop) {
+  function focusCustomerGrid() {
+    const customerGrid = grid();
+    if (!customerGrid) return;
+    customerGrid.tabIndex = -1;
+    customerGrid.focus();
+  }
+
+  function closeModal(backdrop, restoreFocus = true) {
     backdrop.remove();
     document.removeEventListener("keydown", backdrop._onKeyDown);
-    backdrop._returnFocus?.focus?.();
+    if (restoreFocus) backdrop._returnFocus?.focus?.();
   }
 
   function openEditModal() {
@@ -119,7 +126,7 @@
       const count = selectedIds.size;
       try {
         await window.FarockAPI.patch(customerBatch.update, { ids: [...selectedIds], changes });
-        closeModal(backdrop);
+        closeModal(backdrop, false);
         if (await refreshAfterMutation()) showMessage(`已修改 ${Object.keys(changes).length} 个字段，共 ${count} 位客户`);
       } catch (requestError) {
         if (!backdrop.isConnected) {
@@ -142,6 +149,7 @@
       return false;
     }
     await refresh();
+    focusCustomerGrid();
     return true;
   }
 

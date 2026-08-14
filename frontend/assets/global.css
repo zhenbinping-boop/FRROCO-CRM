@@ -137,6 +137,11 @@ farock-header {
   outline-offset: 3px;
 }
 
+.farock-customer-select:has(input:focus-visible) {
+  outline: 2px solid var(--farock-primary);
+  outline-offset: 2px;
+}
+
 .farock-customer-select:has(input:checked) {
   border-color: var(--farock-primary);
   background: var(--farock-primary);

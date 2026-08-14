@@ -24,7 +24,7 @@
 
   async function loadCustomers() {
     const grid = document.querySelector("[data-customer-grid]");
-    if (!grid) return;
+    if (!grid) throw new Error("客户列表已离开当前页面，请返回客户管理后刷新");
     const total = document.querySelector("[data-customer-total]");
     grid.innerHTML = messageCard("正在加载客户数据...");
     try {

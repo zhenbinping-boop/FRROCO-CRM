@@ -14,9 +14,11 @@ assert.match(html, /customer-bulk\.js/);
 assert.match(apiPages, /data-customer-id/);
 assert.match(apiPages, /FarockCustomers/);
 assert.match(apiPages, /customer-detail\.html/);
+assert.match(apiPages, /if \(!grid\) throw/);
 assert.match(bulk, /customerBatch/);
 assert.match(bulk, /MAX_SELECTED = 100/);
 assert.match(bulk, /target\.checked = false/);
+assert.match(bulk, /focusCustomerGrid/);
 assert.match(bulk, /customers\/batch-delete/);
 assert.match(bulk, /selectedIds\.clear\(\)/);
 assert.match(bulk, /FarockCustomers\?\.refresh/);
@@ -26,5 +28,6 @@ assert.match(bulk, /FarockCustomerBulkLoaded/);
 assert.match(bulk, /target\.checked = false/);
 assert.match(shell, /customer-bulk\.js/);
 assert.match(globalCss, /farock-customer-select input:focus-visible/);
+assert.match(globalCss, /farock-customer-select:has\(input:focus-visible\)/);
 
 console.log("customer bulk frontend contract: pass");
