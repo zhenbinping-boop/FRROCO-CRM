@@ -1,8 +1,9 @@
 (() => {
   "use strict";
 
-  const roleLabels = { ADMIN: "管理员", SALES_REP: "导购", DESIGNER: "设计师", DEALER_USER: "代理商用户" };
-  const state = { users: [], organizations: [], positions: [], page: 1, totalPages: 1 };
+  const scopeLabels = { SELF: "仅本人", DEPARTMENT: "本机构", SUB_DEPARTMENT: "本机构及下级", ALL: "全部数据" };
+  const state = { users: [], organizations: [], positions: [], roles: [], permissions: [], page: 1, totalPages: 1 };
+  let userRequestId = 0;
   let currentUser = null;
   try { currentUser = JSON.parse(localStorage.getItem("farock-session") || "null"); } catch { currentUser = null; }
 
@@ -18,6 +19,9 @@
     passwordForm: document.querySelector("#password-form"), deleteButton: document.querySelector("#user-delete"), toast: document.querySelector("#user-toast"),
     positionList: document.querySelector("#position-list"), positionCreateButton: document.querySelector("#position-create-button"),
     positionCreateDialog: document.querySelector("#position-create-dialog"), positionCreateForm: document.querySelector("#position-create-form"),
+    roleList: document.querySelector("#role-list"), roleCreateButton: document.querySelector("#role-create-button"),
+    roleDialog: document.querySelector("#role-dialog"), roleForm: document.querySelector("#role-form"),
+    roleDeleteButton: document.querySelector("#role-delete"), permissionList: document.querySelector("#permission-list"),
   };
   if (!window.FarockAPI || !elements.body) return;
 
@@ -40,7 +44,7 @@
     const data = new FormData(form);
     return {
       name: String(data.get("name") || "").trim(), email: String(data.get("email") || "").trim(),
-      phone: String(data.get("phone") || "").trim() || null, role: String(data.get("role") || ""),
+      phone: String(data.get("phone") || "").trim() || null, roleId: String(data.get("roleId") || ""),
       organizationId: String(data.get("organizationId") || "") || null, positionId: String(data.get("positionId") || "") || null,
       active: data.get("active") === "on",
     };
@@ -66,7 +70,7 @@
     cells[0].querySelector("strong").textContent = user.name;
     cells[0].querySelector(".text-xs").textContent = user.email + (user.phone ? ` · ${user.phone}` : "");
     cells[1].textContent = user.position?.name || "未设置";
-    cells[2].querySelector("span").textContent = roleLabels[user.role] || user.role;
+    cells[2].querySelector("span").textContent = user.dynamicRole?.name || user.role;
     cells[3].textContent = user.organization?.name || "未指定";
     const status = cells[4].querySelector("span");
     status.querySelector("i").classList.add(user.active ? "bg-emerald-600" : "bg-[#9a9d99]");
@@ -89,11 +93,13 @@
   }
 
   async function loadUsers() {
+    const requestId = ++userRequestId;
     elements.body.innerHTML = '<tr><td class="px-5 py-10 text-center text-[#666a67]" colspan="6">正在加载成员...</td></tr>';
     const params = new URLSearchParams({ page: String(state.page), pageSize: "50" });
-    [["search", elements.search.value.trim()], ["positionId", elements.position.value], ["role", elements.role.value], ["organizationId", elements.organization.value], ["active", elements.active.value]].forEach(([key, value]) => { if (value) params.set(key, value); });
+    [["search", elements.search.value.trim()], ["positionId", elements.position.value], ["roleId", elements.role.value], ["organizationId", elements.organization.value], ["active", elements.active.value]].forEach(([key, value]) => { if (value) params.set(key, value); });
     try {
       const payload = await FarockAPI.get(`users?${params}`);
+      if (requestId !== userRequestId) return;
       state.users = payload.data;
       const sessionUser = state.users.find((user) => user.id === currentUser?.id);
       if (sessionUser) {
@@ -104,6 +110,7 @@
       state.totalPages = payload.meta.totalPages;
       renderUsers(payload.meta);
     } catch (error) {
+      if (requestId !== userRequestId) return;
       elements.body.innerHTML = '<tr><td class="px-5 py-10 text-center text-red-700" colspan="6"></td></tr>';
       elements.body.querySelector("td").textContent = error.message;
       elements.count.textContent = "加载失败";
@@ -151,11 +158,71 @@
     catch (error) { showToast(error.message); }
   }
 
+  function fillRoleSelects() {
+    document.querySelectorAll("[data-role-select]").forEach((select) => {
+      select.querySelectorAll("option:not(:first-child)").forEach((option) => option.remove());
+      state.roles.forEach((role) => {
+        const option = new Option(`${role.name}${role.active ? "" : "（已停用）"}`, role.id);
+        if (!role.active && select !== elements.role) option.disabled = true;
+        select.add(option);
+      });
+    });
+  }
+
+  function renderPermissionOptions(selectedCodes = [], disabled = false) {
+    const selected = new Set(selectedCodes);
+    elements.permissionList.replaceChildren(...state.permissions.map((permission) => {
+      const label = document.createElement("label");
+      label.className = "flex items-start gap-3 rounded-md border border-[#dedfda] p-3";
+      const checkbox = Object.assign(document.createElement("input"), { type: "checkbox", name: "permissionCodes", value: permission.code, checked: selected.has(permission.code), disabled });
+      const text = document.createElement("span");
+      text.className = "min-w-0 text-sm";
+      text.append(Object.assign(document.createElement("strong"), { className: "block font-semibold", textContent: permission.name }));
+      text.append(Object.assign(document.createElement("small"), { className: "block break-all text-[#666a67]", textContent: permission.code }));
+      label.append(checkbox, text);
+      return label;
+    }));
+    if (!state.permissions.length) elements.permissionList.textContent = "暂无可配置的权限节点";
+  }
+
+  function renderRoles() {
+    elements.roleList.replaceChildren(...state.roles.map((role) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "grid min-h-[104px] gap-2 rounded-md border border-[#dedfda] bg-[#fafaf7] p-4 text-left transition hover:border-[#8b8e89] focus:outline-none focus:ring-2 focus:ring-[#1b1c19]/20";
+      const header = document.createElement("span");
+      header.className = "flex items-start justify-between gap-3";
+      header.append(Object.assign(document.createElement("strong"), { className: "font-semibold", textContent: role.name }));
+      header.append(Object.assign(document.createElement("small"), { className: role.active ? "text-emerald-700" : "text-[#777b77]", textContent: role.active ? "已启用" : "已停用" }));
+      const summary = document.createElement("span");
+      summary.className = "text-sm text-[#555955]";
+      summary.textContent = `${scopeLabels[role.dataScope] || role.dataScope} · ${role.permissions.length} 项权限 · ${role._count.users} 名成员`;
+      const type = document.createElement("small");
+      type.className = "text-[#777b77]";
+      type.textContent = role.isSystem ? "系统角色" : role.code;
+      button.append(header, summary, type);
+      button.addEventListener("click", () => openRole(role));
+      return button;
+    }));
+  }
+
+  async function loadRoles() {
+    try {
+      state.roles = (await FarockAPI.get("roles")).data;
+      state.permissions = Array.from(new Map(state.roles.flatMap((role) => role.permissions).map(({ permission }) => [permission.code, permission])).values()).sort((left, right) => left.code.localeCompare(right.code));
+      fillRoleSelects();
+      renderRoles();
+    } catch (error) {
+      elements.roleList.textContent = error.message;
+      showToast(error.message);
+    }
+  }
+
   function syncPlacementFields(form) {
     const position = state.positions.find((item) => item.id === form.elements.positionId.value);
     const dealerOnly = Boolean(position?.dealerOnly);
-    if (dealerOnly) form.elements.role.value = "DEALER_USER";
-    const requiresDealer = dealerOnly || form.elements.role.value === "DEALER_USER";
+    const roleCode = state.roles.find((item) => item.id === form.elements.roleId.value)?.code;
+    const requiresDealer = dealerOnly || roleCode === "DEALER_USER";
     const currentOrganization = form.elements.organizationId.value;
     form.elements.organizationId.querySelectorAll("option[data-type]").forEach((option) => { option.hidden = requiresDealer && option.dataset.type !== "DEALER"; });
     if (requiresDealer && state.organizations.find((item) => item.id === currentOrganization)?.type !== "DEALER") form.elements.organizationId.value = "";
@@ -168,7 +235,7 @@
     form.elements.name.value = user.name;
     form.elements.email.value = user.email;
     form.elements.phone.value = user.phone || "";
-    form.elements.role.value = user.role;
+    form.elements.roleId.value = user.roleId;
     form.elements.positionId.value = user.positionId || "";
     form.elements.organizationId.value = user.organizationId || "";
     syncPlacementFields(form);
@@ -240,6 +307,61 @@
     finally { setBusy(elements.positionCreateForm, false); }
   }
 
+  function openRole(role = null) {
+    const form = elements.roleForm;
+    form.reset();
+    clearFormError(form);
+    form.elements.id.value = role?.id || "";
+    form.elements.name.value = role?.name || "";
+    form.elements.dataScope.value = role?.dataScope || "SELF";
+    form.elements.active.checked = role?.active ?? true;
+    const immutable = Boolean(role?.isSystem);
+    form.querySelectorAll("input:not([name=id]), select").forEach((control) => { control.disabled = immutable; });
+    form.querySelector('[type="submit"]').hidden = immutable;
+    elements.roleDeleteButton.hidden = !role || immutable;
+    elements.roleDeleteButton.disabled = Boolean(role?._count.users);
+    renderPermissionOptions(role?.permissions.map(({ permission }) => permission.code) || [], immutable);
+    elements.roleDialog.showModal();
+  }
+
+  async function submitRole(event) {
+    event.preventDefault();
+    clearFormError(elements.roleForm);
+    const data = new FormData(elements.roleForm);
+    const id = String(data.get("id") || "");
+    const payload = {
+      name: String(data.get("name") || "").trim(),
+      dataScope: String(data.get("dataScope") || "SELF"),
+      active: data.get("active") === "on",
+      permissionCodes: data.getAll("permissionCodes").map(String),
+    };
+    if (!id) payload.code = `CUSTOM_${Date.now().toString(36).toUpperCase()}`;
+    setBusy(elements.roleForm, true);
+    try {
+      if (id) await FarockAPI.patch(`roles/${id}`, payload);
+      else await FarockAPI.post("roles", payload);
+      elements.roleDialog.close();
+      await loadRoles();
+      await loadUsers();
+      showToast(id ? "角色已保存" : "角色已创建");
+    } catch (error) { showFormError(elements.roleForm, error.message); }
+    finally { setBusy(elements.roleForm, false); }
+  }
+
+  async function deleteRole() {
+    const id = elements.roleForm.elements.id.value;
+    const role = state.roles.find((item) => item.id === id);
+    if (!role || role.isSystem || !confirm(`确定删除角色“${role.name}”吗？`)) return;
+    elements.roleDeleteButton.disabled = true;
+    try {
+      await FarockAPI.delete(`roles/${id}`);
+      elements.roleDialog.close();
+      await loadRoles();
+      showToast("角色已删除");
+    } catch (error) { showFormError(elements.roleForm, error.message); }
+    finally { elements.roleDeleteButton.disabled = false; }
+  }
+
   let searchTimer;
   elements.search.addEventListener("input", () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { state.page = 1; loadUsers(); }, 250); });
   [elements.position, elements.role, elements.organization, elements.active].forEach((control) => control.addEventListener("change", () => { state.page = 1; loadUsers(); }));
@@ -249,23 +371,26 @@
   elements.createButton?.addEventListener("click", () => { clearFormError(elements.createForm); syncPlacementFields(elements.createForm); elements.createDialog.showModal(); });
   elements.passwordButton?.addEventListener("click", () => { elements.passwordForm.reset(); clearFormError(elements.passwordForm); elements.passwordDialog.showModal(); });
   elements.positionCreateButton?.addEventListener("click", () => { clearFormError(elements.positionCreateForm); elements.positionCreateDialog.showModal(); });
+  elements.roleCreateButton?.addEventListener("click", () => openRole());
   [elements.createForm, elements.editForm].forEach((form) => {
     form.elements.positionId.addEventListener("change", () => syncPlacementFields(form));
-    form.elements.role.addEventListener("change", () => syncPlacementFields(form));
+    form.elements.roleId.addEventListener("change", () => syncPlacementFields(form));
   });
   elements.createForm.addEventListener("submit", submitCreate);
   elements.editForm.addEventListener("submit", submitEdit);
   elements.passwordForm.addEventListener("submit", submitPassword);
   elements.positionCreateForm.addEventListener("submit", submitPosition);
+  elements.roleForm?.addEventListener("submit", submitRole);
   elements.deleteButton.addEventListener("click", deleteMember);
+  elements.roleDeleteButton?.addEventListener("click", deleteRole);
   document.querySelectorAll("[data-dialog-close]").forEach((button) => button.addEventListener("click", () => button.closest("dialog").close()));
   document.querySelectorAll("dialog").forEach((dialog) => dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); }));
 
   let initialized = false;
   function initializeForCurrentUser() {
-    if (initialized || currentUser?.role !== "ADMIN") return;
+    if (initialized || !currentUser?.id) return;
     initialized = true;
-    Promise.all([loadOrganizations(), loadPositions()]).then(() => loadUsers());
+    Promise.all([loadOrganizations(), loadPositions(), loadRoles()]).then(() => loadUsers());
   }
 
   window.addEventListener("farock:user-updated", (event) => {

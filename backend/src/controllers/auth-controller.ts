@@ -21,5 +21,5 @@ export const login: RequestHandler = async (request, response) => {
     secret,
     { subject: user.id, expiresIn: (process.env.JWT_EXPIRES_IN || "8h") as SignOptions["expiresIn"] },
   );
-  response.json({ data: { token, user: { id: user.id, email: user.email, name: user.name, role: user.dynamicRole, avatarData: user.avatarData, organization: user.organization, position: user.position } } });
+  response.json({ data: { token, user: { id: user.id, email: user.email, name: user.name, role: user.role, roleId: user.roleId, dynamicRole: user.dynamicRole, avatarData: user.avatarData, organization: user.organization, position: user.position } } });
 };

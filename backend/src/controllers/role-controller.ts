@@ -3,6 +3,7 @@ import { DataScope, Prisma } from "@prisma/client";
 import { z } from "zod";
 
 import { AppError, validate } from "../lib/http.js";
+import { invalidateAuthRole } from "../lib/auth-user-cache.js";
 import { prisma } from "../lib/prisma.js";
 
 const roleSchema = z.object({
@@ -56,6 +57,7 @@ export const updateRole: RequestHandler = async (request, response) => {
     }
     return tx.role.findUniqueOrThrow({ where: { id }, select: roleSelect });
   });
+  invalidateAuthRole(role.id);
   response.json({ data: role });
 };
 

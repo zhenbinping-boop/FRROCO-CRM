@@ -1,7 +1,7 @@
 import type { RequestHandler } from "express";
 import jwt from "jsonwebtoken";
 
-import { authUserGeneration, cacheAuthUser, getCachedAuthUser } from "../lib/auth-user-cache.js";
+import { authCacheEpoch, authUserGeneration, cacheAuthUser, getCachedAuthUser } from "../lib/auth-user-cache.js";
 import { AppError } from "../lib/http.js";
 import { prisma } from "../lib/prisma.js";
 
@@ -16,6 +16,7 @@ export const authenticate: RequestHandler = async (request, _response, next) => 
     let user = getCachedAuthUser(payload.sub);
     if (!user) {
       const generation = authUserGeneration(payload.sub);
+      const cacheEpoch = authCacheEpoch();
       const record = await prisma.user.findUnique({
         where: { id: payload.sub },
         select: {
@@ -29,6 +30,7 @@ export const authenticate: RequestHandler = async (request, _response, next) => 
           },
         },
       });
+      if (record && !record.dynamicRole.active) throw new Error("inactive role");
       if (record?.dynamicRole.active) {
         let organizationIds: string[] = record.organizationId ? [record.organizationId] : [];
         if (record.dynamicRole.dataScope === "SUB_DEPARTMENT" && record.organizationId) {
@@ -51,16 +53,7 @@ export const authenticate: RequestHandler = async (request, _response, next) => 
           organizationType: record.organization?.type || null,
           organizationIds,
         };
-        cacheAuthUser(user, generation);
-      } else if (record) {
-        user = {
-          id: record.id, email: record.email, role: record.role, active: record.active,
-          roleId: "legacy", roleCode: record.role === "ADMIN" ? "SUPER_ADMIN" : record.role,
-          dataScope: record.role === "ADMIN" ? "ALL" : "DEPARTMENT", permissions: new Set(),
-          organizationId: record.organizationId, organizationType: record.organization?.type || null,
-          organizationIds: record.organizationId ? [record.organizationId] : [],
-        };
-        cacheAuthUser(user, generation);
+        cacheAuthUser(user, generation, cacheEpoch);
       }
     }
     if (!user?.active || user.email !== payload.email) throw new Error("inactive user");

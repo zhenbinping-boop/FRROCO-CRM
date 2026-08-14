@@ -19,6 +19,8 @@ const safeUserSelect = {
   phone: true,
   name: true,
   role: true,
+  roleId: true,
+  dynamicRole: { select: { id: true, code: true, name: true, dataScope: true, active: true } },
   active: true,
   organizationId: true,
   organization: { select: { id: true, code: true, name: true, type: true } },
@@ -34,6 +36,8 @@ const currentUserSelect = {
   phone: true,
   name: true,
   role: true,
+  roleId: true,
+  dynamicRole: { select: { id: true, code: true, name: true, dataScope: true, active: true } },
   active: true,
   organizationId: true,
   avatarData: true,
@@ -45,6 +49,7 @@ const currentUserSelect = {
 export const userListQuerySchema = z.object({
   search: z.preprocess(emptyQueryValue, z.string().trim().max(100).optional()),
   role: z.preprocess(emptyQueryValue, z.enum(roles).optional()),
+  roleId: z.preprocess(emptyQueryValue, z.string().trim().min(1).optional()),
   active: z.preprocess(emptyQueryValue, z.enum(["true", "false"]).transform((value) => value === "true").optional()),
   organizationId: z.preprocess(emptyQueryValue, z.string().trim().min(1).optional()),
   positionId: z.preprocess(emptyQueryValue, z.string().trim().min(1).optional()),
@@ -57,12 +62,14 @@ const createSchema = z.object({
   email: z.string().trim().email().max(160),
   phone: z.string().trim().min(6).max(32).nullable().optional(),
   password: z.string().min(8).max(128),
-  role: z.enum(roles),
+  role: z.enum(roles).optional(),
   roleId: z.string().trim().min(1).optional(),
   active: z.boolean().optional(),
   organizationId: z.string().trim().min(1).nullable().optional(),
   positionId: z.string().trim().min(1),
-});
+})
+  .refine((input) => input.roleId || input.role, { message: "至少选择一个角色", path: ["roleId"] })
+  .refine((input) => !(input.roleId && input.role), { message: "角色编码和角色 ID 不能同时提交", path: ["roleId"] });
 
 const updateSchema = z.object({
   name: z.string().trim().min(1).max(100).optional(),
@@ -73,7 +80,9 @@ const updateSchema = z.object({
   active: z.boolean().optional(),
   organizationId: z.string().trim().min(1).nullable().optional(),
   positionId: z.string().trim().min(1).nullable().optional(),
-}).refine((input) => Object.keys(input).length > 0, { message: "至少提交一个需要修改的字段" });
+})
+  .refine((input) => Object.keys(input).length > 0, { message: "至少提交一个需要修改的字段" })
+  .refine((input) => !(input.roleId && input.role), { message: "角色编码和角色 ID 不能同时提交", path: ["roleId"] });
 
 const positionInput = z.object({
   name: z.string().trim().min(1).max(100),
@@ -107,31 +116,39 @@ function requireAdmin(request: Parameters<RequestHandler>[0]) {
   if (!hasPermission(request.user, "user.manage")) throw new AppError(403, "ADMIN_REQUIRED", "仅管理员可以管理成员");
 }
 
+function requireRoleAssignmentPermission(request: Parameters<RequestHandler>[0], roleCode: string) {
+  if (roleCode === "SUPER_ADMIN" && request.user?.roleCode !== "SUPER_ADMIN") {
+    throw new AppError(403, "SUPER_ADMIN_ASSIGNMENT_FORBIDDEN", "仅超级管理员可以授予超级管理员角色");
+  }
+}
+
 async function validateOrganization(organizationId: string | null | undefined) {
   if (!organizationId) return;
   const exists = await prisma.organization.findUnique({ where: { id: organizationId }, select: { id: true } });
   if (!exists) throw new AppError(400, "INVALID_ORGANIZATION", "所属机构不存在");
 }
 
-async function resolveRoleId(role: typeof roles[number]) {
-  const dynamicRole = await prisma.role.findUnique({ where: { code: role === "ADMIN" ? "SUPER_ADMIN" : role }, select: { id: true } });
-  if (!dynamicRole) throw new AppError(500, "ROLE_NOT_CONFIGURED", "系统角色配置不完整");
-  return dynamicRole.id;
-}
-
-async function validateRoleId(roleId: string | undefined) {
-  if (!roleId) return undefined;
-  const role = await prisma.role.findUnique({ where: { id: roleId }, select: { id: true, active: true } });
+async function resolveDynamicRole(roleId: string | undefined, legacyRole: typeof roles[number] | undefined) {
+  const role = roleId
+    ? await prisma.role.findUnique({ where: { id: roleId }, select: { id: true, code: true, active: true } })
+    : await prisma.role.findUnique({ where: { code: legacyRole === "ADMIN" ? "SUPER_ADMIN" : legacyRole }, select: { id: true, code: true, active: true } });
   if (!role?.active) throw new AppError(400, "INVALID_ROLE", "角色不存在或已停用");
-  return role.id;
+  return role;
 }
 
-async function validateUserPlacement(role: typeof roles[number], organizationId: string | null | undefined, positionId: string | null | undefined) {
+function legacyRoleForCode(code: string, fallback: UserRole): UserRole {
+  if (code === "SUPER_ADMIN") return "ADMIN";
+  return roles.includes(code as typeof roles[number]) ? code as UserRole : fallback;
+}
+
+async function validateUserPlacement(roleCode: string, fallbackRole: UserRole, organizationId: string | null | undefined, positionId: string | null | undefined) {
   const [organization, position] = await Promise.all([
     organizationId ? prisma.organization.findUnique({ where: { id: organizationId }, select: { type: true } }) : null,
     positionId ? prisma.position.findUnique({ where: { id: positionId }, select: { dealerOnly: true, active: true } }) : null,
   ]);
   if (positionId && (!position || !position.active)) throw new AppError(400, "INVALID_POSITION", "职位不存在或已停用");
+  const fallback = position?.dealerOnly || organization?.type === "DEALER" ? UserRole.DEALER_USER : fallbackRole;
+  const role = legacyRoleForCode(roleCode, fallback);
   const placementError = userPlacementError(role, organization?.type || null, position?.dealerOnly || false);
   if (placementError === "DEALER_ORGANIZATION_REQUIRED") {
     throw new AppError(400, "DEALER_ORGANIZATION_REQUIRED", "代理商员工必须选择具体的代理商机构");
@@ -139,6 +156,7 @@ async function validateUserPlacement(role: typeof roles[number], organizationId:
   if (placementError === "DEALER_ROLE_REQUIRED") {
     throw new AppError(400, "DEALER_ROLE_REQUIRED", "代理商职位必须使用代理商用户权限角色");
   }
+  return role;
 }
 
 export const getMe: RequestHandler = async (request, response) => {
@@ -152,6 +170,7 @@ export const listUsers: RequestHandler = async (request, response) => {
   const query = validate(userListQuerySchema, request.query);
   const where: Prisma.UserWhereInput = {
     ...(query.role && { role: query.role }),
+    ...(query.roleId && { roleId: query.roleId }),
     ...(query.active !== undefined && { active: query.active }),
     ...(query.organizationId && { organizationId: query.organizationId }),
     ...(query.positionId && { positionId: query.positionId }),
@@ -198,9 +217,10 @@ export const createUser: RequestHandler = async (request, response) => {
   requireAdmin(request);
   const input = validate(createSchema, request.body);
   await validateOrganization(input.organizationId);
-  await validateUserPlacement(input.role, input.organizationId, input.positionId);
-  const roleId = (await validateRoleId(input.roleId)) || await resolveRoleId(input.role);
-  const { password, ...profile } = input;
+  const dynamicRole = await resolveDynamicRole(input.roleId, input.role);
+  requireRoleAssignmentPermission(request, dynamicRole.code);
+  const role = await validateUserPlacement(dynamicRole.code, input.roleId ? UserRole.SALES_REP : input.role || UserRole.SALES_REP, input.organizationId, input.positionId);
+  const { password, role: _legacyRole, roleId: _roleId, ...profile } = input;
   const user = await prisma.user.create({
     data: {
       ...profile,
@@ -208,7 +228,8 @@ export const createUser: RequestHandler = async (request, response) => {
       phone: input.phone || null,
       organizationId: input.organizationId || null,
       positionId: input.positionId || null,
-      roleId,
+      role,
+      roleId: dynamicRole.id,
       passwordHash: await bcrypt.hash(password, 12),
     },
     select: safeUserSelect,
@@ -221,29 +242,44 @@ export const updateUser: RequestHandler = async (request, response) => {
   const input = validate(updateSchema, request.body);
   const userId = String(request.params.id);
   await validateOrganization(input.organizationId);
-  const existing = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, role: true, active: true, organizationId: true, positionId: true } });
+  const existing = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, role: true, roleId: true, dynamicRole: { select: { code: true } }, active: true, organizationId: true, positionId: true } });
   if (!existing) throw new AppError(404, "USER_NOT_FOUND", "成员不存在");
-  await validateUserPlacement(input.role || existing.role, input.organizationId === undefined ? existing.organizationId : input.organizationId, input.positionId === undefined ? existing.positionId : input.positionId);
+  const roleChanged = input.roleId !== undefined || input.role !== undefined;
+  const dynamicRole = roleChanged ? await resolveDynamicRole(input.roleId, input.role) : { id: existing.roleId, code: existing.dynamicRole.code };
+  if (roleChanged && existing.id === request.user?.id && dynamicRole.id !== existing.roleId) {
+    throw new AppError(400, "CANNOT_CHANGE_OWN_ROLE", "不能修改自己的权限角色");
+  }
+  if (roleChanged) requireRoleAssignmentPermission(request, dynamicRole.code);
+  const targetRole = await validateUserPlacement(
+    dynamicRole.code,
+    roleChanged ? input.roleId ? UserRole.SALES_REP : input.role || UserRole.SALES_REP : existing.role,
+    input.organizationId === undefined ? existing.organizationId : input.organizationId,
+    input.positionId === undefined ? existing.positionId : input.positionId,
+  );
+  const accessChanges = { ...input, ...(roleChanged && { role: targetRole }) };
 
-  if (removesOwnAdminAccess(existing.id === request.user?.id, existing, input)) {
+  if (removesOwnAdminAccess(existing.id === request.user?.id, existing, accessChanges)) {
     throw new AppError(400, "CANNOT_DISABLE_SELF", "不能停用自己或移除自己的管理员角色");
   }
-  if (removesAdminAccess(existing, input) && await prisma.user.count({ where: { role: UserRole.ADMIN, active: true } }) <= 1) {
-    throw new AppError(409, "LAST_ADMIN", "系统必须保留至少一名启用中的管理员");
-  }
-
-  const user = await prisma.user.update({
-    where: { id: existing.id },
-    data: {
-      ...input,
-      ...(input.email && { email: input.email.toLowerCase() }),
-      ...(input.phone !== undefined && { phone: input.phone || null }),
-      ...(input.organizationId !== undefined && { organizationId: input.organizationId || null }),
-      ...(input.positionId !== undefined && { positionId: input.positionId || null }),
-      ...(input.roleId && { roleId: await validateRoleId(input.roleId) }),
-    },
-    select: safeUserSelect,
-  });
+  const { role: _legacyRole, roleId: _roleId, ...changes } = input;
+  const data = {
+    ...changes,
+    ...(input.email && { email: input.email.toLowerCase() }),
+    ...(input.phone !== undefined && { phone: input.phone || null }),
+    ...(input.organizationId !== undefined && { organizationId: input.organizationId || null }),
+    ...(input.positionId !== undefined && { positionId: input.positionId || null }),
+    ...(roleChanged && { role: targetRole, roleId: dynamicRole.id }),
+  };
+  const update = (client: Prisma.TransactionClient | typeof prisma) => client.user.update({ where: { id: existing.id }, data, select: safeUserSelect });
+  const user = removesAdminAccess(existing, accessChanges)
+    ? await prisma.$transaction(async (tx) => {
+        await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext('farock:last-admin'))`;
+        if (await tx.user.count({ where: { role: UserRole.ADMIN, active: true } }) <= 1) {
+          throw new AppError(409, "LAST_ADMIN", "系统必须保留至少一名启用中的管理员");
+        }
+        return update(tx);
+      })
+    : await update(prisma);
   invalidateAuthUser(user.id);
   response.json({ data: user });
 };
@@ -254,9 +290,6 @@ export const deleteUser: RequestHandler = async (request, response) => {
   if (userId === request.user?.id) throw new AppError(400, "CANNOT_DELETE_SELF", "不能删除当前登录账号");
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, role: true, active: true } });
   if (!user) throw new AppError(404, "USER_NOT_FOUND", "成员不存在");
-  if (user.role === "ADMIN" && user.active && await prisma.user.count({ where: { role: UserRole.ADMIN, active: true } }) <= 1) {
-    throw new AppError(409, "LAST_ADMIN", "系统必须保留至少一名启用中的管理员");
-  }
   const [customerCount, openTaskCount] = await Promise.all([
     prisma.customer.count({ where: { OR: [{ salesRepId: user.id }, { designerId: user.id }] } }),
     prisma.task.count({ where: { assigneeId: user.id, status: "PENDING" } }),
@@ -264,7 +297,17 @@ export const deleteUser: RequestHandler = async (request, response) => {
   if (customerCount || openTaskCount) {
     throw new AppError(409, "USER_IN_USE", `该成员仍关联 ${customerCount} 位客户、${openTaskCount} 个未完成任务，请先完成交接或停用账号`);
   }
-  await prisma.user.delete({ where: { id: user.id } });
+  if (user.role === "ADMIN" && user.active) {
+    await prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext('farock:last-admin'))`;
+      if (await tx.user.count({ where: { role: UserRole.ADMIN, active: true } }) <= 1) {
+        throw new AppError(409, "LAST_ADMIN", "系统必须保留至少一名启用中的管理员");
+      }
+      await tx.user.delete({ where: { id: user.id } });
+    });
+  } else {
+    await prisma.user.delete({ where: { id: user.id } });
+  }
   invalidateAuthUser(user.id);
   response.status(204).send();
 };
