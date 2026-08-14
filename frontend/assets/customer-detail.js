@@ -146,9 +146,10 @@
   deleteButton?.addEventListener("click", async () => {
     const customerName = document.querySelector("[data-customer-name]")?.textContent?.trim() || "该客户";
     if (!window.confirm(`确认永久删除客户“${customerName}”吗？此操作无法撤销。`)) return;
+    if (!window.confirm(`第二次确认：客户“${customerName}”的回款流水等关联资料将一并永久删除，且无法恢复。确定继续吗？`)) return;
     deleteButton.disabled = true;
     try {
-      await api.delete(`/customers/${encodeURIComponent(id)}`);
+      await api.delete(`/customers/${encodeURIComponent(id)}`, { confirmTransactions: true });
       location.href = "customers.html";
     } catch (error) {
       deleteButton.disabled = false;

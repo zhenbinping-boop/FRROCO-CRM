@@ -91,7 +91,7 @@
     get: (path) => request(path, { method: "GET" }),
     post: (path, body) => request(path, { method: "POST", body }),
     patch: (path, body) => request(path, { method: "PATCH", body }),
-    delete: (path) => request(path, { method: "DELETE" }),
+    delete: (path, body) => request(path, { method: "DELETE", ...(body === undefined ? {} : { body }) }),
     download,
     setToken(token) { localStorage.setItem("farock-token", token); },
     clearToken() { localStorage.removeItem("farock-token"); },

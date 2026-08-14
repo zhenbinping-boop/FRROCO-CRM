@@ -156,17 +156,18 @@
   async function deleteSelected() {
     if (deleteSelected.busy) return;
     const count = selectedIds.size;
-    if (!window.confirm(`确定删除已选择的 ${count} 位客户吗？\n已有订单或回款记录的客户将保留，并返回失败明细。`)) return;
+    if (!window.confirm(`确定删除已选择的 ${count} 位客户吗？\n已有订单的客户仍会保留，有回款流水的客户需要第二次确认后删除。`)) return;
+    if (!window.confirm(`第二次确认：客户资料及已有回款流水将永久删除，且无法恢复；已有订单的客户仍不会删除。确定继续吗？`)) return;
     deleteSelected.busy = true;
     const button = document.querySelector("[data-customer-bulk-delete]");
     if (button) button.disabled = true;
     try {
-      const result = await window.FarockAPI.post(customerBatch.remove, { ids: [...selectedIds] });
+      const result = await window.FarockAPI.post(customerBatch.remove, { ids: [...selectedIds], confirmTransactions: true });
       const deleted = Number(result.data?.deleted) || 0;
       const failed = result.data?.failed || [];
       if (!await refreshAfterMutation()) return;
       const detail = failed.map((item) => `${item.id}：${item.message}`).join("；");
-      showMessage(failed.length ? `已删除 ${deleted} 位客户，${failed.length} 位客户因已有订单或回款未删除。${detail}` : `已删除 ${deleted} 位客户` , Boolean(failed.length));
+      showMessage(failed.length ? `已删除 ${deleted} 位客户，${failed.length} 位客户因已有订单未删除。${detail}` : `已删除 ${deleted} 位客户` , Boolean(failed.length));
     } catch (error) {
       showMessage(error.message || "批量删除失败", true);
     } finally {

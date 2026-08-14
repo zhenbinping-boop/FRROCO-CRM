@@ -11,6 +11,10 @@ export const customerBatchIdsSchema = z.object({
   ids: z.array(z.string().trim().min(1)).min(1, "至少选择一位客户").max(100, "一次最多 100 位客户").superRefine(uniqueIds),
 });
 
+export const customerBatchDeleteSchema = customerBatchIdsSchema.extend({
+  confirmTransactions: z.boolean().default(false),
+});
+
 export const customerBatchChangesSchema = z.strictObject({
   tier: z.enum(["S", "A", "B", "C"]).optional(),
   stage: z.enum(["LEAD", "FOLLOWING", "PROPOSAL", "CONTRACTED", "LOST"]).optional(),
@@ -24,11 +28,14 @@ export function customerBatchWhere(user: PolicyUser, ids: string[]): Prisma.Cust
 
 export type BatchDeleteTarget = { id: string; _count: { orders: number; transactions: number } };
 
-export function splitBatchDeleteTargets(targets: BatchDeleteTarget[]) {
-  const failed = targets.filter((target) => target._count.orders > 0 || target._count.transactions > 0).map((target) => ({
+export function splitBatchDeleteTargets(targets: BatchDeleteTarget[], confirmTransactions = false) {
+  const failed = targets.filter((target) => target._count.orders > 0 || (!confirmTransactions && target._count.transactions > 0)).map((target) => ({
     id: target.id,
-    code: "CUSTOMER_HAS_ORDERS",
-    message: "该客户已有订单或回款记录，不能直接删除",
+    code: target._count.orders > 0 ? "CUSTOMER_HAS_ORDERS" : "CUSTOMER_HAS_TRANSACTIONS",
+    message: target._count.orders > 0 ? "该客户已有订单，不能删除" : "该客户已有回款记录，需确认后删除",
   }));
-  return { deletableIds: targets.filter((target) => target._count.orders === 0 && target._count.transactions === 0).map((target) => target.id), failed };
+  return {
+    deletableIds: targets.filter((target) => target._count.orders === 0 && (confirmTransactions || target._count.transactions === 0)).map((target) => target.id),
+    failed,
+  };
 }

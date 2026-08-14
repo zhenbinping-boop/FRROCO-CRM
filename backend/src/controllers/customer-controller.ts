@@ -3,7 +3,7 @@ import type { RequestHandler } from "express";
 import { z } from "zod";
 
 import { assertOrganizationAccess, assertUserAssignmentAccess, customerAccessWhere, hasGlobalBusinessAccess } from "../lib/access.js";
-import { customerBatchChangesSchema, customerBatchIdsSchema, customerBatchWhere, splitBatchDeleteTargets } from "../lib/customer-bulk.js";
+import { customerBatchChangesSchema, customerBatchDeleteSchema, customerBatchIdsSchema, customerBatchWhere, splitBatchDeleteTargets } from "../lib/customer-bulk.js";
 import { AppError, validate } from "../lib/http.js";
 import { prisma } from "../lib/prisma.js";
 
@@ -38,6 +38,7 @@ const transactionInput = z.object({
   sourceRow: z.coerce.number().int().positive().optional(),
 });
 const importedCustomerInput = customerInput.extend({ transactions: z.array(transactionInput).max(500).default([]) });
+const customerDeleteSchema = z.object({ confirmTransactions: z.boolean().default(false) });
 const storeInput = z.object({
   code: z.string().trim().min(1).max(64), storeName: z.string().trim().min(1).max(160),
   storeType: z.enum(["DIRECT", "DEALER"]), regionProvince: z.string().trim().min(1).max(64),
@@ -143,23 +144,25 @@ export const batchUpdateCustomers: RequestHandler = async (request, response) =>
 
 export const deleteCustomer: RequestHandler = async (request, response) => {
   const { id } = validate(z.object({ id: z.string().min(1) }), request.params);
+  const { confirmTransactions } = validate(customerDeleteSchema, request.body ?? {});
   const customer = await prisma.customer.findFirst({
     where: { id, ...customerAccessWhere(request) },
     select: { id: true, _count: { select: { orders: true, transactions: true } } },
   });
   if (!customer) throw new AppError(404, "CUSTOMER_NOT_FOUND", "客户不存在");
-  if (customer._count.orders > 0 || customer._count.transactions > 0) {
-    throw new AppError(409, "CUSTOMER_HAS_ORDERS", "该客户已有订单或回款记录，不能直接删除");
+  if (customer._count.orders > 0) throw new AppError(409, "CUSTOMER_HAS_ORDERS", "该客户已有订单，不能删除");
+  if (customer._count.transactions > 0 && !confirmTransactions) {
+    throw new AppError(409, "CUSTOMER_HAS_TRANSACTIONS", "该客户已有回款记录，请确认后删除");
   }
   const deleted = await prisma.customer.deleteMany({
-    where: { AND: [{ id }, customerAccessWhere(request), { orders: { none: {} }, transactions: { none: {} } }] },
+    where: { AND: [{ id }, customerAccessWhere(request), { orders: { none: {} } }] },
   });
   if (!deleted.count) throw new AppError(409, "CUSTOMER_SELECTION_CHANGED", "客户列表已变化，请刷新后重试");
   response.status(204).send();
 };
 
 export const batchDeleteCustomers: RequestHandler = async (request, response) => {
-  const { ids } = validate(customerBatchIdsSchema, request.body);
+  const { ids, confirmTransactions } = validate(customerBatchDeleteSchema, request.body);
   if (!request.user) throw new AppError(401, "UNAUTHORIZED", "请先登录");
   const result = await prisma.$transaction(async (tx) => {
     const targets = await tx.customer.findMany({
@@ -167,9 +170,9 @@ export const batchDeleteCustomers: RequestHandler = async (request, response) =>
       select: { id: true, _count: { select: { orders: true, transactions: true } } },
     });
     if (targets.length !== ids.length) throw new AppError(409, "CUSTOMER_SELECTION_CHANGED", "客户列表已变化，请刷新后重试");
-    const { deletableIds, failed } = splitBatchDeleteTargets(targets);
+    const { deletableIds, failed } = splitBatchDeleteTargets(targets, confirmTransactions);
     const deletableWhere: Prisma.CustomerWhereInput = {
-      AND: [customerBatchWhere(request.user!, deletableIds), { orders: { none: {} }, transactions: { none: {} } }],
+      AND: [customerBatchWhere(request.user!, deletableIds), { orders: { none: {} } }],
     };
     const deleted = deletableIds.length
       ? await tx.customer.deleteMany({ where: deletableWhere })
