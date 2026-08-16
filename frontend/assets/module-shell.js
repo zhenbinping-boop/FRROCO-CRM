@@ -9,7 +9,7 @@
     "dashboard.html": { scripts: ["api-pages.js"], refreshBeforeScripts: true },
     "customers.html": { scripts: ["customer-import.js", "customer-export.js", "api-pages.js", "customer-bulk.js"], refreshBeforeScripts: true },
     "follow-up-tasks.html": { scripts: ["tasks-page.js"], refreshBeforeScripts: false },
-    "channel-analysis.html": { scripts: [], refreshBeforeScripts: false },
+    "channel-analysis.html": { scripts: ["channel-analysis.js"], refreshBeforeScripts: false },
     "orders-payments.html": { scripts: ["order-actions.js"], refreshBeforeScripts: false },
     "master-data.html": { scripts: [], refreshBeforeScripts: false }
   };

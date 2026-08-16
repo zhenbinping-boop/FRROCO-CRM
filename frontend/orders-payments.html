@@ -219,7 +219,7 @@
 <h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary">订单与收款管理</h2>
 <p class="text-on-surface-variant mt-2 text-body-lg">跟踪订单状态、余额并登记新收款。</p>
 </div>
-<button class="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-on-primary rounded-xl font-label-md hover:bg-surface-tint transition-all shadow-[0_4px_12px_rgba(26,26,26,0.1)]">
+<button class="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-on-primary rounded-xl font-label-md hover:bg-surface-tint transition-all shadow-[0_4px_12px_rgba(26,26,26,0.1)]" data-order-payment-shortcut type="button">
 <span class="material-symbols-outlined text-[20px]">payments</span>
                     登记收款
                 </button>
@@ -232,35 +232,18 @@
 <span class="text-label-md text-on-surface-variant uppercase tracking-wider">待收总余额</span>
 <span class="material-symbols-outlined text-outline">account_balance_wallet</span>
 </div>
-<div class="font-data-mono text-3xl font-bold text-primary relative z-10">
-                        $245,890<span class="text-body-md font-body-md text-on-surface-variant ml-1">.00</span>
-</div>
-<div class="flex items-center gap-2 mt-4 relative z-10">
-<span class="flex items-center text-status-earth text-sm font-medium bg-surface-container-low px-2 py-1 rounded">
-<span class="material-symbols-outlined text-[16px] mr-1">trending_down</span> 4.2%
-                        </span>
-<span class="text-body-md text-on-surface-variant">较上月</span>
-</div>
+<div class="font-data-mono text-3xl font-bold text-primary relative z-10" data-order-summary-outstanding>--</div>
+<p class="text-body-md text-on-surface-variant mt-4 relative z-10">当前数据范围</p>
 <div class="absolute bottom-0 right-0 w-32 h-32 bg-primary/5 rounded-tl-full -mr-10 -mb-10 transition-transform group-hover:scale-110"></div>
 </div>
 <!-- Monthly Collection Target -->
 <div class="bg-surface-white rounded-xl p-card-padding border border-outline-variant/50 shadow-[0_4px_20px_rgba(26,26,26,0.04)] flex flex-col relative overflow-hidden group">
 <div class="flex justify-between items-start mb-4 relative z-10">
-<span class="text-label-md text-on-surface-variant uppercase tracking-wider">月度收款目标</span>
+<span class="text-label-md text-on-surface-variant uppercase tracking-wider">累计已收金额</span>
 <span class="material-symbols-outlined text-outline">target</span>
 </div>
-<div class="font-data-mono text-3xl font-bold text-primary relative z-10">
-                        $500,000<span class="text-body-md font-body-md text-on-surface-variant ml-1">.00</span>
-</div>
-<div class="mt-4 relative z-10 w-full">
-<div class="flex justify-between text-label-md mb-2">
-<span class="text-primary font-semibold">已完成 68%</span>
-<span class="text-on-surface-variant">已收款 $340K</span>
-</div>
-<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
-<div class="bg-secondary h-full rounded-full" style="width: 68%"></div>
-</div>
-</div>
+<div class="font-data-mono text-3xl font-bold text-primary relative z-10" data-order-summary-paid>--</div>
+<p class="text-body-md text-on-surface-variant mt-4 relative z-10" data-order-summary-count>正在加载财务记录...</p>
 </div>
 <!-- Orders Processed -->
 <div class="bg-surface-white rounded-xl p-card-padding border border-outline-variant/50 shadow-[0_4px_20px_rgba(26,26,26,0.04)] flex flex-col relative overflow-hidden group">
@@ -268,15 +251,8 @@
 <span class="text-label-md text-on-surface-variant uppercase tracking-wider">待付款订单</span>
 <span class="material-symbols-outlined text-outline">pending_actions</span>
 </div>
-<div class="font-headline-lg text-3xl text-primary relative z-10">
-                        14
-                    </div>
-<div class="flex items-center gap-2 mt-4 relative z-10">
-<span class="flex items-center text-status-sage text-sm font-medium bg-surface-container-low px-2 py-1 rounded">
-<span class="material-symbols-outlined text-[16px] mr-1">trending_down</span> -2
-                        </span>
-<span class="text-body-md text-on-surface-variant">较昨日</span>
-</div>
+<div class="font-headline-lg text-3xl text-primary relative z-10" data-order-summary-pending>--</div>
+<p class="text-body-md text-on-surface-variant mt-4 relative z-10">尚有待收余额</p>
 </div>
 </div>
 <!-- Orders Table Section -->
@@ -327,94 +303,19 @@
 </tr>
 </thead>
 <tbody class="divide-y divide-outline-variant/30 text-body-md" id="orders-table-body">
-<!-- Row 1: Partial Payment -->
-<tr class="hover:bg-surface-container-low/50 transition-colors group" data-has-balance="true" data-order-status="confirmed">
-<td class="py-4 px-6 font-data-mono text-primary font-medium">ORD-2024-089</td>
-<td class="py-4 px-6 font-medium text-primary">Stellar Architecture</td>
-<td class="py-4 px-6 text-on-surface-variant">Onyx Collection - T2</td>
-<td class="py-4 px-6 text-right font-data-mono">$45,000.00</td>
-<td class="py-4 px-6 text-right font-data-mono text-secondary">$20,000.00</td>
-<td class="py-4 px-6 text-right font-data-mono font-semibold text-error-red">$25,000.00</td>
-<td class="py-4 px-6 text-center">
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-warning-amber/20 text-inverse-surface border border-warning-amber/30">
-                                        已确认
-                                    </span>
-</td>
-<td class="py-4 px-4 text-right">
-<button aria-label="订单操作" class="text-outline hover:text-primary transition-colors opacity-0 group-hover:opacity-100" data-order-actions type="button">
-<span class="material-symbols-outlined text-[20px]">more_vert</span>
-</button>
-</td>
-</tr>
-<!-- Row 2: Completed -->
-<tr class="hover:bg-surface-container-low/50 transition-colors group" data-has-balance="false" data-order-status="completed">
-<td class="py-4 px-6 font-data-mono text-primary font-medium">ORD-2024-088</td>
-<td class="py-4 px-6 font-medium text-primary">Apex Developments</td>
-<td class="py-4 px-6 text-on-surface-variant">Titanium Core</td>
-<td class="py-4 px-6 text-right font-data-mono">$12,450.00</td>
-<td class="py-4 px-6 text-right font-data-mono text-secondary">$12,450.00</td>
-<td class="py-4 px-6 text-right font-data-mono text-on-surface-variant">$0.00</td>
-<td class="py-4 px-6 text-center">
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-status-sage/20 text-inverse-surface border border-status-sage/30">
-                                        已完成
-                                    </span>
-</td>
-<td class="py-4 px-4 text-right">
-<button aria-label="订单操作" class="text-outline hover:text-primary transition-colors opacity-0 group-hover:opacity-100" data-order-actions type="button">
-<span class="material-symbols-outlined text-[20px]">more_vert</span>
-</button>
-</td>
-</tr>
-<!-- Row 3: Draft/No Payment -->
-<tr class="hover:bg-surface-container-low/50 transition-colors group" data-has-balance="true" data-order-status="draft">
-<td class="py-4 px-6 font-data-mono text-primary font-medium">ORD-2024-091</td>
-<td class="py-4 px-6 font-medium text-primary">Nova Build Group</td>
-<td class="py-4 px-6 text-on-surface-variant">Quartz Line - Custom</td>
-<td class="py-4 px-6 text-right font-data-mono">$88,200.00</td>
-<td class="py-4 px-6 text-right font-data-mono text-secondary">$0.00</td>
-<td class="py-4 px-6 text-right font-data-mono font-semibold text-error-red">$88,200.00</td>
-<td class="py-4 px-6 text-center">
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-surface-variant text-on-surface border border-outline-variant/50">
-                                        草稿
-                                    </span>
-</td>
-<td class="py-4 px-4 text-right">
-<button aria-label="订单操作" class="text-outline hover:text-primary transition-colors opacity-0 group-hover:opacity-100" data-order-actions type="button">
-<span class="material-symbols-outlined text-[20px]">more_vert</span>
-</button>
-</td>
-</tr>
-<!-- Row 4: Confirmed Minor Balance -->
-<tr class="hover:bg-surface-container-low/50 transition-colors group" data-has-balance="true" data-order-status="confirmed">
-<td class="py-4 px-6 font-data-mono text-primary font-medium">ORD-2024-085</td>
-<td class="py-4 px-6 font-medium text-primary">Lumina Spaces</td>
-<td class="py-4 px-6 text-on-surface-variant">Onyx Collection - T1</td>
-<td class="py-4 px-6 text-right font-data-mono">$34,000.00</td>
-<td class="py-4 px-6 text-right font-data-mono text-secondary">$30,000.00</td>
-<td class="py-4 px-6 text-right font-data-mono font-semibold text-error-red">$4,000.00</td>
-<td class="py-4 px-6 text-center">
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-warning-amber/20 text-inverse-surface border border-warning-amber/30">
-                                        已确认
-                                    </span>
-</td>
-<td class="py-4 px-4 text-right">
-<button aria-label="订单操作" class="text-outline hover:text-primary transition-colors opacity-0 group-hover:opacity-100" data-order-actions type="button">
-<span class="material-symbols-outlined text-[20px]">more_vert</span>
-</button>
-</td>
-</tr>
+<tr><td class="py-8 text-center text-on-surface-variant" colspan="8">正在加载订单...</td></tr>
 </tbody>
 </table>
 </div>
 <!-- Pagination Footer -->
 <div class="p-4 border-t border-outline-variant/30 flex items-center justify-between text-body-md text-on-surface-variant bg-surface-bright">
-<div id="order-pagination-summary">显示第 1 至 2 条，共 4 条订单</div>
+<div id="order-pagination-summary">正在加载订单...</div>
 <div class="flex items-center gap-1">
 <button aria-label="上一页" class="p-1 rounded hover:bg-surface-container-low text-outline disabled:opacity-50" disabled="" id="order-page-prev" type="button">
 <span class="material-symbols-outlined">chevron_left</span>
 </button>
-<span aria-live="polite" class="min-w-[72px] text-center text-label-md text-on-surface-variant" id="order-page-indicator">第 1 / 2 页</span>
-<button aria-label="下一页" class="p-1 rounded hover:bg-surface-container-low text-primary transition-colors" id="order-page-next" type="button">
+<span aria-live="polite" class="min-w-[72px] text-center text-label-md text-on-surface-variant" id="order-page-indicator">第 1 / 1 页</span>
+<button aria-label="下一页" class="p-1 rounded hover:bg-surface-container-low text-primary transition-colors" disabled="" id="order-page-next" type="button">
 <span class="material-symbols-outlined">chevron_right</span>
 </button>
 </div>

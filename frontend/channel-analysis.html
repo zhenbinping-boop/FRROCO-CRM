@@ -317,7 +317,7 @@
 </div>
 </header>
 <!-- Main Canvas -->
-<main class="flex-1 p-margin-mobile md:p-gutter-desktop lg:p-margin-desktop overflow-y-auto">
+<main class="flex-1 p-margin-mobile md:p-gutter-desktop lg:p-margin-desktop overflow-y-auto" data-analysis-page>
 <!-- Page Header -->
 <div class="mb-10">
 <h2 class="font-headline-lg-mobile md:font-headline-lg text-primary mb-2">Acquisition Analytics</h2>
@@ -333,10 +333,9 @@
 <span class="material-symbols-outlined text-[18px]" data-icon="group_add">group_add</span>
 </span>
 </div>
-<div class="font-data-mono text-[32px] leading-tight text-primary font-bold mb-2">4,289</div>
-<div class="flex items-center gap-1 font-label-md text-label-md text-status-sage">
-<span class="material-symbols-outlined text-[16px]" data-icon="arrow_upward">arrow_upward</span>
-<span>12.5% vs last month</span>
+<div class="font-data-mono text-[32px] leading-tight text-primary font-bold mb-2" data-analysis-total-leads>--</div>
+<div class="flex items-center gap-1 font-label-md text-label-md text-status-sage" data-analysis-total-note>
+<span>正在加载客户数据...</span>
 </div>
 </div>
 <!-- KPI Card 2 -->
@@ -347,10 +346,9 @@
 <span class="material-symbols-outlined text-[18px]" data-icon="query_stats">query_stats</span>
 </span>
 </div>
-<div class="font-data-mono text-[32px] leading-tight text-primary font-bold mb-2">18.4%</div>
-<div class="flex items-center gap-1 font-label-md text-label-md text-error-red">
-<span class="material-symbols-outlined text-[16px]" data-icon="arrow_downward">arrow_downward</span>
-<span>2.1% vs last month</span>
+<div class="font-data-mono text-[32px] leading-tight text-primary font-bold mb-2" data-analysis-conversion-rate>--</div>
+<div class="flex items-center gap-1 font-label-md text-label-md text-error-red" data-analysis-conversion-note>
+<span>正在计算成交率...</span>
 </div>
 </div>
 <!-- KPI Card 3 -->
@@ -361,10 +359,9 @@
 <span class="material-symbols-outlined text-[18px]" data-icon="payments">payments</span>
 </span>
 </div>
-<div class="font-data-mono text-[32px] leading-tight text-primary font-bold mb-2">$1.2M</div>
-<div class="flex items-center gap-1 font-label-md text-label-md text-status-sage">
-<span class="material-symbols-outlined text-[16px]" data-icon="arrow_upward">arrow_upward</span>
-<span>8.4% vs last month</span>
+<div class="font-data-mono text-[32px] leading-tight text-primary font-bold mb-2" data-analysis-total-revenue>--</div>
+<div class="flex items-center gap-1 font-label-md text-label-md text-status-sage" data-analysis-revenue-note>
+<span>正在汇总订单金额...</span>
 </div>
 </div>
 </div>
@@ -372,95 +369,32 @@
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-section-gap">
 <!-- Main Chart (Spans 2 cols) -->
 <div class="lg:col-span-2 bg-surface-white rounded-xl p-card-padding border border-surface-variant shadow-[0px_4px_20px_rgba(26,26,26,0.04)] flex flex-col min-h-[400px]">
-<div class="flex justify-between items-center mb-6">
+<div class="flex items-center mb-6">
 <div>
 <h3 class="font-headline-md text-headline-md text-primary">Revenue by Channel</h3>
-<p class="font-label-md text-label-md text-on-surface-variant">Last 30 Days Trajectory</p>
-</div>
-<div class="flex gap-2">
-<button class="px-3 py-1 rounded-md border border-outline-variant font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low">Weekly</button>
-<button class="px-3 py-1 rounded-md bg-primary text-on-primary font-label-md text-label-md">Monthly</button>
+<p class="font-label-md text-label-md text-on-surface-variant">当前权限范围内的累计订单金额</p>
 </div>
 </div>
-<!-- Simulated Chart Area (Bar Chart) -->
-<div class="flex-1 flex items-end justify-between gap-2 md:gap-4 mt-8 pb-4 border-b border-surface-variant relative">
-<!-- Y-axis labels -->
-<div class="absolute left-0 top-0 h-full flex flex-col justify-between text-on-surface-variant font-data-mono text-[10px] pb-4">
-<span>$400k</span>
-<span>$300k</span>
-<span>$200k</span>
-<span>$100k</span>
-<span>0</span>
-</div>
-<!-- Bars -->
-<div class="flex-1 flex items-end justify-center group ml-12">
-<div class="w-12 md:w-16 h-[70%] bg-warning-amber rounded-t-md opacity-80 group-hover:opacity-100 transition-opacity relative">
-<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-surface-container-high px-2 py-1 rounded text-primary font-data-mono text-xs hidden group-hover:block">$280k</div>
-</div>
-</div>
-<div class="flex-1 flex items-end justify-center group">
-<div class="w-12 md:w-16 h-[40%] bg-secondary-fixed-dim rounded-t-md opacity-80 group-hover:opacity-100 transition-opacity relative">
-<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-surface-container-high px-2 py-1 rounded text-primary font-data-mono text-xs hidden group-hover:block">$160k</div>
-</div>
-</div>
-<div class="flex-1 flex items-end justify-center group">
-<div class="w-12 md:w-16 h-[90%] bg-status-earth rounded-t-md opacity-80 group-hover:opacity-100 transition-opacity relative">
-<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-surface-container-high px-2 py-1 rounded text-primary font-data-mono text-xs hidden group-hover:block">$360k</div>
-</div>
-</div>
-<div class="flex-1 flex items-end justify-center group">
-<div class="w-12 md:w-16 h-[60%] bg-outline rounded-t-md opacity-80 group-hover:opacity-100 transition-opacity relative">
-<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-surface-container-high px-2 py-1 rounded text-primary font-data-mono text-xs hidden group-hover:block">$240k</div>
-</div>
-</div>
+<div class="flex-1 flex items-end justify-between gap-2 md:gap-4 mt-8 pb-4 border-b border-surface-variant relative" data-analysis-revenue-chart>
+<p class="m-auto text-on-surface-variant">正在加载渠道金额...</p>
 </div>
 <!-- X-axis labels -->
-<div class="flex justify-between items-center mt-4 ml-12 px-4 md:px-8">
-<span class="font-label-md text-label-md text-on-surface-variant text-center w-12 md:w-16">Xiaohongshu</span>
-<span class="font-label-md text-label-md text-on-surface-variant text-center w-12 md:w-16">Douyin</span>
-<span class="font-label-md text-label-md text-on-surface-variant text-center w-12 md:w-16">Referrals</span>
-<span class="font-label-md text-label-md text-on-surface-variant text-center w-12 md:w-16">Direct</span>
-</div>
+<div class="flex justify-between items-center mt-4 ml-12 px-4 md:px-8" data-analysis-revenue-labels></div>
 </div>
 <!-- Secondary Chart (Donut/Pie abstract representation) -->
 <div class="bg-surface-white rounded-xl p-card-padding border border-surface-variant shadow-[0px_4px_20px_rgba(26,26,26,0.04)] flex flex-col min-h-[400px]">
 <h3 class="font-headline-md text-headline-md text-primary mb-1">Lead Source Dist.</h3>
 <p class="font-label-md text-label-md text-on-surface-variant mb-8">Volume composition</p>
 <div class="flex-1 flex flex-col items-center justify-center">
-<!-- Abstract Donut Shape using borders -->
-<div class="w-48 h-48 rounded-full border-[24px] border-surface-container flex items-center justify-center relative">
-<!-- Simulated Segments (Purely visual representation for static HTML) -->
-<div class="absolute inset-0 rounded-full border-[24px] border-warning-amber" style="clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 50% 100%);"></div>
-<div class="absolute inset-0 rounded-full border-[24px] border-status-earth" style="clip-path: polygon(50% 50%, 0% 100%, 50% 100%);"></div>
+<div class="w-48 h-48 rounded-full border-[24px] border-surface-container flex items-center justify-center relative" data-analysis-source-chart>
 <div class="text-center z-10">
-<span class="block font-data-mono text-2xl font-bold text-primary">100%</span>
-<span class="font-label-md text-label-md text-on-surface-variant">Total</span>
+<span class="font-label-md text-label-md text-on-surface-variant">加载中</span>
 </div>
 </div>
 </div>
 <!-- Legend -->
-<div class="mt-8 space-y-3">
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-2">
-<div class="w-3 h-3 rounded-sm bg-warning-amber"></div>
-<span class="font-body-md text-body-md text-primary">Xiaohongshu</span>
-</div>
-<span class="font-data-mono text-on-surface-variant">42%</span>
-</div>
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-2">
-<div class="w-3 h-3 rounded-sm bg-surface-container"></div>
-<span class="font-body-md text-body-md text-primary">Douyin</span>
-</div>
-<span class="font-data-mono text-on-surface-variant">38%</span>
-</div>
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-2">
-<div class="w-3 h-3 rounded-sm bg-status-earth"></div>
-<span class="font-body-md text-body-md text-primary">Referrals</span>
-</div>
-<span class="font-data-mono text-on-surface-variant">20%</span>
-</div>
+<div class="mt-8 space-y-3" data-analysis-source-legend>
+<p class="text-center text-on-surface-variant">正在加载来源分布...</p>
 </div>
 </div>
 </div>
@@ -484,83 +418,8 @@
 <th class="py-4 px-6 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider text-right">Total Revenue</th>
 </tr>
 </thead>
-<tbody class="divide-y divide-surface-variant">
-<tr class="hover:bg-surface-container-low transition-colors group">
-<td class="py-4 px-6 font-body-md text-primary font-medium flex items-center gap-3">
-<div class="w-8 h-8 rounded-md bg-warning-amber/20 flex items-center justify-center text-warning-amber">
-<span class="material-symbols-outlined text-[16px]" data-icon="campaign">campaign</span>
-</div>
-                                        Xiaohongshu
-                                    </td>
-<td class="py-4 px-6 font-data-mono text-on-surface-variant">1,802</td>
-<td class="py-4 px-6">
-<div class="flex items-center gap-2">
-<span class="font-data-mono text-primary">22.4%</span>
-<div class="w-16 h-1.5 bg-surface-container rounded-full overflow-hidden">
-<div class="h-full bg-warning-amber w-[22%]"></div>
-</div>
-</div>
-</td>
-<td class="py-4 px-6 font-data-mono text-on-surface-variant">$1,250</td>
-<td class="py-4 px-6 font-data-mono text-primary font-medium text-right">$504,560</td>
-</tr>
-<tr class="hover:bg-surface-container-low transition-colors group">
-<td class="py-4 px-6 font-body-md text-primary font-medium flex items-center gap-3">
-<div class="w-8 h-8 rounded-md bg-secondary-fixed-dim/20 flex items-center justify-center text-secondary">
-<span class="material-symbols-outlined text-[16px]" data-icon="play_circle">play_circle</span>
-</div>
-                                        Douyin
-                                    </td>
-<td class="py-4 px-6 font-data-mono text-on-surface-variant">1,450</td>
-<td class="py-4 px-6">
-<div class="flex items-center gap-2">
-<span class="font-data-mono text-primary">15.8%</span>
-<div class="w-16 h-1.5 bg-surface-container rounded-full overflow-hidden">
-<div class="h-full bg-secondary-fixed-dim w-[15%]"></div>
-</div>
-</div>
-</td>
-<td class="py-4 px-6 font-data-mono text-on-surface-variant">$890</td>
-<td class="py-4 px-6 font-data-mono text-primary font-medium text-right">$203,890</td>
-</tr>
-<tr class="hover:bg-surface-container-low transition-colors group">
-<td class="py-4 px-6 font-body-md text-primary font-medium flex items-center gap-3">
-<div class="w-8 h-8 rounded-md bg-status-earth/20 flex items-center justify-center text-status-earth">
-<span class="material-symbols-outlined text-[16px]" data-icon="diversity_3">diversity_3</span>
-</div>
-                                        Referrals
-                                    </td>
-<td class="py-4 px-6 font-data-mono text-on-surface-variant">645</td>
-<td class="py-4 px-6">
-<div class="flex items-center gap-2">
-<span class="font-data-mono text-primary">34.2%</span>
-<div class="w-16 h-1.5 bg-surface-container rounded-full overflow-hidden">
-<div class="h-full bg-status-earth w-[34%]"></div>
-</div>
-</div>
-</td>
-<td class="py-4 px-6 font-data-mono text-on-surface-variant">$2,100</td>
-<td class="py-4 px-6 font-data-mono text-primary font-medium text-right">$463,218</td>
-</tr>
-<tr class="hover:bg-surface-container-low transition-colors group">
-<td class="py-4 px-6 font-body-md text-primary font-medium flex items-center gap-3">
-<div class="w-8 h-8 rounded-md bg-outline/20 flex items-center justify-center text-outline">
-<span class="material-symbols-outlined text-[16px]" data-icon="language">language</span>
-</div>
-                                        Direct Web
-                                    </td>
-<td class="py-4 px-6 font-data-mono text-on-surface-variant">392</td>
-<td class="py-4 px-6">
-<div class="flex items-center gap-2">
-<span class="font-data-mono text-primary">12.5%</span>
-<div class="w-16 h-1.5 bg-surface-container rounded-full overflow-hidden">
-<div class="h-full bg-outline w-[12%]"></div>
-</div>
-</div>
-</td>
-<td class="py-4 px-6 font-data-mono text-on-surface-variant">$1,100</td>
-<td class="py-4 px-6 font-data-mono text-primary font-medium text-right">$53,900</td>
-</tr>
+<tbody class="divide-y divide-surface-variant" data-analysis-source-table>
+<tr><td class="px-6 py-8 text-center text-on-surface-variant" colspan="5">正在加载渠道数据...</td></tr>
 </tbody>
 </table>
 </div>
@@ -569,6 +428,8 @@
 </div>
 </div>
 <script src="assets/layout.js" defer></script>
+<script src="assets/api.js" defer></script>
+<script src="assets/channel-analysis.js" defer></script>
 <script src="assets/app.js" defer></script>
 <script src="assets/module-shell.js" defer></script>
 </body></html>

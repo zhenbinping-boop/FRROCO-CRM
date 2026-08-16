@@ -3,7 +3,7 @@ import { Router } from "express";
 import { dashboard } from "../controllers/analytics-controller.js";
 import { login } from "../controllers/auth-controller.js";
 import { batchDeleteCustomers, batchUpdateCustomers, changeOwnership, createCustomer, createStore, deleteCustomer, exportRegionalCustomers, getCustomer, importCustomers, listCustomers, listDealerGroups, listStores, updateCustomer } from "../controllers/customer-controller.js";
-import { createOrder, createPayment, getOrder, listOrders } from "../controllers/order-controller.js";
+import { createOrder, createPayment, getOrder, listOrderOverview, listOrders } from "../controllers/order-controller.js";
 import { createTask, listTasks, updateTask } from "../controllers/task-controller.js";
 import { createRole, deleteRole, listRoles, updateRole } from "../controllers/role-controller.js";
 import { changeMyAvatar, changeMyPassword, createPosition, createUser, deleteUser, getMe, listOrganizations, listPositions, listUsers, updateUser } from "../controllers/user-controller.js";
@@ -46,6 +46,7 @@ apiRouter.post("/stores", requirePermission("organization.manage"), createStore)
 apiRouter.get("/dealer-groups", requirePermission("organization.read"), listDealerGroups);
 apiRouter.get("/orders", requirePermission("order.read"), listOrders);
 apiRouter.post("/orders", requirePermission("order.manage"), createOrder);
+apiRouter.get("/orders/overview", requirePermission("order.read"), listOrderOverview);
 apiRouter.get("/orders/:id", requirePermission("order.read"), getOrder);
 apiRouter.post("/orders/:id/payments", requirePermission("payment.manage"), createPayment);
 apiRouter.get("/tasks", requirePermission("task.read"), listTasks);

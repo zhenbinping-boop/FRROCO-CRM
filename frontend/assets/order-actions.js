@@ -12,6 +12,10 @@
   const next = document.querySelector("#order-page-next");
   const summary = document.querySelector("#order-pagination-summary");
   const indicator = document.querySelector("#order-page-indicator");
+  const outstanding = document.querySelector("[data-order-summary-outstanding]");
+  const paidTotal = document.querySelector("[data-order-summary-paid]");
+  const orderCount = document.querySelector("[data-order-summary-count]");
+  const pendingCount = document.querySelector("[data-order-summary-pending]");
   const pageSize = 10;
   let page = 1;
   let tab = "all";
@@ -25,16 +29,31 @@
     const paid = Number(order.paidAmount || 0);
     const balance = Math.max(0, total - paid);
     const status = statusLabels[order.status] || order.status;
-    return `<tr class="hover:bg-surface-container-low/50 transition-colors group" data-order-id="${escape(order.id)}" data-order-status="${escape(order.status)}" data-has-balance="${balance > 0}">
-      <td class="py-4 px-6 font-data-mono text-primary font-medium">${escape(order.orderNumber)}</td>
+    const imported = order.source === "CUSTOMER";
+    return `<tr class="hover:bg-surface-container-low/50 transition-colors group" data-order-id="${escape(order.id)}" data-order-source="${escape(order.source)}" data-order-status="${escape(order.status)}" data-has-balance="${balance > 0}">
+      <td class="py-4 px-6 font-data-mono text-primary font-medium"><span>${escape(order.orderNumber)}</span>${imported ? '<span class="ml-2 inline-flex rounded bg-surface-container-high px-1.5 py-0.5 font-body-md text-xs text-on-surface-variant">历史客户</span>' : ""}</td>
       <td class="py-4 px-6 font-medium text-primary">${escape(order.customer?.name)}</td>
       <td class="py-4 px-6 text-on-surface-variant">${escape((order.productSeries || []).join("、") || "未填写")}</td>
       <td class="py-4 px-6 text-right font-data-mono">${money(total)}</td>
       <td class="py-4 px-6 text-right font-data-mono text-secondary">${money(paid)}</td>
       <td class="py-4 px-6 text-right font-data-mono font-semibold ${balance ? "text-error-red" : "text-on-surface-variant"}">${money(balance)}</td>
       <td class="py-4 px-6 text-center"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${order.status === "COMPLETED" ? "bg-status-sage/20" : "bg-warning-amber/20"}">${escape(status)}</span></td>
-      <td class="py-4 px-4 text-right"><button aria-label="订单操作" class="text-outline hover:text-primary transition-colors" data-order-actions type="button"><span class="material-symbols-outlined">more_vert</span></button></td>
+      <td class="py-4 px-4 text-right"><button aria-label="${imported ? "查看客户财务详情" : "登记订单收款"}" class="text-outline hover:text-primary transition-colors" data-order-actions type="button"><span class="material-symbols-outlined">${imported ? "person" : "payments"}</span></button></td>
     </tr>`;
+  }
+
+  function renderSummary(data) {
+    if (!data) {
+      if (outstanding) outstanding.textContent = "--";
+      if (paidTotal) paidTotal.textContent = "--";
+      if (orderCount) orderCount.textContent = "财务汇总加载失败";
+      if (pendingCount) pendingCount.textContent = "--";
+      return;
+    }
+    if (outstanding) outstanding.textContent = money(data?.outstandingAmount);
+    if (paidTotal) paidTotal.textContent = money(data?.paidAmount);
+    if (orderCount) orderCount.textContent = `共 ${Number(data?.orderCount || 0)} 笔财务记录`;
+    if (pendingCount) pendingCount.textContent = Number(data?.pendingCount || 0).toLocaleString("zh-CN");
   }
 
   async function load() {
@@ -47,8 +66,9 @@
     else if (selectedStatus && selectedStatus !== "all") params.set("status", selectedStatus.toUpperCase());
     if (search?.value.trim()) params.set("search", search.value.trim());
     try {
-      const payload = await api.get(`/orders?${params}`);
+      const payload = await api.get(`/orders/overview?${params}`);
       if (current !== requestId) return;
+      renderSummary(payload.summary);
       const orders = payload.data || [];
       body.innerHTML = orders.length ? orders.map(row).join("") : `<tr><td class="py-8 text-center text-on-surface-variant" colspan="8">暂无符合条件的订单</td></tr>`;
       const meta = payload.meta || { page, total: orders.length, totalPages: 1 };
@@ -58,6 +78,7 @@
       if (previous) previous.disabled = page <= 1;
       if (next) next.disabled = page >= meta.totalPages;
     } catch (error) {
+      renderSummary();
       body.innerHTML = `<tr><td class="py-8 text-center text-error-red" colspan="8">${escape(error.message || "订单加载失败")}</td></tr>`;
     }
   }
@@ -66,8 +87,11 @@
     const button = event.target.closest("[data-order-actions]");
     if (!button) return;
     const orderId = button.closest("tr")?.dataset.orderId;
+    const source = button.closest("tr")?.dataset.orderSource;
     if (!orderId) return;
-    window.location.href = `payment-entry.html?orderId=${encodeURIComponent(orderId)}`;
+    window.location.href = source === "CUSTOMER"
+      ? `customer-detail.html?id=${encodeURIComponent(orderId)}`
+      : `payment-entry.html?orderId=${encodeURIComponent(orderId)}`;
   });
   tabs.forEach((item) => item.addEventListener("click", () => { tab = item.dataset.orderTab || "all"; page = 1; load(); }));
   statusFilter?.addEventListener("change", () => { page = 1; load(); });
@@ -75,5 +99,12 @@
   search?.addEventListener("input", () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { page = 1; load(); }, 250); });
   previous?.addEventListener("click", () => { if (page > 1) { page -= 1; load(); } });
   next?.addEventListener("click", () => { page += 1; load(); });
+  document.addEventListener("click", async (event) => {
+    if (!event.target.closest?.("[data-order-payment-shortcut]")) return;
+    tab = "pending";
+    page = 1;
+    await load();
+    body.closest("table")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
   load();
 })();

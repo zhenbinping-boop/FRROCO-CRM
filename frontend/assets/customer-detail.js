@@ -70,6 +70,13 @@
     };
     Object.entries(fields).forEach(([key, value]) => setText(`[data-field="${key}"]`, value));
     renderTransactions(data);
+    const createOrderButton = document.querySelector("#customer-create-order-button");
+    if (createOrderButton) {
+      const hasImportedFinance = Number(data.totalAmount || 0) > 0
+        || Number(data.depositAmount || 0) > 0
+        || (data.transactions || []).length > 0;
+      createOrderButton.hidden = hasImportedFinance;
+    }
   }
 
   function field(name, label, value = "", required = false, type = "text", attributes = "") {
@@ -126,6 +133,43 @@
     document.body.append(backdrop);
   }
 
+  function openOrderCreator() {
+    if (!customer) return;
+    const backdrop = document.createElement("div");
+    backdrop.className = "farock-modal-backdrop";
+    backdrop.innerHTML = `<section class="farock-modal" role="dialog" aria-modal="true" aria-labelledby="order-creator-title"><header class="farock-modal-header"><h2 id="order-creator-title">为 ${escapeHtml(customer.name)} 创建订单</h2><button type="button" data-close aria-label="关闭"><span class="material-symbols-outlined">close</span></button></header><form><div class="farock-modal-body grid grid-cols-1 md:grid-cols-2 gap-4">
+      ${field("title", "订单项目", valueOf(customer.projectName, customer.community, `${customer.name}项目`), true, "text", 'maxlength="160"')}
+      ${field("totalAmount", "订单金额", "", true, "number", 'min="0.01" step="0.01"')}
+      ${field("signedAt", "签约日期", dateInputValue(customer.dealDate), false, "date")}
+      ${select("status", "订单状态", ["DRAFT", "CONFIRMED", "IN_PRODUCTION"], "DRAFT", { DRAFT: "草稿", CONFIRMED: "已确认", IN_PRODUCTION: "生产中" })}
+      ${field("productSeries", "产品系列（顿号分隔）", (customer.productSeries || []).join("、"), false, "text", 'maxlength="500"')}
+      <p class="hidden text-error-red md:col-span-2" data-order-error role="alert"></p>
+      </div><footer class="farock-modal-actions"><button class="farock-btn" type="button" data-close>取消</button><button class="farock-btn primary" type="submit">创建订单</button></footer></form></section>`;
+    const close = () => backdrop.remove();
+    backdrop.querySelectorAll("[data-close]").forEach((button) => button.addEventListener("click", close));
+    backdrop.querySelector("form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const submit = form.querySelector('[type="submit"]');
+      const errorBox = form.querySelector("[data-order-error]");
+      submit.disabled = true;
+      errorBox.classList.add("hidden");
+      try {
+        const values = Object.fromEntries(new FormData(form));
+        values.customerId = id;
+        values.productSeries = values.productSeries.split(/[、，,]/).map((value) => value.trim()).filter(Boolean);
+        if (!values.signedAt) delete values.signedAt;
+        await api.post("/orders", values);
+        location.href = "orders-payments.html";
+      } catch (error) {
+        errorBox.textContent = error.message || "订单创建失败";
+        errorBox.classList.remove("hidden");
+        submit.disabled = false;
+      }
+    });
+    document.body.append(backdrop);
+  }
+
   async function load() {
     if (!id) {
       setText("[data-customer-name]", "缺少客户编号");
@@ -157,5 +201,6 @@
     }
   });
   document.querySelector("#customer-edit-button")?.addEventListener("click", openEditor);
+  document.querySelector("#customer-create-order-button")?.addEventListener("click", openOrderCreator);
   load();
 })();
