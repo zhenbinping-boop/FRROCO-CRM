@@ -20,6 +20,7 @@
     revenueChart: main.querySelector("[data-analysis-revenue-chart]"),
     revenueLabels: main.querySelector("[data-analysis-revenue-labels]"),
     sourceChart: main.querySelector("[data-analysis-source-chart]"),
+    sourceTotal: main.querySelector("[data-analysis-source-total]"),
     sourceLegend: main.querySelector("[data-analysis-source-legend]"),
     sourceTable: main.querySelector("[data-analysis-source-table]"),
   };
@@ -33,9 +34,10 @@
     elements.revenueNote.textContent = "正在汇总订单金额...";
     elements.revenueChart.innerHTML = '<p class="m-auto text-on-surface-variant">正在加载渠道金额...</p>';
     elements.revenueLabels.innerHTML = "";
-    elements.sourceChart.className = "w-48 h-48 rounded-full border-[24px] border-surface-container flex items-center justify-center";
+    elements.sourceChart.className = "farock-source-chart w-48 h-48 rounded-full flex items-center justify-center";
     elements.sourceChart.removeAttribute("style");
     elements.sourceChart.innerHTML = '<span class="font-label-md text-label-md text-on-surface-variant">加载中</span>';
+    elements.sourceTotal.textContent = "--";
     elements.sourceLegend.innerHTML = '<p class="text-center text-on-surface-variant">正在加载来源分布...</p>';
     elements.sourceTable.innerHTML = '<tr><td class="px-6 py-8 text-center text-on-surface-variant" colspan="5">正在加载渠道数据...</td></tr>';
   }
@@ -61,8 +63,10 @@
 
   function renderDistribution(sources, totalLeads) {
     if (!sources.length || !totalLeads) {
-      elements.sourceChart.className = "w-48 h-48 rounded-full bg-surface-container flex items-center justify-center";
+      elements.sourceChart.className = "farock-source-chart w-48 h-48 rounded-full bg-surface-container flex items-center justify-center";
+      elements.sourceChart.removeAttribute("style");
       elements.sourceChart.innerHTML = '<span class="text-on-surface-variant">暂无数据</span>';
+      elements.sourceTotal.textContent = "0 位客户";
       elements.sourceLegend.innerHTML = "";
       return;
     }
@@ -73,9 +77,10 @@
       return `${colors[index]} ${start.toFixed(2)}% ${cursor.toFixed(2)}%`;
     });
     if (cursor < 100) segments.push(`#e3e3de ${cursor.toFixed(2)}% 100%`);
-    elements.sourceChart.className = "w-48 h-48 rounded-full p-6 flex items-center justify-center";
+    elements.sourceChart.className = "farock-source-chart w-48 h-48 rounded-full";
     elements.sourceChart.style.background = `conic-gradient(${segments.join(",")})`;
-    elements.sourceChart.innerHTML = `<div class="flex h-full w-full flex-col items-center justify-center rounded-full bg-surface-white text-center"><span class="font-data-mono text-2xl font-bold text-primary">${integer(totalLeads)}</span><span class="font-label-md text-label-md text-on-surface-variant">客户</span></div>`;
+    elements.sourceChart.innerHTML = "";
+    elements.sourceTotal.textContent = `共 ${integer(totalLeads)} 位客户`;
     elements.sourceLegend.innerHTML = sources.slice(0, colors.length).map((item, index) => {
       const share = ((item.leads / totalLeads) * 100).toFixed(1);
       return `<div class="flex items-center justify-between gap-3"><div class="flex min-w-0 items-center gap-2"><span class="h-3 w-3 shrink-0 rounded-sm" style="background:${colors[index]}"></span><span class="truncate font-body-md text-body-md text-primary">${escapeHtml(item.source)}</span></div><span class="font-data-mono text-on-surface-variant">${share}%</span></div>`;
@@ -113,9 +118,10 @@
       elements.revenueNote.textContent = "--";
       elements.revenueChart.innerHTML = '<p class="m-auto text-error-red">渠道分析加载失败</p>';
       elements.revenueLabels.innerHTML = "";
-      elements.sourceChart.className = "w-48 h-48 rounded-full bg-surface-container flex items-center justify-center";
+      elements.sourceChart.className = "farock-source-chart w-48 h-48 rounded-full bg-surface-container flex items-center justify-center";
       elements.sourceChart.removeAttribute("style");
       elements.sourceChart.innerHTML = '<span class="text-error-red">加载失败</span>';
+      elements.sourceTotal.textContent = "--";
       elements.sourceLegend.innerHTML = "";
       elements.sourceTable.innerHTML = `<tr><td class="px-6 py-8 text-center text-error-red" colspan="5">${escapeHtml(error.message || "渠道数据加载失败")}</td></tr>`;
     }

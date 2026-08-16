@@ -92,6 +92,92 @@ label:has(input) {
   padding: 24px;
 }
 
+.farock-modal--bulk-edit {
+  width: min(680px, 100%);
+}
+
+.farock-bulk-fields {
+  display: grid;
+  gap: 12px;
+}
+
+.farock-bulk-field {
+  display: grid;
+  grid-template-columns: 20px minmax(104px, 128px) minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  margin: 0;
+}
+
+.farock-bulk-field > input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: #000;
+}
+
+.farock-bulk-field > label {
+  min-width: 0;
+  color: #1b1c19;
+  cursor: pointer;
+  font: 500 14px/20px Inter, sans-serif;
+  white-space: nowrap;
+}
+
+.farock-bulk-field > input:not([type="checkbox"]),
+.farock-bulk-field > select,
+.farock-bulk-field > textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  border: 1px solid #c4c7c7;
+  border-radius: 8px;
+  background: #fff;
+  padding: 10px 12px;
+  color: #1b1c19;
+  font: 400 14px/20px Inter, sans-serif;
+}
+
+.farock-bulk-field > input:not([type="checkbox"]):disabled,
+.farock-bulk-field > select:disabled,
+.farock-bulk-field > textarea:disabled {
+  cursor: not-allowed;
+  background: #f1f0ea;
+  color: #747878;
+}
+
+.farock-bulk-field > input:not([type="checkbox"]):focus,
+.farock-bulk-field > select:focus,
+.farock-bulk-field > textarea:focus {
+  border-color: #000;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08);
+}
+
+.farock-bulk-field--notes {
+  align-items: start;
+}
+
+.farock-bulk-field--notes > input[type="checkbox"] {
+  margin-top: 13px;
+}
+
+.farock-bulk-field--notes > label {
+  padding-top: 12px;
+}
+
+.farock-bulk-field--notes > textarea {
+  min-height: 88px;
+  resize: vertical;
+}
+
+.farock-source-chart {
+  flex: 0 0 auto;
+  aspect-ratio: 1;
+  border-radius: 50% !important;
+}
+
 .farock-modal-actions {
   justify-content: flex-end;
   border-top: 1px solid #e3e3de;
@@ -221,6 +307,15 @@ label:has(input) {
   .farock-toast-stack {
     top: 16px;
     right: 16px;
+  }
+
+  .farock-modal--bulk-edit .farock-modal-body {
+    padding: 20px 16px;
+  }
+
+  .farock-bulk-field {
+    grid-template-columns: 20px minmax(88px, 0.7fr) minmax(0, 1.3fr);
+    gap: 8px;
   }
 
   .farock-mobile-dock {

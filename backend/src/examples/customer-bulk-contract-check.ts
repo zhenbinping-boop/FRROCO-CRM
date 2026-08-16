@@ -15,6 +15,15 @@ assert.throws(() => customerBatchIdsSchema.parse({ ids: ["   "] }), /Too small|�
 assert.throws(() => customerBatchIdsSchema.parse({ ids: ["c-1", "c-1"] }), /不能重复/);
 assert.throws(() => customerBatchIdsSchema.parse({ ids: Array.from({ length: 101 }, (_, i) => `c-${i}`) }), /最多 100/);
 assert.deepEqual(customerBatchChangesSchema.parse({ tier: "A", notes: "" }), { tier: "A", notes: "" });
+assert.deepEqual(customerBatchChangesSchema.parse({
+  salesRepName: "导购甲",
+  designerName: "设计师乙",
+  referralDesignerName: "带单设计师丙",
+}), {
+  salesRepName: "导购甲",
+  designerName: "设计师乙",
+  referralDesignerName: "带单设计师丙",
+});
 assert.throws(() => customerBatchChangesSchema.parse({}), /至少修改一个字段/);
 assert.throws(() => customerBatchChangesSchema.parse({ storeId: "store-2" }), /不允许/);
 assert.deepEqual(customerBatchDeleteSchema.parse({ ids: ["c-1"] }), { ids: ["c-1"], confirmTransactions: false });

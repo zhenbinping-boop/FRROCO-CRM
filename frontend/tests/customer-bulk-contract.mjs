@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-const [html, apiPages, bulk, detail, api, shell, globalCss] = await Promise.all([
+const [html, apiPages, bulk, detail, api, shell, globalCss, appCss] = await Promise.all([
   readFile(new URL("../customers.html", import.meta.url), "utf8"),
   readFile(new URL("../assets/api-pages.js", import.meta.url), "utf8"),
   readFile(new URL("../assets/customer-bulk.js", import.meta.url), "utf8"),
@@ -9,6 +9,7 @@ const [html, apiPages, bulk, detail, api, shell, globalCss] = await Promise.all(
   readFile(new URL("../assets/api.js", import.meta.url), "utf8"),
   readFile(new URL("../assets/module-shell.js", import.meta.url), "utf8"),
   readFile(new URL("../assets/global.css", import.meta.url), "utf8"),
+  readFile(new URL("../assets/app.css", import.meta.url), "utf8"),
 ]);
 
 assert.match(html, /data-customer-bulk-toolbar/);
@@ -28,6 +29,13 @@ assert.match(bulk, /farock:customers-loaded/);
 assert.match(bulk, /deleteSelected\.busy/);
 assert.match(bulk, /第二次确认/);
 assert.match(bulk, /confirmTransactions: true/);
+for (const field of ["salesRepName", "designerName", "referralDesignerName"]) {
+  assert.match(bulk, new RegExp(`${field}Enabled`));
+  assert.match(bulk, new RegExp(`changes\\.${field}`));
+}
+assert.match(bulk, /farock-modal--bulk-edit/);
+assert.match(appCss, /\.farock-bulk-field/);
+assert.match(appCss, /grid-template-columns: 20px/);
 assert.equal((bulk.match(/window\.confirm/g) || []).length, 2);
 assert.match(bulk, /FarockCustomerBulkLoaded/);
 assert.match(bulk, /target\.checked = false/);

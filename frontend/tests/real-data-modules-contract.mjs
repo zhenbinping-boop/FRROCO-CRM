@@ -22,11 +22,14 @@ assert.match(orderActions, /customer-detail\.html\?id=/);
 for (const marker of ["data-analysis-total-leads", "data-analysis-revenue-chart", "data-analysis-source-table"]) {
   assert.match(channelHtml, new RegExp(marker));
 }
+assert.match(channelHtml, /data-analysis-source-total/);
 assert.match(channelHtml, /assets\/api\.js/);
 assert.match(channelHtml, /assets\/channel-analysis\.js/);
 assert.doesNotMatch(channelHtml, /Xiaohongshu|Douyin|Referrals|Direct Web|\$504,560/);
 assert.match(channelAnalysis, /\/analytics\/dashboard/);
 assert.match(channelAnalysis, /sourcePerformance/);
+assert.match(channelAnalysis, /sourceTotal\.textContent/);
+assert.doesNotMatch(channelAnalysis, /bg-surface-white text-center/);
 assert.doesNotMatch(channelAnalysis, /Math\.max\(8,/);
 assert.doesNotMatch(channelHtml, /Last 30 Days Trajectory|Weekly|Monthly|vs last month/);
 assert.match(moduleShell, /"channel-analysis\.html": \{ scripts: \["channel-analysis\.js"\]/);

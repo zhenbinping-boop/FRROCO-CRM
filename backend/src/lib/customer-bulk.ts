@@ -19,6 +19,9 @@ export const customerBatchChangesSchema = z.strictObject({
   tier: z.enum(["S", "A", "B", "C"]).optional(),
   stage: z.enum(["LEAD", "FOLLOWING", "PROPOSAL", "CONTRACTED", "LOST"]).optional(),
   customerSource: z.string().trim().max(160).optional(),
+  salesRepName: z.string().trim().max(100).optional(),
+  designerName: z.string().trim().max(100).optional(),
+  referralDesignerName: z.string().trim().max(100).optional(),
   notes: z.string().trim().optional(),
 }, { error: "存在不允许批量修改的字段" }).refine((changes) => Object.keys(changes).length > 0, "至少修改一个字段");
 

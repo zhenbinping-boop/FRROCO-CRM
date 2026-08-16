@@ -76,13 +76,66 @@
     const returnFocus = document.activeElement;
     const backdrop = document.createElement("div");
     backdrop.className = "farock-modal-backdrop";
-    backdrop.innerHTML = `<section class="farock-modal" role="dialog" aria-modal="true" aria-labelledby="customer-bulk-edit-title"><header class="farock-modal-header"><h2 id="customer-bulk-edit-title">批量修改客户</h2><button aria-label="关闭" data-customer-bulk-close type="button"><span class="material-symbols-outlined">close</span></button></header><form><div class="farock-modal-body"><p class="text-on-surface-variant">已选择 ${selectedIds.size} 位客户。勾选要修改的字段，未勾选字段保持不变。</p><label class="farock-bulk-field"><input name="tierEnabled" type="checkbox"><span>客户等级</span><select disabled name="tier"><option value="S">S</option><option value="A">A</option><option value="B" selected>B</option><option value="C">C</option></select></label><label class="farock-bulk-field"><input name="stageEnabled" type="checkbox"><span>跟进阶段</span><select disabled name="stage"><option value="LEAD">线索</option><option value="FOLLOWING">跟进中</option><option value="PROPOSAL">方案中</option><option value="CONTRACTED">已签约</option><option value="LOST">已流失</option></select></label><label class="farock-bulk-field"><input name="sourceEnabled" type="checkbox"><span>客户来源</span><input disabled maxlength="160" name="customerSource" type="text"></label><label class="farock-bulk-field"><input name="notesEnabled" type="checkbox"><span>备注</span><textarea disabled name="notes" rows="3"></textarea></label><p class="hidden farock-bulk-error" data-customer-bulk-error role="alert"></p></div><footer class="farock-modal-actions"><button class="farock-btn" data-customer-bulk-close type="button">取消</button><button class="farock-btn primary" data-customer-bulk-submit type="submit">保存修改</button></footer></form></section>`;
+    backdrop.innerHTML = `
+      <section class="farock-modal farock-modal--bulk-edit" role="dialog" aria-modal="true" aria-labelledby="customer-bulk-edit-title">
+        <header class="farock-modal-header">
+          <h2 id="customer-bulk-edit-title">批量修改客户</h2>
+          <button aria-label="关闭" data-customer-bulk-close type="button"><span class="material-symbols-outlined">close</span></button>
+        </header>
+        <form>
+          <div class="farock-modal-body">
+            <p class="text-on-surface-variant">已选择 ${selectedIds.size} 位客户。勾选要修改的字段，未勾选字段保持不变。</p>
+            <div class="farock-bulk-fields">
+              <div class="farock-bulk-field">
+                <input id="customer-bulk-tier-enabled" name="tierEnabled" type="checkbox">
+                <label for="customer-bulk-tier-enabled">客户等级</label>
+                <select aria-label="客户等级目标值" disabled name="tier"><option value="S">S</option><option value="A">A</option><option value="B" selected>B</option><option value="C">C</option></select>
+              </div>
+              <div class="farock-bulk-field">
+                <input id="customer-bulk-stage-enabled" name="stageEnabled" type="checkbox">
+                <label for="customer-bulk-stage-enabled">跟进阶段</label>
+                <select aria-label="跟进阶段目标值" disabled name="stage"><option value="LEAD">线索</option><option value="FOLLOWING">跟进中</option><option value="PROPOSAL">方案中</option><option value="CONTRACTED">已签约</option><option value="LOST">已流失</option></select>
+              </div>
+              <div class="farock-bulk-field">
+                <input id="customer-bulk-source-enabled" name="sourceEnabled" type="checkbox">
+                <label for="customer-bulk-source-enabled">客户来源</label>
+                <input aria-label="客户来源目标值" disabled maxlength="160" name="customerSource" placeholder="请输入客户来源" type="text">
+              </div>
+              <div class="farock-bulk-field">
+                <input id="customer-bulk-sales-rep-enabled" name="salesRepNameEnabled" type="checkbox">
+                <label for="customer-bulk-sales-rep-enabled">导购</label>
+                <input aria-label="导购目标值" disabled maxlength="100" name="salesRepName" placeholder="请输入导购姓名" type="text">
+              </div>
+              <div class="farock-bulk-field">
+                <input id="customer-bulk-designer-enabled" name="designerNameEnabled" type="checkbox">
+                <label for="customer-bulk-designer-enabled">设计师</label>
+                <input aria-label="设计师目标值" disabled maxlength="100" name="designerName" placeholder="请输入设计师姓名" type="text">
+              </div>
+              <div class="farock-bulk-field">
+                <input id="customer-bulk-referral-designer-enabled" name="referralDesignerNameEnabled" type="checkbox">
+                <label for="customer-bulk-referral-designer-enabled">带单设计师</label>
+                <input aria-label="带单设计师目标值" disabled maxlength="100" name="referralDesignerName" placeholder="请输入带单设计师姓名" type="text">
+              </div>
+              <div class="farock-bulk-field farock-bulk-field--notes">
+                <input id="customer-bulk-notes-enabled" name="notesEnabled" type="checkbox">
+                <label for="customer-bulk-notes-enabled">备注</label>
+                <textarea aria-label="备注目标值" disabled name="notes" placeholder="请输入备注" rows="3"></textarea>
+              </div>
+            </div>
+            <p class="hidden farock-bulk-error" data-customer-bulk-error role="alert"></p>
+          </div>
+          <footer class="farock-modal-actions">
+            <button class="farock-btn" data-customer-bulk-close type="button">取消</button>
+            <button class="farock-btn primary" data-customer-bulk-submit type="submit">保存修改</button>
+          </footer>
+        </form>
+      </section>`;
     document.body.append(backdrop);
     const form = backdrop.querySelector("form");
     const dialog = backdrop.querySelector('[role="dialog"]');
     const error = backdrop.querySelector("[data-customer-bulk-error]");
     const submit = backdrop.querySelector("[data-customer-bulk-submit]");
-    const enableFields = () => ["tier", "stage", "customerSource", "notes"].forEach((name) => {
+    const enableFields = () => ["tier", "stage", "customerSource", "salesRepName", "designerName", "referralDesignerName", "notes"].forEach((name) => {
       const control = form.elements[name];
       control.disabled = !form.elements[`${name === "customerSource" ? "source" : name}Enabled`].checked;
     });
@@ -116,6 +169,9 @@
       if (form.elements.tierEnabled.checked) changes.tier = form.elements.tier.value;
       if (form.elements.stageEnabled.checked) changes.stage = form.elements.stage.value;
       if (form.elements.sourceEnabled.checked) changes.customerSource = form.elements.customerSource.value.trim();
+      if (form.elements.salesRepNameEnabled.checked) changes.salesRepName = form.elements.salesRepName.value.trim();
+      if (form.elements.designerNameEnabled.checked) changes.designerName = form.elements.designerName.value.trim();
+      if (form.elements.referralDesignerNameEnabled.checked) changes.referralDesignerName = form.elements.referralDesignerName.value.trim();
       if (form.elements.notesEnabled.checked) changes.notes = form.elements.notes.value;
       if (!Object.keys(changes).length) {
         error.textContent = "至少启用一个修改字段";
