@@ -15,6 +15,10 @@ export function validate<T>(schema: ZodType<T>, input: unknown): T {
 }
 
 export const errorHandler: ErrorRequestHandler = (error, _request, response, _next) => {
+  if (error?.type === "entity.too.large") {
+    response.status(413).json({ error: { code: "PAYLOAD_TOO_LARGE", message: "请求数据过大，请分批提交" } });
+    return;
+  }
   if (error instanceof AppError) {
     response.status(error.status).json({ error: { code: error.code, message: error.message, details: error.details } });
     return;

@@ -2,6 +2,7 @@
   "use strict";
 
   const SHEETJS_URL = "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
+  const IMPORT_BATCH_SIZE = 200;
   const MATCH_THRESHOLD = 0.74;
   const aliases = {
     name: ["姓名", "客户姓名", "客户名称", "顾客姓名", "业主姓名", "name"],
@@ -373,6 +374,9 @@
     fileName: document.querySelector("#customer-import-file-name"), total: document.querySelector("#customer-import-total"),
     valid: document.querySelector("#customer-import-valid"), invalid: document.querySelector("#customer-import-invalid"),
     error: document.querySelector("#customer-import-error"), preview: document.querySelector("#customer-import-preview"),
+    progress: document.querySelector("#customer-import-progress"), progressTrack: document.querySelector("#customer-import-progress-track"),
+    progressBar: document.querySelector("#customer-import-progress-bar"), progressText: document.querySelector("#customer-import-progress-text"),
+    progressPercent: document.querySelector("#customer-import-progress-percent"),
     storeMapping: document.querySelector("#customer-import-store-mapping"), storeMappingList: document.querySelector("#customer-import-store-mapping-list"),
     storeForm: document.querySelector("#customer-import-store-form"), storeFormSheet: document.querySelector("#customer-import-store-form-sheet"),
     storeFormCancel: document.querySelector("#customer-import-store-cancel"), storeFormSubmit: document.querySelector("#customer-import-store-submit"),
@@ -388,6 +392,23 @@
   let activeSheetName = "";
   let sheetJsPromise;
   const normalizeTier = (value) => ["S", "A", "B", "C"].includes(String(value).trim().charAt(0).toUpperCase()) ? String(value).trim().charAt(0).toUpperCase() : "B";
+
+  function updateImportProgress(completed, total) {
+    const percent = total ? Math.round((completed / total) * 100) : 0;
+    elements.progress.classList.remove("hidden");
+    elements.progressBar.style.width = `${percent}%`;
+    elements.progressTrack.setAttribute("aria-valuenow", String(percent));
+    elements.progressText.textContent = `已处理 ${completed} / ${total} 位客户`;
+    elements.progressPercent.textContent = `${percent}%`;
+  }
+
+  function resetImportProgress() {
+    elements.progress.classList.add("hidden");
+    elements.progressBar.style.width = "0%";
+    elements.progressTrack.setAttribute("aria-valuenow", "0");
+    elements.progressText.textContent = "准备导入";
+    elements.progressPercent.textContent = "0%";
+  }
 
   function loadSheetJs() {
     if (window.XLSX) return Promise.resolve(window.XLSX);
@@ -591,6 +612,7 @@
   function openModal(fileName) {
     elements.fileName.textContent = fileName;
     elements.error.classList.add("hidden");
+    resetImportProgress();
     elements.modal.classList.remove("hidden");
     elements.modal.classList.add("flex");
     elements.close.focus();
@@ -657,13 +679,24 @@
     const customers = parsedRows.filter((row) => row.valid).map((row) => row.customer);
     if (!customers.length) return;
     elements.confirm.disabled = true;
-    elements.confirm.textContent = "正在导入...";
+    const totalBatches = Math.ceil(customers.length / IMPORT_BATCH_SIZE);
+    let imported = 0;
+    let completed = 0;
+    updateImportProgress(0, customers.length);
     try {
-      const result = await window.FarockAPI.post("/customers/import", { customers });
-      elements.confirm.textContent = `已导入 ${result.data.imported} 位客户`;
+      for (let offset = 0; offset < customers.length; offset += IMPORT_BATCH_SIZE) {
+        const batch = customers.slice(offset, offset + IMPORT_BATCH_SIZE);
+        const batchNumber = Math.floor(offset / IMPORT_BATCH_SIZE) + 1;
+        elements.confirm.textContent = `正在导入 ${batchNumber}/${totalBatches} 批...`;
+        const result = await window.FarockAPI.post("/customers/import", { customers: batch });
+        imported += Number(result.data?.imported) || batch.length;
+        completed += batch.length;
+        updateImportProgress(completed, customers.length);
+      }
+      elements.confirm.textContent = `已导入 ${imported} 位客户`;
       setTimeout(() => window.location.reload(), 600);
     } catch (error) {
-      showError(error.message || "客户导入失败");
+      showError(`已导入 ${imported} 位客户，后续批次未完成：${error.message || "客户导入失败"}`);
       elements.confirm.disabled = false;
       elements.confirm.textContent = "确认导入";
     }
