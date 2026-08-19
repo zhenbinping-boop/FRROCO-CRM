@@ -71,6 +71,7 @@ for (const file of [
 for (const file of [
   "customer-bulk-contract.mjs",
   "customer-import-contract.mjs",
+  "customer-list-performance-contract.mjs",
   "module-shell-contract.mjs",
   "real-data-modules-contract.mjs",
   "role-permissions-contract.mjs",

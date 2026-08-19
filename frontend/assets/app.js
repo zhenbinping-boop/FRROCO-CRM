@@ -671,12 +671,14 @@
     if (page === routes.customers) {
       const grid = document.querySelector("[data-customer-grid]");
       if (!grid) return;
+      let timer;
       const handleSearch = () => {
-        grid._farockCustomerQuery = search.value.trim().toLowerCase();
-        grid._farockRender?.();
+        grid._farockCustomerQuery = search.value.trim();
+        clearTimeout(timer);
+        timer = setTimeout(() => grid._farockLoad?.(), 250);
       };
       search.addEventListener("input", handleSearch);
-      search._farockGlobalSearchCleanup = () => search.removeEventListener("input", handleSearch);
+      search._farockGlobalSearchCleanup = () => { clearTimeout(timer); search.removeEventListener("input", handleSearch); };
       return;
     }
 
@@ -765,14 +767,7 @@
     const grid = document.querySelector("[data-customer-grid]");
     if (!grid) return;
     const controls = Array.from(document.querySelectorAll("[data-customer-filter]"));
-    const empty = document.createElement("div");
-    empty.className = "farock-empty farock-hidden";
-    empty.textContent = "没有符合当前筛选条件的客户。";
-    empty.setAttribute("data-customer-empty", "true");
-    grid.after(empty);
-
-    const getCards = () => Array.from(grid.children).filter((card) => card.dataset.operationMode);
-    const valueOf = (card, key) => String(card.dataset[key] || "").trim();
+    const options = { stores: [], dealerGroups: [] };
     const selected = (name) => document.querySelector(`[data-customer-filter="${name}"]`)?.value || "";
     const setOptions = (name, values, label) => {
       const select = document.querySelector(`[data-customer-filter="${name}"]`);
@@ -784,69 +779,45 @@
     };
     const unique = (items) => [...new Set(items.filter(Boolean))].sort((a, b) => a.localeCompare(b));
     const refreshOptions = () => {
-      const cards = getCards();
       const mode = selected("mode");
-      setOptions("province", unique(cards.filter((card) => !mode || valueOf(card, "operationMode") === mode).map((card) => valueOf(card, "province"))), "全部省份");
+      const matchingMode = options.stores.filter((store) => !mode || store.storeType === mode);
+      setOptions("province", unique(matchingMode.map((store) => store.regionProvince)), "全部省份");
       const province = selected("province");
-      setOptions("city", unique(cards.filter((card) => (!mode || valueOf(card, "operationMode") === mode) && (!province || valueOf(card, "province") === province)).map((card) => valueOf(card, "city"))), "全部城市");
+      const matchingProvince = matchingMode.filter((store) => !province || store.regionProvince === province);
+      setOptions("city", unique(matchingProvince.map((store) => store.regionCity)), "全部城市");
       const city = selected("city");
-      const stores = [...new Map(cards.filter((card) => (!mode || valueOf(card, "operationMode") === mode) && (!province || valueOf(card, "province") === province) && (!city || valueOf(card, "city") === city))
-        .map((card) => [valueOf(card, "store"), { value: valueOf(card, "store"), label: valueOf(card, "storeLabel") || valueOf(card, "store") }])
-        .filter(([value]) => value)).values()];
+      const stores = matchingProvince.filter((store) => !city || store.regionCity === city)
+        .map((store) => ({ value: store.id, label: store.storeName }));
       setOptions("store", stores, "全部门店");
-      const dealerGroups = [...new Map(cards.filter((card) => (!mode || valueOf(card, "operationMode") === mode) && (!province || valueOf(card, "province") === province))
-        .map((card) => [valueOf(card, "dealerGroup"), { value: valueOf(card, "dealerGroup"), label: valueOf(card, "dealerGroupLabel") || valueOf(card, "dealerGroup") }])
-        .filter(([value]) => value)).values()];
+      const dealerGroups = options.dealerGroups.filter((group) => (!province || group.regionProvince === province) && (!city || group.regionCity === city))
+        .map((group) => ({ value: group.id, label: group.dealerName }));
       setOptions("dealer-group", dealerGroups, "全部代理商分组");
     };
-    const render = () => {
-      const mode = selected("mode");
-      const province = selected("province");
-      const city = selected("city");
-      const store = selected("store");
-      const dealerGroup = selected("dealer-group");
-      const tier = selected("tier");
-      const query = grid._farockCustomerQuery || "";
-      const sort = selected("sort");
-      const cards = getCards().sort((a, b) => {
-        if (sort === "name") return textOf(a.querySelector("h3")).localeCompare(textOf(b.querySelector("h3")));
-        if (sort === "tier") return valueOf(a, "tier").localeCompare(valueOf(b, "tier"));
-        return String(b.dataset.createdAt || "").localeCompare(String(a.dataset.createdAt || ""));
-      });
-      cards.forEach((card) => grid.append(card));
-      let visible = 0;
-      cards.forEach((card) => {
-        const show = (!mode || valueOf(card, "operationMode") === mode)
-          && (!province || valueOf(card, "province") === province)
-          && (!city || valueOf(card, "city") === city)
-          && (!store || valueOf(card, "store") === store)
-          && (!dealerGroup || valueOf(card, "dealerGroup") === dealerGroup)
-          && (!tier || valueOf(card, "tier") === tier)
-          && (!query || textOf(card).toLowerCase().includes(query));
-        card.classList.toggle("farock-hidden", !show);
-        if (show) visible += 1;
-      });
-      empty.classList.toggle("farock-hidden", visible > 0);
-      const heading = Array.from(document.querySelectorAll("h2")).find((item) => textOf(item).includes("Active Portfolio"));
-      const count = heading?.parentElement?.querySelector("span");
-      if (count) count.textContent = `${visible} 位客户`;
+    const apply = () => {
+      grid._farockCustomerFilters = {
+        storeType: selected("mode"), province: selected("province"), city: selected("city"),
+        storeId: selected("store"), dealerGroupId: selected("dealer-group"), tier: selected("tier"), sort: selected("sort"),
+      };
+      grid._farockLoad?.();
     };
-    grid._farockRender = render;
-    grid._farockRefreshOptions = refreshOptions;
     controls.forEach((control) => control.addEventListener("change", () => {
       if (["mode", "province", "city"].includes(control.dataset.customerFilter)) refreshOptions();
-      render();
+      apply();
     }));
+    document.addEventListener("farock:customer-filter-options", (event) => {
+      options.stores = event.detail?.stores || [];
+      options.dealerGroups = event.detail?.dealerGroups || [];
+      refreshOptions();
+    }, { once: true });
     document.querySelector("[data-customer-filter-clear]")?.addEventListener("click", () => {
       controls.forEach((control) => { if (control.dataset.customerFilter !== "sort") control.value = ""; });
       grid._farockCustomerQuery = "";
       const search = document.querySelector("[data-global-search]");
       if (search) search.value = "";
       refreshOptions();
-      render();
+      apply();
     });
-    refreshOptions();
-    render();
+    apply();
   }
 
   function setupCreateCustomer() {

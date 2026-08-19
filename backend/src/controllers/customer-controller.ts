@@ -66,22 +66,37 @@ async function verifyAttribution(storeType: "DIRECT" | "DEALER", storeId: string
   return store;
 }
 
+const customerCardSelect = {
+  id: true, name: true, storeType: true, regionProvince: true, regionCity: true, regionDistrict: true,
+  personaSummary: true, whyFarock: true, tier: true, dealerGroupId: true, createdAt: true,
+  store: { select: { id: true, storeName: true } },
+  dealerGroup: { select: { id: true, dealerName: true } },
+} satisfies Prisma.CustomerSelect;
+
 export const listCustomers: RequestHandler = async (request, response) => {
   const query = validate(z.object({
     page: z.coerce.number().int().min(1).default(1), pageSize: z.coerce.number().int().min(1).max(100).default(20),
     storeType: z.enum(["DIRECT", "DEALER"]).optional(), province: z.string().optional(), city: z.string().optional(),
-    dealerGroupId: z.string().optional(), tier: z.enum(["S", "A", "B", "C"]).optional(), search: z.string().trim().optional(),
+    storeId: z.string().optional(), dealerGroupId: z.string().optional(), tier: z.enum(["S", "A", "B", "C"]).optional(),
+    search: z.string().trim().optional(), sort: z.enum(["recent", "name", "tier"]).default("recent"),
   }), request.query);
-  const where = {
-    ...customerAccessWhere(request),
+  const filters: Prisma.CustomerWhereInput = {
     ...(query.storeType && { storeType: query.storeType }), ...(query.province && { regionProvince: query.province }),
-    ...(query.city && { regionCity: query.city }), ...(query.dealerGroupId && { dealerGroupId: query.dealerGroupId }),
-    ...(query.tier && { tier: query.tier }), ...(query.search && { OR: [
-      { name: { contains: query.search, mode: "insensitive" as const } }, { phone: { contains: query.search } },
-    ] }),
+    ...(query.city && { regionCity: query.city }), ...(query.storeId && { storeId: query.storeId }),
+    ...(query.dealerGroupId && { dealerGroupId: query.dealerGroupId }), ...(query.tier && { tier: query.tier }),
   };
+  const where: Prisma.CustomerWhereInput = { AND: [
+    customerAccessWhere(request), filters, ...(query.search ? [{ OR: [
+      { name: { contains: query.search, mode: "insensitive" as const } }, { phone: { contains: query.search } },
+    ] }] : []),
+  ] };
+  const orderBy: Prisma.CustomerOrderByWithRelationInput[] = query.sort === "name"
+    ? [{ name: "asc" }, { id: "asc" }]
+    : query.sort === "tier"
+      ? [{ tier: "asc" }, { createdAt: "desc" }, { id: "desc" }]
+      : [{ createdAt: "desc" }, { id: "desc" }];
   const [items, total] = await prisma.$transaction([
-    prisma.customer.findMany({ where, include: { store: true, dealerGroup: true }, orderBy: [{ createdAt: "desc" }, { id: "desc" }], skip: (query.page - 1) * query.pageSize, take: query.pageSize }),
+    prisma.customer.findMany({ where, select: customerCardSelect, orderBy, skip: (query.page - 1) * query.pageSize, take: query.pageSize }),
     prisma.customer.count({ where }),
   ]);
   response.json({ data: items, meta: { page: query.page, pageSize: query.pageSize, total, totalPages: Math.ceil(total / query.pageSize) } });

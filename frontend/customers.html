@@ -267,7 +267,7 @@
 <span class="font-body-md text-body-md text-on-surface-variant hidden sm:inline">批量操作仅影响当前可见且有权限的客户</span>
 </div>
 <div class="flex items-center gap-2 flex-wrap justify-end">
-<button class="farock-btn" data-customer-bulk-select-visible type="button"><span class="material-symbols-outlined text-[18px]">select_all</span>全选当前结果</button>
+<button class="farock-btn" data-customer-bulk-select-visible type="button"><span class="material-symbols-outlined text-[18px]">select_all</span>全选当前页</button>
 <button class="farock-btn" data-customer-bulk-edit disabled type="button"><span class="material-symbols-outlined text-[18px]">edit</span>批量修改</button>
 <button class="farock-btn" data-customer-bulk-delete disabled type="button"><span class="material-symbols-outlined text-[18px]">delete</span>批量删除</button>
 <button aria-label="清空已选客户" class="farock-btn" data-customer-bulk-clear type="button"><span class="material-symbols-outlined text-[18px]">close</span></button>
@@ -393,6 +393,11 @@
 </div>
 </div>
 </div>
+<nav aria-label="客户列表分页" class="mt-6 hidden flex items-center justify-center gap-4" data-customer-pagination>
+<button aria-label="上一页" class="flex h-10 w-10 items-center justify-center rounded-lg border border-outline-variant/50 bg-surface-white text-primary disabled:cursor-not-allowed disabled:opacity-40" data-customer-page-prev type="button"><span class="material-symbols-outlined">chevron_left</span></button>
+<span class="min-w-28 text-center font-label-md text-label-md text-on-surface-variant tabular-nums" data-customer-page-status>第 1 / 1 页</span>
+<button aria-label="下一页" class="flex h-10 w-10 items-center justify-center rounded-lg border border-outline-variant/50 bg-surface-white text-primary disabled:cursor-not-allowed disabled:opacity-40" data-customer-page-next type="button"><span class="material-symbols-outlined">chevron_right</span></button>
+</nav>
 </section>
 </div>
 </div>

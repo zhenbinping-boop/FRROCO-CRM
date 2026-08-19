@@ -396,6 +396,7 @@
   function updateImportProgress(completed, total) {
     const percent = total ? Math.round((completed / total) * 100) : 0;
     elements.progress.classList.remove("hidden");
+    elements.progressBar.classList.remove("animate-pulse");
     elements.progressBar.style.width = `${percent}%`;
     elements.progressTrack.setAttribute("aria-valuenow", String(percent));
     elements.progressText.textContent = `已处理 ${completed} / ${total} 位客户`;
@@ -404,11 +405,23 @@
 
   function resetImportProgress() {
     elements.progress.classList.add("hidden");
+    elements.progressBar.classList.remove("animate-pulse");
     elements.progressBar.style.width = "0%";
     elements.progressTrack.setAttribute("aria-valuenow", "0");
     elements.progressText.textContent = "准备导入";
     elements.progressPercent.textContent = "0%";
   }
+
+  function updateScanProgress(percent, message) {
+    elements.progress.classList.remove("hidden");
+    elements.progressBar.classList.add("animate-pulse");
+    elements.progressBar.style.width = `${percent}%`;
+    elements.progressTrack.setAttribute("aria-valuenow", String(percent));
+    elements.progressText.textContent = message;
+    elements.progressPercent.textContent = `${percent}%`;
+  }
+
+  const nextFrame = () => new Promise((resolve) => requestAnimationFrame(resolve));
 
   function loadSheetJs() {
     if (window.XLSX) return Promise.resolve(window.XLSX);
@@ -644,26 +657,35 @@
   async function handleFile(file) {
     const extension = file.name.split(".").pop().toLowerCase();
     if (!["xlsx", "xls", "csv"].includes(extension)) throw new Error("仅支持 .xlsx、.xls 或 .csv 文件");
+    updateScanProgress(10, "正在加载表格解析组件...");
     const XLSX = await loadSheetJs();
+    updateScanProgress(25, "正在读取客户基础资料...");
     const [storesPayload, customers, dealerGroupsPayload] = await Promise.all([
       window.FarockAPI.get("/stores"),
       fetchAllCustomers(),
       window.FarockAPI.get("/dealer-groups"),
     ]);
+    updateScanProgress(45, "正在读取表格文件...");
     const buffer = await file.arrayBuffer();
+    await nextFrame();
     const workbook = extension === "csv" ? XLSX.read(new TextDecoder("utf-8").decode(buffer).replace(/^\uFEFF/, ""), { type: "string" }) : XLSX.read(buffer, { type: "array" });
     if (!workbook.SheetNames.length) throw new Error("文件中没有可读取的工作表");
+    updateScanProgress(70, `正在扫描表格（${workbook.SheetNames.length} 个工作表）...`);
+    await nextFrame();
     sourceRows = extractRows(XLSX, workbook);
     if (!sourceRows.length) throw new Error("所有工作表均未识别到客户数据");
     availableStores = storesPayload.data;
     availableDealerGroups = dealerGroupsPayload.data;
     existingCustomers = customers;
     storeIdsBySheet.clear();
+    updateScanProgress(90, "正在校验客户数据...");
+    await nextFrame();
     parsedRows = validateRows(sourceRows, availableStores, existingCustomers);
-    openModal(file.name);
     renderStoreMappings();
     renderDealerGroupOptions();
     renderPreview();
+    updateScanProgress(100, "表格扫描完成");
+    elements.progressBar.classList.remove("animate-pulse");
   }
 
   elements.button.addEventListener("click", () => elements.input.click());
@@ -671,9 +693,15 @@
     const file = elements.input.files[0];
     if (!file) return;
     elements.button.disabled = true;
+    openModal(file.name);
+    parsedRows = [];
+    renderPreview();
+    elements.confirm.textContent = "正在扫描...";
+    updateScanProgress(5, "正在准备扫描表格...");
+    await nextFrame();
     try { await handleFile(file); }
-    catch (error) { openModal(file.name); parsedRows = []; renderPreview(); showError(error.message || "文件解析失败，请检查格式后重试"); }
-    finally { elements.button.disabled = false; }
+    catch (error) { resetImportProgress(); parsedRows = []; renderPreview(); showError(error.message || "文件解析失败，请检查格式后重试"); }
+    finally { elements.button.disabled = false; elements.confirm.textContent = "确认导入"; }
   });
   elements.confirm.addEventListener("click", async () => {
     const customers = parsedRows.filter((row) => row.valid).map((row) => row.customer);

@@ -5,6 +5,7 @@
   if (!api) return;
   const escapeHtml = (value) => String(value ?? "").replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]);
   const currency = (value) => new Intl.NumberFormat("zh-CN", { style: "currency", currency: "CNY", maximumFractionDigits: 0 }).format(Number(value) || 0);
+  const customerState = { page: 1, pageSize: 48 };
 
   function messageCard(message, retry) {
     return `<div class="col-span-full bg-surface-white rounded-2xl border border-outline-variant/30 p-8 text-center" role="${retry ? "alert" : "status"}"><p class="text-on-surface-variant">${escapeHtml(message)}</p>${retry ? '<button class="mt-4 bg-primary text-on-primary px-5 py-2.5 rounded-lg" type="button" data-api-retry>重新加载</button>' : ""}</div>`;
@@ -22,23 +23,37 @@
     </article>`;
   }
 
-  async function loadCustomers() {
+  function customerQuery(grid, page) {
+    const params = new URLSearchParams({ page: String(page), pageSize: String(customerState.pageSize) });
+    Object.entries(grid._farockCustomerFilters || {}).forEach(([key, value]) => { if (value) params.set(key, value); });
+    if (grid._farockCustomerQuery) params.set("search", grid._farockCustomerQuery);
+    return params;
+  }
+
+  function renderCustomerPagination(meta) {
+    const pagination = document.querySelector("[data-customer-pagination]");
+    if (!pagination) return;
+    const pages = Math.max(1, Number(meta.totalPages) || 1);
+    pagination.classList.toggle("hidden", Number(meta.total) === 0);
+    pagination.querySelector("[data-customer-page-prev]").disabled = customerState.page <= 1;
+    pagination.querySelector("[data-customer-page-next]").disabled = customerState.page >= pages;
+    pagination.querySelector("[data-customer-page-status]").textContent = `第 ${customerState.page} / ${pages} 页`;
+  }
+
+  async function loadCustomers(page = customerState.page) {
     const grid = document.querySelector("[data-customer-grid]");
     if (!grid) throw new Error("客户列表已离开当前页面，请返回客户管理后刷新");
     const total = document.querySelector("[data-customer-total]");
+    customerState.page = page;
     grid.innerHTML = messageCard("正在加载客户数据...");
     try {
-      const firstPage = await api.get("/customers?page=1&pageSize=100");
-      const totalPages = Number(firstPage.meta?.totalPages) || 1;
-      const remaining = totalPages > 1 ? await Promise.all(Array.from({ length: totalPages - 1 }, (_, index) => (
-        api.get(`/customers?page=${index + 2}&pageSize=100`)
-      ))) : [];
-      const customers = [firstPage, ...remaining].flatMap((page) => page.data);
+      const payload = await api.get(`/customers?${customerQuery(grid, customerState.page)}`);
+      if (!payload.data.length && customerState.page > 1) return loadCustomers(customerState.page - 1);
+      const customers = payload.data;
       grid.innerHTML = customers.length ? customers.map(customerCard).join("") : messageCard("暂无客户数据");
-      if (total) total.textContent = `${firstPage.meta.total} 位客户`;
-      grid._farockRefreshOptions?.();
-      grid._farockRender?.();
-      window.FarockCustomers = { refresh: loadCustomers };
+      if (total) total.textContent = `${payload.meta.total} 位客户`;
+      renderCustomerPagination(payload.meta);
+      window.FarockCustomers = { refresh: () => loadCustomers(customerState.page), applyFilters: () => loadCustomers(1) };
       document.dispatchEvent(new CustomEvent("farock:customers-loaded"));
     } catch (error) {
       grid.innerHTML = messageCard(`客户数据加载失败：${error.message}`, true);
@@ -46,6 +61,13 @@
       grid.querySelector("[data-api-retry]")?.addEventListener("click", () => { void loadCustomers().catch(() => {}); });
       throw error;
     }
+  }
+
+  async function loadCustomerFilterOptions() {
+    try {
+      const [stores, dealerGroups] = await Promise.all([api.get("/stores"), api.get("/dealer-groups")]);
+      document.dispatchEvent(new CustomEvent("farock:customer-filter-options", { detail: { stores: stores.data, dealerGroups: dealerGroups.data } }));
+    } catch { /* The list remains usable with manually selected filters. */ }
   }
 
   async function loadDashboard() {
@@ -69,6 +91,13 @@
     }
   }
 
-  void loadCustomers().catch(() => {});
+  const customerGrid = document.querySelector("[data-customer-grid]");
+  if (customerGrid) {
+    customerGrid._farockLoad = () => loadCustomers(1);
+    document.querySelector("[data-customer-page-prev]")?.addEventListener("click", () => { void loadCustomers(customerState.page - 1); });
+    document.querySelector("[data-customer-page-next]")?.addEventListener("click", () => { void loadCustomers(customerState.page + 1); });
+    void loadCustomers().catch(() => {});
+    void loadCustomerFilterOptions();
+  }
   loadDashboard();
 })();
